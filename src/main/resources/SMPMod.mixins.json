@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ml.spmc.smpmod.minecraft.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinPlayerManager",
+    "MixinServerPlayNetworkHandler",
+    "MixinServerPlayer",
+    "MixinPlayerAdvancements"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
