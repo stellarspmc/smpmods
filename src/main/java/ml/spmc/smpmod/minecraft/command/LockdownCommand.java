@@ -5,27 +5,27 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import ml.spmc.smpmod.SMPMod;
 import ml.spmc.smpmod.utils.UtilClass;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 
 import java.util.Objects;
 
 public class LockdownCommand {
-    public static LiteralArgumentBuilder<CommandSourceStack> buildCommand(){
-        return Commands.literal("lock").executes(LockdownCommand::lock);
+    public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
+        return CommandManager.literal("lock").executes(LockdownCommand::lock);
     }
-    public static int lock(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Player player = ctx.getSource().getPlayerOrException();
+    public static int lock(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        PlayerEntity player = ctx.getSource().getPlayerOrThrow();
         if (!Objects.equals(player.getName().getString(), "tcfplayz") || !Objects.equals(player.getName().getString(), "eyelol")) return 0;
         if (!UtilClass.lockdown) {
             UtilClass.lockdown = true;
-            SMPMod.SERVER.getPlayerList().broadcastSystemMessage(Component.literal("balance locked"), false);
+            SMPMod.SERVER.getPlayerManager().broadcast(Text.literal("balance locked"), false);
             SMPMod.MESSAGECHANNEL.sendMessage("balance locked").queue();
         } else {
             UtilClass.lockdown = false;
-            SMPMod.SERVER.getPlayerList().broadcastSystemMessage(Component.literal("balance unlocked"), false);
+            SMPMod.SERVER.getPlayerManager().broadcast(Text.literal("balance unlocked"), false);
             SMPMod.MESSAGECHANNEL.sendMessage("balance unlocked").queue();
         }
         System.out.println("used lock cmd");

@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static ml.spmc.smpmod.utils.music.MusicPlayer.loadPlaylist;
-
 
 public class TrackScheduler extends AudioEventAdapter {
 
@@ -43,8 +41,8 @@ public class TrackScheduler extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         this.lastTrack = track;
         if (endReason.mayStartNext) {
-            if (queue.size() == 0) loadPlaylist();
-            else if (lastTrack == queue.toArray()[queue.size() - 1]) loadPlaylist();
+            if (queue.size() == 0) MusicPlayer.loadPlaylist();
+            else if (lastTrack == queue.toArray()[queue.size() - 1]) MusicPlayer.loadPlaylist();
             else nextTrack();
         }
     }

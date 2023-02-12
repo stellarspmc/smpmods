@@ -6,8 +6,8 @@
   "mixins": [
     "MixinPlayerManager",
     "MixinServerPlayNetworkHandler",
-    "MixinServerPlayer",
-    "MixinPlayerAdvancements"
+    "MixinPlayerEntity",
+    "MixinPlayerAdvancementTracker"
   ],
   "client": [
   ],

@@ -25,7 +25,6 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,15 +36,13 @@ import static ml.spmc.smpmod.SMPMod.*;
 
 public class EventHandler extends ListenerAdapter {
 
-    public static Level lvl;
-
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         if (SERVER == null) return;
         if (e.getChannel() != MESSAGECHANNEL) return;
         if (e.getAuthor().isBot()) return;
         LOGGER.info(("[Discord] " + e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator() + ": " + e.getMessage().getContentRaw()));
-        SERVER.getPlayerList().getPlayers().forEach(player -> player.sendSystemMessage(TextParserUtils.formatText("[<dark_purple>Discord</dark_purple>] <dark_purple>" + MarkdownParser.parseMarkdown(e.getAuthor().getName()) + "#" + e.getAuthor().getDiscriminator() + "</dark_purple>: " + MarkdownParser.parseMarkdown(e.getMessage().getContentRaw()))));
+        SERVER.getPlayerManager().getPlayerList().forEach(player -> player.sendMessage(TextParserUtils.formatText("[<dark_purple>Discord</dark_purple>] <dark_purple>" + MarkdownParser.parseMarkdown(e.getAuthor().getName()) + "#" + e.getAuthor().getDiscriminator() + "</dark_purple>: " + MarkdownParser.parseMarkdown(e.getMessage().getContentRaw()))));
     }
 
     @Override

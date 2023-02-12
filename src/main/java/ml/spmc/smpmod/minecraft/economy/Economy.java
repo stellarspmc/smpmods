@@ -3,43 +3,42 @@ package ml.spmc.smpmod.minecraft.economy;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import ml.spmc.smpmod.utils.UtilClass;
-import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 public class Economy {
 
     // cmd util
-    private static void createItem(Player player, int big) {
+    private static void createItem(PlayerEntity player, int big) {
         ItemStack itemStack = new ItemStack(Items.SUNFLOWER);
         itemStack.setCount(big);
-        CompoundTag tag = itemStack.getOrCreateTagElement("worth");
+        NbtCompound tag = itemStack.getOrCreateNbt();
         tag.putDouble("worth", 1);
-        itemStack.setTag(tag);
-        itemStack.enchant(Enchantments.UNBREAKING, 1);
-        itemStack.setHoverName(Component.literal("$" + 1).withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
-        ItemEntity itemEntity = player.drop(itemStack, true);
+        itemStack.setNbt(tag);
+        itemStack.addEnchantment(Enchantments.UNBREAKING, 1);
+        itemStack.setCustomName(Text.literal("$" + 1).formatted(Formatting.BOLD, Formatting.AQUA));
+        ItemEntity itemEntity = player.dropItem(itemStack, true);
         assert itemEntity != null;
-        itemEntity.setNoPickUpDelay();
-        itemEntity.setOwner(player.getUUID());
+        itemEntity.setPickupDelayInfinite();
+        itemEntity.setOwner(player.getUuid());
     }
 
     // cmds
-    public static int depositCommand(CommandContext<CommandSourceStack> css, ServerPlayer plr)  {
+    public static int depositCommand(CommandContext<ServerCommandSource> css, PlayerEntity plr)  {
         try {
             Inventory inv = plr.getInventory();
-            for (ItemStack item : inv.items) {
-                if (item.getItem().equals(Items.DIAMOND)) {
+            for (int i=0; i>inv.size();i++) {
+                if (inv.getStack(i).equals(Items.DIAMOND)) {
                     UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), 1);
-                    inv.removeItem(item);
+                    inv.removeStack(i);
                 }
             }
         } catch (Exception e) {
@@ -48,9 +47,9 @@ public class Economy {
         return 0;
     }
 
-    public static int withdrawCommand(CommandContext<CommandSourceStack> e, double amount) {
+    public static int withdrawCommand(CommandContext<ServerCommandSource> e, double amount) {
         try {
-            Player plr = e.getSource().getPlayerOrException();
+            PlayerEntity plr = e.getSource().getPlayerOrThrow();
             createItem(plr, ((int) Math.floor(amount)));
             UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), -((int) Math.floor(amount)));
         } catch (CommandSyntaxException ex) {

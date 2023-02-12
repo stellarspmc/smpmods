@@ -1,37 +1,35 @@
 package ml.spmc.smpmod.minecraft.command.screen.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import ml.spmc.smpmod.SMPMod;
 import ml.spmc.smpmod.minecraft.command.screen.Screen;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.ScreenHandlerFactory;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.stat.Stats;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 public class GarbageCommand extends Screen {
-    public static LiteralArgumentBuilder<CommandSourceStack> buildCommand(){
-        return Commands.literal("dispose").executes(new GarbageCommand());
+    public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
+        return CommandManager.literal("dispose").executes(new GarbageCommand());
     }
-    private static final MenuConstructor SCREEN_HANDLER_FACTORY = (syncId, inventory, player) ->
-            ChestMenu.sixRows(syncId, inventory);
+    private static final ScreenHandlerFactory SCREEN_HANDLER_FACTORY = (syncId, inventory, player) ->
+            GenericContainerScreenHandler.createGeneric9x6(syncId, inventory);
 
     @Override
-    protected Component getScreenTitle() {
-        return Component.literal("Garbage Can");
+    protected Text getScreenTitle() {
+        return Text.literal("Garbage Can");
     }
 
     @Override
-    protected @NotNull MenuConstructor getScreenHandlerFactory() {
+    protected @NotNull ScreenHandlerFactory getScreenHandlerFactory() {
         return SCREEN_HANDLER_FACTORY;
     }
 
     @Override
-    protected void onOpen(ServerPlayer player) {
-        SMPMod.SERVER.getPlayerList().broadcastSystemMessage(Component.literal("OH EM GEE " + player + " USE GARBAGE CAN MEAN " + player + " TRASH!!!!!!!!!!!!!!!"), true);
-        player.awardStat(Stats.DEATHS, 100000);
+    protected void onOpen(ServerPlayerEntity player) {
+        player.increaseStat(Stats.DEATHS, 100000);
     }
 }

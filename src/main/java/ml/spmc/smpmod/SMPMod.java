@@ -57,7 +57,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 MESSAGECHANNEL.getManager().setTopic(topic).queue();
                 MusicPlayer.playMusic();
                 MESSAGECHANNEL.sendMessage("<@&964807039702421564> Server has opened!").queue();
-                EventHandler.lvl = server.overworld();
+                
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

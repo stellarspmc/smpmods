@@ -1,39 +1,39 @@
 package ml.spmc.smpmod.minecraft.command;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import ml.spmc.smpmod.utils.UtilClass;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import ml.spmc.smpmod.utils.sql.DatabaseManager;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.Component;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 
 public class BalanceCommand {
-        public static LiteralArgumentBuilder<CommandSourceStack> buildCommand(){
-            return Commands.literal("balance")
+        public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
+            return CommandManager.literal("balance")
                     .then(
-                            Commands.argument("playerName", StringArgumentType.string())
+                            CommandManager.argument("playerName", StringArgumentType.string())
                                     .executes(e -> {
                                         String string = StringArgumentType.getString(e, "playerName");
                                         return balanceCommand(e, string);
                                     })
                     )
                     .then(
-                            Commands.argument("player", EntityArgument.player())
+                            CommandManager.argument("player", EntityArgumentType.players())
                                     .executes(e -> {
-                                        String player = EntityArgument.getPlayer(e, "player").getName().getString();
+                                        String player = EntityArgumentType.getPlayer(e, "player").getName().getString();
                                         return balanceCommand(e, player);
                                     })
                     )
-                    .executes(e -> balanceCommand(e, e.getSource().getPlayerOrException().getName().getString()));
+                    .executes(e -> balanceCommand(e, e.getSource().getPlayerOrThrow().getName().getString()));
         }
 
-        public static int balanceCommand(CommandContext<CommandSourceStack> ctx, String player) {
+        public static int balanceCommand(CommandContext<ServerCommandSource> ctx, String player) {
             DatabaseManager dm = UtilClass.getDatabaseManager();
             double bal = dm.getBalance(player);
-            ctx.getSource().sendSuccess(Component.literal(player + " has $" + bal), false);
+            ctx.getSource().sendFeedback(Text.literal(player + " has $" + bal), false);
             return 1;
         }
 }
