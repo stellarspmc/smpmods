@@ -14,41 +14,35 @@ repositories {
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
+    // basic minecraft things
     minecraft("com.mojang:minecraft:${project.minecraft_version}")
     mappings("net.fabricmc:yarn:1.19.3+build.1:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
-    include modImplementation("com.vdurmont:emoji-java:5.1.1")
-    include modImplementation("org.json:json:20220320")
+
+    // must have
+    include modImplementation("net.dv8tion:JDA:${project.JDA_version}")
+    include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
+
+    include modImplementation("com.neovisionaries:nv-websocket-client:2.14")
+    include modImplementation("com.github.walkyst:lavaplayer-fork:1.4.2")
+
+    // dependencies for must have
     include modImplementation("com.squareup.okhttp3:okhttp:4.10.0")
     include modImplementation("com.squareup.okio:okio:2.10.0")
-    include modImplementation("net.dv8tion:JDA:5.0.0-alpha.18")
-    include modImplementation("com.neovisionaries:nv-websocket-client:2.14")
-    include modImplementation("com.sedmelluq:lavaplayer:1.3.78")
-    include modImplementation("com.sedmelluq:lava-common:1.1.2")
-    include modImplementation("com.sedmelluq:lavaplayer-natives:1.3.14")
     include modImplementation("org.slf4j:slf4j-api:1.7.25")
     include modImplementation("org.apache.httpcomponents:httpcore:4.4.15")
     include modImplementation("org.apache.httpcomponents:httpclient:4.5.13")
     include modImplementation("commons-logging:commons-logging:1.2")
     include modImplementation("commons-io:commons-io:2.6")
     include modImplementation("org.jsoup:jsoup:1.12.1")
-    include modImplementation("net.iharder:base64:2.3.9")
     include modImplementation("net.sf.trove4j:trove4j:3.0.3")
     include modImplementation("org.apache.commons:commons-collections4:4.4")
     include modImplementation("org.slf4j:slf4j-api:1.7.36")
     include modImplementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
     include modImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     include modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.13.3")
-    include modImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
-    include modImplementation("mysql:mysql-connector-java:8.0.29")
-    include modImplementation("eu.pb4:placeholder-api:2.0.0-pre.1+1.19.2")
-    include modImplementation("com.google.zxing:core:3.5.1")
-    include modImplementation("com.google.zxing:javase:3.5.1")
-    include modImplementation('com.github.kenglxn.QRGen:javase:3.0.1')
+    //include modImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
 }
 
 processResources {

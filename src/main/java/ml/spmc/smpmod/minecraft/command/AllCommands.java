@@ -8,14 +8,13 @@ import net.minecraft.server.command.ServerCommandSource;
 
 public class AllCommands {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        /*
         dispatcher.register(BalanceCommand.buildCommand());
-        //dispatcher.register(WithdrawCommand.buildCommand());
+        dispatcher.register(WithdrawCommand.buildCommand());
+        */
         dispatcher.register(DeployCommand.buildCommand());
         dispatcher.register(LockdownCommand.buildCommand());
         dispatcher.register(SurfaceCommand.buildCommand());
-        dispatcher.register(SurfaceCommand.buildAlise());
-        dispatcher.register(DiscordCommand.buildCommand());
-        dispatcher.register(StatsCommand.buildCommand());
         dispatcher.register(MyIPCommand.buildCommand());
         dispatcher.register(ECCommand.buildCommand());
         dispatcher.register(TPAllCommand.buildCommand());

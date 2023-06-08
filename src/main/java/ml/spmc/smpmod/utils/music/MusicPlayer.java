@@ -9,9 +9,9 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import ml.spmc.smpmod.SMPMod;
-import ml.spmc.smpmod.utils.ConfigJava;
+import ml.spmc.smpmod.utils.ConfigLoader;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.List;
@@ -22,8 +22,9 @@ public class MusicPlayer {
     private static final MusicManager musicManager = new MusicManager(manager);
 
     public static void playMusic() {
-        final VoiceChannel channel = SMPMod.JDA.getVoiceChannelById(ConfigJava.MUSIC_ID);
-        final Guild guild = SMPMod.JDA.getGuildById(ConfigJava.GUILD);
+        final VoiceChannel channel = SMPMod.JDA.getVoiceChannelById(ConfigLoader.MUSIC_CHANNEL_ID);
+        final Guild guild = SMPMod.JDA.getGuildById(ConfigLoader.GUILD_ID);
+        assert guild != null;
         final AudioManager manager2 = guild.getAudioManager();
         AudioPlayer player = musicManager.player;
         manager2.setSendingHandler(musicManager.getSendHandler());
@@ -41,8 +42,7 @@ public class MusicPlayer {
 
     public static void loadPlaylist() {
         final String playlist1 = "https://youtube.com/playlist?list=PLy_S3qOMUL1epiuCU4kBTOpLo1xOFJSLx";
-        //final String playlist1 = "https://www.youtube.com/playlist?list=PL7AMJQQdFhwa1rO-o7n-sBRQTdC5Qk2B6";
-       manager.loadItem(playlist1, new AudioLoadResultHandler() {
+        manager.loadItem(playlist1, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
             }

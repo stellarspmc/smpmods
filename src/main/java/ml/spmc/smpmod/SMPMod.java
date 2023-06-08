@@ -3,12 +3,12 @@ package ml.spmc.smpmod;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
-import ml.spmc.smpmod.utils.ConfigJava;
+import ml.spmc.smpmod.utils.ConfigLoader;
 import ml.spmc.smpmod.utils.music.MusicPlayer;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -42,8 +42,10 @@ public class SMPMod implements DedicatedServerModInitializer {
         }
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             try {
+                ConfigLoader.checkConfigs();
+
                 SERVER = server;
-                JDA = JDABuilder.createDefault(ConfigJava.TOKEN).setHttpClient(new OkHttpClient.Builder()
+                JDA = JDABuilder.createDefault(ConfigLoader.BOT_TOKEN).setHttpClient(new OkHttpClient.Builder()
                                 .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                                 .build())
                         .setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -51,7 +53,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                         .addEventListeners(new EventHandler())
                         .build();
                 JDA.awaitReady();
-                MESSAGECHANNEL = JDA.getTextChannelById(ConfigJava.MESSAGE_CHANNEL_ID);
+                MESSAGECHANNEL = JDA.getTextChannelById(ConfigLoader.MESSAGE_CHANNEL_ID);
                 JDA.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 String topic = "SMP Opened!";
                 MESSAGECHANNEL.getManager().setTopic(topic).queue();
@@ -59,6 +61,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 MESSAGECHANNEL.sendMessage("<@&964807039702421564> Server has opened!").queue();
                 
             } catch (Exception e) {
+                LOGGER.error("PLEASE PUT INFORMATION INTO CONFIG");
                 throw new RuntimeException(e);
             }
         });
@@ -75,11 +78,11 @@ public class SMPMod implements DedicatedServerModInitializer {
         JsonObject body = new JsonObject();
         body.addProperty("content", message);
         body.addProperty("username", playername);
-        body.addProperty("avatar_url", ConfigJava.AVATAR_URL.replace("%player%", playeruuid));
+        body.addProperty("avatar_url", ConfigLoader.AVATAR_URL.replace("%player%", playeruuid));
         body.add("allowed_mentions", new Gson().fromJson("{\"parse\":[]}", JsonObject.class));
 
         Request request = new Request.Builder()
-                .url(ConfigJava.WEBHOOK_URL)
+                .url(ConfigLoader.WEBHOOK_URL)
                 .post(RequestBody.create(body.toString(), MediaType.get("application/json")))
                 .build();
 

@@ -37,7 +37,7 @@ public class Economy {
             Inventory inv = plr.getInventory();
             for (int i=0; i>inv.size();i++) {
                 if (inv.getStack(i).equals(Items.DIAMOND)) {
-                    UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), 1);
+                    //UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), 1);
                     inv.removeStack(i);
                 }
             }
@@ -51,7 +51,7 @@ public class Economy {
         try {
             PlayerEntity plr = e.getSource().getPlayerOrThrow();
             createItem(plr, ((int) Math.floor(amount)));
-            UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), -((int) Math.floor(amount)));
+            //UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), -((int) Math.floor(amount)));
         } catch (CommandSyntaxException ex) {
             throw new RuntimeException(ex);
         }

@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import ml.spmc.smpmod.utils.UtilClass;
-import ml.spmc.smpmod.utils.sql.DatabaseManager;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,9 +30,9 @@ public class BalanceCommand {
         }
 
         public static int balanceCommand(CommandContext<ServerCommandSource> ctx, String player) {
-            DatabaseManager dm = UtilClass.getDatabaseManager();
-            double bal = dm.getBalance(player);
-            ctx.getSource().sendFeedback(Text.literal(player + " has $" + bal), false);
+            //DatabaseManager dm = UtilClass.getDatabaseManager();
+            //double bal = dm.getBalance(player);
+            //ctx.getSource().sendFeedback(Text.literal(player + " has $" + bal), false);
             return 1;
         }
 }

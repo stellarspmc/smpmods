@@ -18,6 +18,7 @@ public class MixinPlayerAdvancementTracker {
 
     @Inject(method = "grantCriterion", at = @At(value = "TAIL"))
     private void addMessage(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
+        if (advancement.getDisplay() == null) return;
         String advancementName = advancement.getDisplay().getTitle().getString();
         String sent = "Nice, " + owner.getName().getString() + " has done " + advancementName;
         switch (advancement.getDisplay().getFrame()) {

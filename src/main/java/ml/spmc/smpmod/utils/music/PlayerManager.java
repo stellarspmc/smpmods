@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import ml.spmc.smpmod.SMPMod;
-import ml.spmc.smpmod.utils.ConfigJava;
+import ml.spmc.smpmod.utils.ConfigLoader;
 
 public class PlayerManager {
 
@@ -21,7 +21,7 @@ public class PlayerManager {
     }
 
     public MusicManager getGuildManager() {
-        SMPMod.JDA.getGuildById(ConfigJava.GUILD).getAudioManager().setSendingHandler(guildmanager.getSendHandler());
+        SMPMod.JDA.getGuildById(ConfigLoader.GUILD_ID).getAudioManager().setSendingHandler(guildmanager.getSendHandler());
         return guildmanager;
     }
 

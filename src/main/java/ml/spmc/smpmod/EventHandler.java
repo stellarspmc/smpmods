@@ -1,35 +1,34 @@
 package ml.spmc.smpmod;
 
-import eu.pb4.placeholders.api.TextParserUtils;
-import ml.spmc.smpmod.utils.ConfigJava;
-import ml.spmc.smpmod.utils.MarkdownParser;
+import ml.spmc.smpmod.utils.ConfigLoader;
+import ml.spmc.smpmod.utils.UtilClass;
+
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.Modal;
+import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Objects;
 
 import static ml.spmc.smpmod.SMPMod.*;
@@ -38,20 +37,18 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (SERVER == null) return;
-        if (e.getChannel() != MESSAGECHANNEL) return;
-        if (e.getAuthor().isBot()) return;
-        LOGGER.info(("[Discord] " + e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator() + ": " + e.getMessage().getContentRaw()));
-        SERVER.getPlayerManager().getPlayerList().forEach(player -> player.sendMessage(TextParserUtils.formatText("[<dark_purple>Discord</dark_purple>] <dark_purple>" + MarkdownParser.parseMarkdown(e.getAuthor().getName()) + "#" + e.getAuthor().getDiscriminator() + "</dark_purple>: " + MarkdownParser.parseMarkdown(e.getMessage().getContentRaw()))));
+        if (e.getChannel() != MESSAGECHANNEL || e.getAuthor().isBot() || SERVER == null) return;
+        if (e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator(), e.getMessage().getContentRaw());
+        else UtilClass.broadcastMessage(e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator(), "<attachment>");
     }
 
-    @Override
+    /*@Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event){
-        if (event.getGuild() == JDA.getGuildById(ConfigJava.GUILD)) {
+        if (event.getGuild() == JDA.getGuildById(ConfigLoader.GUILD_ID)) {
             Member member = event.getMember();
             event.getGuild().createVoiceChannel(member.getNickname() + "'s VC");
         }
-    }
+    }*/
 
     @Override
     public void onGuildReady(@Nullable GuildReadyEvent e) {
@@ -97,19 +94,12 @@ public class EventHandler extends ListenerAdapter {
                         .setMaxLength(1000)
                         .build();
                 Modal modal = Modal.create("appeal", "Appeal")
-                        .addActionRows(ActionRow.of(menu), ActionRow.of(subject), ActionRow.of(body))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(menu))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(subject))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(body))
                         .build();
                 e.replyModal(modal).queue();
             }
-            case "role" -> e.reply("Get role/s!").addActionRow(
-                    SelectMenu.create("rank")
-                            .addOption("Discord Pings", "discord", "Discord Server Pings")
-                            .addOption("SMP Pings", "minecraft", "SMP Notice Pings")
-                            .addOption("Legacy Player", "legacy", "1.8.9 PVP Player")
-                            .addOption("Modern Player", "modern", "1.9+ PVP Player")
-                            .addOption("Phantom Forces", "pf", "Phantom Forces Player!")
-                            .build()
-            ).queue();
             case "idea" -> {
                 TextInput menu = TextInput.create("for", "For", TextInputStyle.SHORT)
                         .setPlaceholder("The idea is for where. (Minecraft/Discord...)")
@@ -120,7 +110,8 @@ public class EventHandler extends ListenerAdapter {
                         .setMaxLength(1000)
                         .build();
                 Modal modal = Modal.create("idea", "Idea!")
-                        .addActionRows(ActionRow.of(menu), ActionRow.of(body))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(menu))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(body))
                         .build();
                 e.replyModal(modal).queue();
             }
@@ -136,7 +127,8 @@ public class EventHandler extends ListenerAdapter {
                         .setMaxLength(1000)
                         .build();
                 Modal modal = Modal.create("mod", "Mod!")
-                        .addActionRows(ActionRow.of(subject), ActionRow.of(body))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(subject))
+                        .addActionRow((Collection<? extends ItemComponent>) ActionRow.of(body))
                         .build();
                 e.replyModal(modal).queue();
             }
@@ -159,7 +151,7 @@ public class EventHandler extends ListenerAdapter {
                 eb.addField("Reason of Appeal", body, false);
                 eb.setTimestamp(Instant.now());
 
-                TextChannel channel2 = JDA.getTextChannelById(ConfigJava.APPEAL_CHANNEL);
+                TextChannel channel2 = JDA.getTextChannelById(ConfigLoader.APPEAL_CHANNEL_ID);
                 if (channel2 == null) return;
                 channel2.sendMessageEmbeds(eb.build()).queue();
 
@@ -200,7 +192,7 @@ public class EventHandler extends ListenerAdapter {
     private void idea(EmbedBuilder eb) {
         eb.setTimestamp(Instant.now());
 
-        MessageCreateAction message1 = JDA.getNewsChannelById("1068520925068271687").sendMessageEmbeds(eb.build());
+        MessageCreateAction message1 = Objects.requireNonNull(JDA.getNewsChannelById("1068520925068271687")).sendMessageEmbeds(eb.build());
         Message message = message1.complete();
         message.addReaction(Emoji.fromCustom("tell", 970358692648206477L, false)).queue();
         message.addReaction(Emoji.fromCustom("untell", 969424392947900496L, false)).queue();
@@ -219,36 +211,6 @@ public class EventHandler extends ListenerAdapter {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onSelectMenuInteraction(SelectMenuInteractionEvent event) {
-        if (event.getComponentId().equals("rank")) {
-            Member member = event.getMember();
-            assert member != null;
-            switch (event.getValues().get(0)) {
-                case "minecraft" -> {
-                    if (member.getGuild().getRoles().contains(JDA.getRoleById(964807039702421564L))) member.getGuild().addRoleToMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                    else member.getGuild().removeRoleFromMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                }
-                case "discord" -> {
-                    if (member.getGuild().getRoles().contains(JDA.getRoleById(981528409630969856L))) member.getGuild().addRoleToMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                    else member.getGuild().removeRoleFromMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(981528409630969856L))).queue();
-                }
-                case "modern" -> {
-                    if (member.getGuild().getRoles().contains(JDA.getRoleById(1021401004601790554L))) member.getGuild().addRoleToMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                    else member.getGuild().removeRoleFromMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(1021401004601790554L))).queue();
-                }
-                case "legacy" -> {
-                    if (member.getGuild().getRoles().contains(JDA.getRoleById(1021400946699423814L))) member.getGuild().addRoleToMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                    else member.getGuild().removeRoleFromMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(1021400946699423814L))).queue();
-                }
-                case "pf" -> {
-                    if (member.getGuild().getRoles().contains(JDA.getRoleById(965801725367844864L))) member.getGuild().addRoleToMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(964807039702421564L))).queue();
-                    else member.getGuild().removeRoleFromMember(member.getUser(), Objects.requireNonNull(JDA.getRoleById(965801725367844864L))).queue();
-                }
-            }
         }
     }
 }
