@@ -1,4 +1,4 @@
-package ml.spmc.smpmod.utils.music;
+package ml.spmc.smpmod.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;

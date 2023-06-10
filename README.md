@@ -27,6 +27,10 @@ appeal_channel_id=Text Channel ID
 
 # Changelog
 
+### SMPMods 3.21
+Done:
+- Before death, the coordinate will be sent to the Discord Server.
+
 ### SMPMods 3.2
 Done:
 - Updated to 1.20

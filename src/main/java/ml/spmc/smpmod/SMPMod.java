@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
 import ml.spmc.smpmod.utils.ConfigLoader;
-import ml.spmc.smpmod.utils.music.MusicPlayer;
+import ml.spmc.smpmod.music.MusicPlayer;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -66,12 +66,12 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register((server) -> MESSAGECHANNEL.sendMessage("<@&964807039702421564> Server has stopped!").submit()
-                .whenComplete((v, ex) -> {
-                    String topic = "Oh no! Server closed!";
-                    MESSAGECHANNEL.getManager().setTopic(topic);
-                    JDA.shutdownNow();
-                }));
+        ServerLifecycleEvents.SERVER_STOPPED.register((server) -> {
+            MESSAGECHANNEL.sendMessage("Server has stopped!").queue();
+            String topic = "Oh no! Server closed!";
+            MESSAGECHANNEL.getManager().setTopic(topic);
+            JDA.shutdownNow();
+        });
     }
 
     public static void sendWebhookMessage(String message, String playername, String playeruuid) {

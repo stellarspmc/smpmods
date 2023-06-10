@@ -25,7 +25,9 @@ dependencies {
     include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
 
     include modImplementation("com.neovisionaries:nv-websocket-client:2.14")
-    include modImplementation("com.github.walkyst:lavaplayer-fork:1.4.2")
+    include modImplementation("com.sedmelluq:lavaplayer:1.3.78")
+    include modImplementation("com.sedmelluq:lava-common:1.1.2")
+    include modImplementation("com.sedmelluq:lavaplayer-natives:1.3.14")
 
     // dependencies for must have
     include modImplementation("com.squareup.okhttp3:okhttp:4.10.0")
