@@ -26,15 +26,22 @@ appeal_channel_id=Text Channel ID
 ```
 
 # Changelog
+
+### SMPMods 3.2
+Done:
+- Updated to 1.20
+- Updated Gradle to 8.1.1
+- Updated Fabric Loom to 1.2-SNAPSHOT
+
 ### SMPMods 3.1
-Fixed:
-- AdvancementTracker breaking the server
+Done:
+- Fixed AdvancementTracker breaking the server
 - Updated lavaplayer to lavaplayer-fork
 
 ### SMPMods 3.0
 I lost my source code, so I had to rewrite this in SMPMods 2.14.
 
-Fixed:
-- Economy module from breaking
+Done:
+- Fixed Economy module from breaking
 - Removed unnecessary code
 - Removed unnecessary dependencies (Reduced file size)
