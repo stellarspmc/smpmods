@@ -12,6 +12,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
@@ -22,8 +24,8 @@ public class MixinEnchantCommand {
      * @author tcfplayz
      * @reason to make enchanting easier
      */
-    @Overwrite
-    private static int execute(ServerCommandSource serverCommandSource, Collection<? extends Entity> collection, RegistryEntry<Enchantment> registryEntry, int i) throws CommandSyntaxException {
+    @Inject(method = "execute", at = @At("TAIL"))
+    private static void execute(ServerCommandSource serverCommandSource, Collection<? extends Entity> collection, RegistryEntry<Enchantment> registryEntry, int i, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException {
         Enchantment enchantment = registryEntry.comp_349();
         Entity entity = collection.iterator().next();
         if (entity instanceof LivingEntity) {
@@ -32,6 +34,5 @@ public class MixinEnchantCommand {
             if (!itemStack.isEmpty()) itemStack.addEnchantment(enchantment, i);
             livingEntity.sendMessage(Text.literal("Your item has been enchanted to " + enchantment.getName(1)));
         }
-        return 1;
     }
 }
