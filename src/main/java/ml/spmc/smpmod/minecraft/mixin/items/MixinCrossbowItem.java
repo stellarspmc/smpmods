@@ -8,28 +8,29 @@ import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import net.minecraft.util.math.random.Random;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(CrossbowItem.class)
-public abstract class MixinCrossbowItem {
+public class MixinCrossbowItem {
 
     @Shadow
-    protected static boolean loadProjectile(LivingEntity livingEntity, ItemStack itemStack, ItemStack itemStack2, boolean bl, boolean bl2) {return false;}
+    private static boolean loadProjectile(LivingEntity livingEntity, ItemStack itemStack, ItemStack itemStack2, boolean bl, boolean bl2) {return false;}
     @Shadow
-    protected static List<ItemStack> getProjectiles(ItemStack itemStack) {return null;}
+    private static List<ItemStack> getProjectiles(ItemStack itemStack) {return null;}
     @Shadow
-    protected static void shoot(World world, LivingEntity livingEntity, Hand hand, ItemStack itemStack, ItemStack itemStack2, float f, boolean bl, float g, float h, float i) {}
+    private static void shoot(World world, LivingEntity livingEntity, Hand hand, ItemStack itemStack, ItemStack itemStack2, float f, boolean bl, float g, float h, float i) {}
     @Shadow
-    protected static float[] getSoundPitches(Random random) {return new float[]{};}
+    private static float getSoundPitch(boolean bl, Random random) {return 0;}
     @Shadow
-    protected static void postShoot(World world, LivingEntity livingEntity, ItemStack itemStack) {}
+    private static void postShoot(World world, LivingEntity livingEntity, ItemStack itemStack) {}
 
         /**
          * @author tcfplayz
@@ -38,7 +39,7 @@ public abstract class MixinCrossbowItem {
     @Overwrite
     private static boolean loadProjectiles(LivingEntity livingEntity, ItemStack itemStack) {
         int i = EnchantmentHelper.getLevel(Enchantments.MULTISHOT, itemStack);
-        int j = i > 0 ? i + 1 : 1;
+        int j = i > 0 ? i*5 : 1;
         boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
         ItemStack itemStack2 = livingEntity.getProjectileType(itemStack);
         ItemStack itemStack3 = itemStack2.copy();
@@ -68,24 +69,11 @@ public abstract class MixinCrossbowItem {
     @Overwrite
     public static void shootAll(World world, LivingEntity livingEntity, Hand hand, ItemStack itemStack, float f, float g) {
         List<ItemStack> list = getProjectiles(itemStack);
-        float[] fs = getSoundPitches(livingEntity.getRandom());
+        float fs = getSoundPitch(false, Random.create());
 
-        for(int i = 0; i < list.size(); ++i) {
-            ItemStack itemStack2 = list.get(i);
-            boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
-            if (!itemStack2.isEmpty()) {
-                switch(i) {
-                    case 1:
-                        shoot(world, livingEntity, hand, itemStack, itemStack2, fs[i], bl, f, g, -10.0F);
-                        break;
-                    case 2:
-                        shoot(world, livingEntity, hand, itemStack, itemStack2, fs[i], bl, f, g, 10.0F);
-                        break;
-                    default:
-                        shoot(world, livingEntity, hand, itemStack, itemStack2, fs[i], bl, f, g, 0.0F);
-
-                }
-            }
+        for(int i = 0; i < Objects.requireNonNull(list).size(); ++i) {
+           boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
+           shoot(world, livingEntity, hand, itemStack, itemStack, fs, bl, f, g, new java.util.Random().nextFloat(-20, 21));
         }
 
         postShoot(world, livingEntity, itemStack);

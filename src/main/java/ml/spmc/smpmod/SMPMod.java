@@ -41,7 +41,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> AllCommands.register(dispatcher));
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> AllCommands.register(dispatcher, registryAccess));
         } catch (Exception e) {
             LOGGER.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
@@ -64,8 +64,8 @@ public class SMPMod implements DedicatedServerModInitializer {
                 String topic = "SMP Opened!";
                 MESSAGECHANNEL.getManager().setTopic(topic).queue();
                 MusicPlayer.playMusic();
-                MESSAGECHANNEL.sendMessage("<@&964807039702421564> Server has opened!").queue();
-                
+                //MESSAGECHANNEL.sendMessage("<@&964807039702421564> Server has opened!").queue();
+                MESSAGECHANNEL.sendMessage("Server has opened!").queue();
             } catch (Exception e) {
                 LOGGER.error("PLEASE PUT INFORMATION INTO CONFIG");
                 throw new RuntimeException(e);

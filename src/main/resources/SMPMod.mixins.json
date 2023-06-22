@@ -8,10 +8,11 @@
     "player.MixinServerPlayNetworkHandler",
     "player.MixinPlayerEntity",
     "player.MixinPlayerAdvancementTracker",
-    "commands.MixinEnchantCommand",
     "items.MixinFireChargeItem",
     "items.MixinCrossbowItem",
-    "util.MixinEnchantment"
+    "util.ench.MixinUnbreakingEnchantment",
+    "util.ench.MixinMultishotEnchantment",
+    "util.ench.MixinEnchantment"
   ],
   "client": [
   ],

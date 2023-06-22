@@ -29,16 +29,17 @@ public class ConfigLoader {
                 Files.createFile(configFilePath);
 
                 FileWriter myWriter = new FileWriter(configFilePath.toFile());
-                myWriter.write("// URLs");
-                myWriter.write("webhook_url=null");
-                myWriter.write("avatar_url=null");
-                myWriter.write("// Discord Stuff");
-                myWriter.write("bot_token=null");
-                myWriter.write("message_channel_id=null");
-                myWriter.write("music_channel_id=null");
-                myWriter.write("guild_id=null");
-                myWriter.write("appeal_channel_id=null");
-                myWriter.close();
+               myWriter.write(
+                       "// URLs\n" +
+                          "webhook_url=null\n" +
+                          "avatar_url=null\n" +
+                          "// Discord Stuff\n" +
+                          "bot_token=null\n" +
+                          "message_channel_id=null\n" +
+                          "music_channel_id=null\n" +
+                          "guild_id=null\n" +
+                          "appeal_channel_id=null");
+               myWriter.close();
             }
 
             FileInputStream propsInput = new FileInputStream(configFilePath.toFile());
