@@ -22,7 +22,7 @@ public class DeployCommand {
     }
 
     private static int deployConfirm(String version) {
-        SMPMod.SERVER.getPlayerManager().broadcast(Text.literal("SMP Update " + version + " coming out in 1-5 minutes!"), false);
+        SMPMod.SERVER.getPlayerManager().getPlayerList().forEach((player) -> player.sendMessage(Text.literal("SMP Update " + version + " coming out in 1-5 minutes!"), false));
         SMPMod.MESSAGECHANNEL.sendMessage("SMP Update " + version + " coming out in 1-5 minutes!").queue();
         return 1;
     }

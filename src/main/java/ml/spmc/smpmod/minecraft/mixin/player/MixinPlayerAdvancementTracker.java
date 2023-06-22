@@ -1,4 +1,4 @@
-package ml.spmc.smpmod.minecraft.mixin;
+package ml.spmc.smpmod.minecraft.mixin.player;
 
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.advancement.Advancement;

@@ -1,4 +1,4 @@
-package ml.spmc.smpmod.minecraft.mixin;
+package ml.spmc.smpmod.minecraft.mixin.player;
 
 import ml.spmc.smpmod.SMPMod;
 import ml.spmc.smpmod.utils.MarkdownParser;

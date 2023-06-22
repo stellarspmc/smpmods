@@ -38,8 +38,8 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         if (e.getChannel() != MESSAGECHANNEL || e.getAuthor().isBot() || SERVER == null) return;
-        if (e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator(), e.getMessage().getContentRaw());
-        else UtilClass.broadcastMessage(e.getAuthor().getName() + "#" + e.getAuthor().getDiscriminator(), "<attachment>");
+        if (e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName(), e.getMessage().getContentRaw());
+        else UtilClass.broadcastMessage(e.getAuthor().getName(), "<attachment>");
     }
 
     /*@Override
@@ -144,7 +144,7 @@ public class EventHandler extends ListenerAdapter {
                 String from = Objects.requireNonNull(event.getValue("from")).getAsString();
 
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setAuthor(event.getUser().getName() + "#" + event.getUser().getDiscriminator(), event.getUser().getEffectiveAvatarUrl());
+                eb.setAuthor(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl());
                 eb.setTitle(subject);
                 eb.setColor(new Color(155, 160, 81));
                 eb.addField("Warned From", from, false);
@@ -162,7 +162,7 @@ public class EventHandler extends ListenerAdapter {
                 String idea = Objects.requireNonNull(event.getValue("idea")).getAsString();
 
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setAuthor(event.getUser().getName() + "#" + event.getUser().getDiscriminator(), event.getUser().getEffectiveAvatarUrl());
+                eb.setAuthor(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl());
                 eb.setTitle("An idea!");
                 eb.setColor(new Color(155, 160, 81));
                 eb.addField("The idea is for:", for1, false);
@@ -176,7 +176,7 @@ public class EventHandler extends ListenerAdapter {
                 String idea = Objects.requireNonNull(event.getValue("idea")).getAsString();
 
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setAuthor(event.getUser().getName() + "#" + event.getUser().getDiscriminator(), event.getUser().getEffectiveAvatarUrl());
+                eb.setAuthor(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl());
                 eb.setTitle("A mod request!");
                 eb.setColor(new Color(155, 160, 81));
                 eb.addField("Mod:", mod, false);

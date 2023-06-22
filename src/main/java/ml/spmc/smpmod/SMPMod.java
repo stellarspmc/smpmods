@@ -3,6 +3,8 @@ package ml.spmc.smpmod;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
+import ml.spmc.smpmod.minecraft.events.MobSpawnedEvent;
+import ml.spmc.smpmod.minecraft.events.TreasureEvent;
 import ml.spmc.smpmod.utils.ConfigLoader;
 import ml.spmc.smpmod.music.MusicPlayer;
 import net.dv8tion.jda.api.JDABuilder;
@@ -15,8 +17,12 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import okhttp3.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -72,6 +78,10 @@ public class SMPMod implements DedicatedServerModInitializer {
             MESSAGECHANNEL.getManager().setTopic(topic);
             JDA.shutdownNow();
         });
+
+        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> MobSpawnedEvent.onEntityJoin(world, entity));
+
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> TreasureEvent.onBreakBlock((ServerWorld) world, player, state));
     }
 
     public static void sendWebhookMessage(String message, String playername, String playeruuid) {
