@@ -11,7 +11,6 @@
     "items.MixinFireChargeItem",
     "items.MixinCrossbowItem",
     "util.ench.MixinUnbreakingEnchantment",
-    "util.ench.MixinMultishotEnchantment",
     "util.ench.MixinEnchantment"
   ],
   "client": [
