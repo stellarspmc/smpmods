@@ -72,8 +72,9 @@ public class MixinCrossbowItem {
         float fs = getSoundPitch(false, Random.create());
 
         for(int i = 0; i < Objects.requireNonNull(list).size(); ++i) {
-           boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
-           shoot(world, livingEntity, hand, itemStack, itemStack, fs, bl, f, g, new java.util.Random().nextFloat(-20, 21));
+            ItemStack itemStack2 = list.get(i);
+            boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
+            shoot(world, livingEntity, hand, itemStack, itemStack2, fs, bl, f, g, new java.util.Random().nextFloat(-20, 21));
         }
 
         postShoot(world, livingEntity, itemStack);

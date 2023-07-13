@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import static ml.spmc.smpmod.SMPMod.LOGGER;
+import static ml.spmc.smpmod.SMPMod.modLogger;
 
 public class ConfigLoader {
 
@@ -25,7 +25,7 @@ public class ConfigLoader {
         try {
             Path configFilePath = FabricLoader.getInstance().getConfigDir().resolve("smpmods.properties");
             if (!Files.exists(configFilePath)) {
-                LOGGER.info("Creating Config File...");
+                modLogger.info("Creating Config File...");
                 Files.createFile(configFilePath);
 
                 FileWriter myWriter = new FileWriter(configFilePath.toFile());
@@ -54,6 +54,12 @@ public class ConfigLoader {
             GUILD_ID = prop.getProperty("guild_id");
             APPEAL_CHANNEL_ID = prop.getProperty("appeal_channel_id");
         } catch (IOException e) {
+            modLogger.error("==============================================");
+            modLogger.error("");
+            modLogger.error("PLEASE PUT INFORMATION INTO CONFIG");
+            modLogger.error("");
+            modLogger.error("==============================================");
+
             e.printStackTrace();
         }
     }

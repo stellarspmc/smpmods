@@ -7,11 +7,12 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(Enchantment.class)
 public class MixinEnchantment {
-
     /**
      * @author tcfplayz
-     * @reason to make level 1 things become level 10
+     * @reason change enchantment max level
      */
     @Overwrite
-    public int getMaxLevel() {return 10;}
+    public int getMaxLevel() {
+        return 3;
+    }
 }

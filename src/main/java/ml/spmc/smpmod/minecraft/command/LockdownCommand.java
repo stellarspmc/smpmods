@@ -21,12 +21,12 @@ public class LockdownCommand {
         if (!Objects.equals(player.getName().getString(), "tcfplayz") || !Objects.equals(player.getName().getString(), "eyelol")) return 0;
         if (!UtilClass.lockdown) {
             UtilClass.lockdown = true;
-            SMPMod.SERVER.getPlayerManager().broadcast(Text.literal("balance locked"), false);
-            SMPMod.MESSAGECHANNEL.sendMessage("balance locked").queue();
+            SMPMod.minecraftServer.getPlayerManager().broadcast(Text.literal("balance locked"), false);
+            SMPMod.messageChannel.sendMessage("balance locked").queue();
         } else {
             UtilClass.lockdown = false;
-            SMPMod.SERVER.getPlayerManager().broadcast(Text.literal("balance unlocked"), false);
-            SMPMod.MESSAGECHANNEL.sendMessage("balance unlocked").queue();
+            SMPMod.minecraftServer.getPlayerManager().broadcast(Text.literal("balance unlocked"), false);
+            SMPMod.messageChannel.sendMessage("balance unlocked").queue();
         }
         System.out.println("used lock cmd");
         return 1;

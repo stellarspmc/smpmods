@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static ml.spmc.smpmod.SMPMod.MESSAGECHANNEL;
+import static ml.spmc.smpmod.SMPMod.messageChannel;
 
 @Mixin(PlayerAdvancementTracker.class)
 public class MixinPlayerAdvancementTracker {
@@ -26,6 +26,6 @@ public class MixinPlayerAdvancementTracker {
             case GOAL -> sent = "Nice, " + owner.getName().getString() + " has achieved " + advancementName;
             case CHALLENGE -> sent = "Nice, " + owner.getName().getString() + " has finished " + advancementName;
         }
-        MESSAGECHANNEL.sendMessage(MarkdownSanitizer.escape(sent)).queue();
+        messageChannel.sendMessage(MarkdownSanitizer.escape(sent)).queue();
     }
 }

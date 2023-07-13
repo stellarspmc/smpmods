@@ -22,8 +22,8 @@ public class MusicPlayer {
     private static final MusicManager musicManager = new MusicManager(manager);
 
     public static void playMusic() {
-        final VoiceChannel channel = SMPMod.JDA.getVoiceChannelById(ConfigLoader.MUSIC_CHANNEL_ID);
-        final Guild guild = SMPMod.JDA.getGuildById(ConfigLoader.GUILD_ID);
+        final VoiceChannel channel = SMPMod.bot.getVoiceChannelById(ConfigLoader.MUSIC_CHANNEL_ID);
+        final Guild guild = SMPMod.bot.getGuildById(ConfigLoader.GUILD_ID);
         assert guild != null;
         final AudioManager manager2 = guild.getAudioManager();
         AudioPlayer player = musicManager.player;

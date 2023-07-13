@@ -21,7 +21,7 @@ public class PlayerManager {
     }
 
     public MusicManager getGuildManager() {
-        SMPMod.JDA.getGuildById(ConfigLoader.GUILD_ID).getAudioManager().setSendingHandler(guildmanager.getSendHandler());
+        SMPMod.bot.getGuildById(ConfigLoader.GUILD_ID).getAudioManager().setSendingHandler(guildmanager.getSendHandler());
         return guildmanager;
     }
 

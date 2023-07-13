@@ -21,8 +21,8 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // must have
-    include modImplementation("net.dv8tion:JDA:${project.JDA_version}")
     include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
+    include modImplementation("net.dv8tion:JDA:${project.JDA_version}")
 
     include modImplementation("com.neovisionaries:nv-websocket-client:2.14")
     include modImplementation("com.sedmelluq:lavaplayer:1.3.78")

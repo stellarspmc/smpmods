@@ -1,17 +1,17 @@
 package ml.spmc.smpmod.minecraft.mixin.util.ench;
 
-import net.minecraft.enchantment.UnbreakingEnchantment;
+import net.minecraft.enchantment.QuickChargeEnchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-@Mixin(UnbreakingEnchantment.class)
-public class MixinUnbreakingEnchantment {
+@Mixin(QuickChargeEnchantment.class)
+public class MixinQuickChargeEnchantment {
     /**
      * @author tcfplayz
      * @reason change enchantment max level
      */
     @Overwrite()
     public int getMaxLevel() {
-        return 10;
+        return 5;
     }
 }

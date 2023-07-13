@@ -6,12 +6,18 @@
   "mixins": [
     "player.MixinPlayerManager",
     "player.MixinServerPlayNetworkHandler",
-    "player.MixinPlayerEntity",
+    "player.MixinServerPlayerEntity",
     "player.MixinPlayerAdvancementTracker",
+
     "items.MixinFireChargeItem",
     "items.MixinCrossbowItem",
+    "items.MixinBowItem",
+
     "util.ench.MixinUnbreakingEnchantment",
-    "util.ench.MixinEnchantment"
+    "util.ench.MixinEnchantment",
+    "util.ench.MixinMendingEnchantment",
+    "util.ench.MixinQuickChargeEnchantment",
+    "util.ench.MixinMultishotEnchantment"
   ],
   "client": [
   ],

@@ -19,7 +19,7 @@ public class TPAllCommand {
     public static int tpall(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         PlayerEntity player = ctx.getSource().getPlayerOrThrow();
         if (!Objects.equals(player.getName().getString(), "tcfplayz")) return 0;
-        else SMPMod.SERVER.getPlayerManager().getPlayerList().forEach(player1 -> player1.teleport((ServerWorld) player.getWorld(), player.getX(), player.getY(), player.getZ(), 1f, 1f));
+        else SMPMod.minecraftServer.getPlayerManager().getPlayerList().forEach(player1 -> player1.teleport((ServerWorld) player.getWorld(), player.getX(), player.getY(), player.getZ(), 1f, 1f));
         return 1;
     }
 }

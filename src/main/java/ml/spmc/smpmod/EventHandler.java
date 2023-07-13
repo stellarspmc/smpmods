@@ -37,14 +37,14 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (e.getChannel() != MESSAGECHANNEL || e.getAuthor().isBot() || SERVER == null) return;
+        if (e.getChannel() != messageChannel || e.getAuthor().isBot() || minecraftServer == null) return;
         if (e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName(), e.getMessage().getContentRaw());
         else UtilClass.broadcastMessage(e.getAuthor().getName(), "<attachment>");
     }
 
     /*@Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event){
-        if (event.getGuild() == JDA.getGuildById(ConfigLoader.GUILD_ID)) {
+        if (event.getGuild() == bot.getGuildById(ConfigLoader.GUILD_ID)) {
             Member member = event.getMember();
             event.getGuild().createVoiceChannel(member.getNickname() + "'s VC");
         }
@@ -64,7 +64,7 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        JDA.updateCommands().addCommands(
+        bot.updateCommands().addCommands(
                 Commands.slash("appeal", "Appeal?")
         ).queue();
     }
@@ -151,7 +151,7 @@ public class EventHandler extends ListenerAdapter {
                 eb.addField("Reason of Appeal", body, false);
                 eb.setTimestamp(Instant.now());
 
-                TextChannel channel2 = JDA.getTextChannelById(ConfigLoader.APPEAL_CHANNEL_ID);
+                TextChannel channel2 = bot.getTextChannelById(ConfigLoader.APPEAL_CHANNEL_ID);
                 if (channel2 == null) return;
                 channel2.sendMessageEmbeds(eb.build()).queue();
 
@@ -192,7 +192,7 @@ public class EventHandler extends ListenerAdapter {
     private void idea(EmbedBuilder eb) {
         eb.setTimestamp(Instant.now());
 
-        MessageCreateAction message1 = Objects.requireNonNull(JDA.getNewsChannelById("1068520925068271687")).sendMessageEmbeds(eb.build());
+        MessageCreateAction message1 = Objects.requireNonNull(bot.getNewsChannelById("1068520925068271687")).sendMessageEmbeds(eb.build());
         Message message = message1.complete();
         message.addReaction(Emoji.fromCustom("tell", 970358692648206477L, false)).queue();
         message.addReaction(Emoji.fromCustom("untell", 969424392947900496L, false)).queue();
@@ -203,7 +203,7 @@ public class EventHandler extends ListenerAdapter {
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
         try {
             if (Objects.requireNonNull(event.getMember()).getRoles().contains(964789877541589053L)) {
-                if (event.getChannel().asTextChannel().equals(JDA.getTextChannelById("1068520925068271687"))) {
+                if (event.getChannel().asTextChannel().equals(bot.getTextChannelById("1068520925068271687"))) {
                     if (event.getEmoji().asCustom().equals(Emoji.fromCustom("bfg50", 1018537301602738256L, false))) {
                         event.getChannel().deleteMessageById(event.getMessageId());
                     }
