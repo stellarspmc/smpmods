@@ -9,6 +9,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
+import java.util.function.Supplier;
+
 public class BalanceCommand {
         public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
             return CommandManager.literal("balance")
@@ -33,6 +35,7 @@ public class BalanceCommand {
             //DatabaseManager dm = UtilClass.getDatabaseManager();
             //double bal = dm.getBalance(player);
             //ctx.getSource().sendFeedback(Text.literal(player + " has $" + bal), false);
+            ctx.getSource().sendFeedback((Supplier<Text>) Text.literal(player + " has $0"), false);
             return 1;
         }
 }

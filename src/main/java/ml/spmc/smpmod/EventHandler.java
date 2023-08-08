@@ -31,7 +31,9 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         if (e.getChannel() != messageChannel || e.getAuthor().isBot() || minecraftServer == null) return;
-        if (e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName(), e.getMessage().getContentRaw());
+        if (e.getMessage().getAttachments().isEmpty() && e.getMessage().getStickers().isEmpty()) {
+            UtilClass.broadcastMessage(e.getAuthor().getName(), e.getMessage().getContentStripped());
+        } else if (e.getMessage().getStickers().isEmpty() && !e.getMessage().getAttachments().isEmpty()) UtilClass.broadcastMessage(e.getAuthor().getName(), "<sticker>");
         else UtilClass.broadcastMessage(e.getAuthor().getName(), "<attachment>");
     }
 
