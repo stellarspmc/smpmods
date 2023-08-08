@@ -2,7 +2,6 @@ package ml.spmc.smpmod.minecraft.economy;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import ml.spmc.smpmod.utils.UtilClass;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,7 +23,7 @@ public class Economy {
         tag.putDouble("worth", 1);
         itemStack.setNbt(tag);
         itemStack.addEnchantment(Enchantments.UNBREAKING, 1);
-        itemStack.setCustomName(Text.literal("$" + 1).formatted(Formatting.BOLD, Formatting.AQUA));
+        itemStack.setCustomName(Text.literal("$1").formatted(Formatting.BOLD, Formatting.AQUA));
         ItemEntity itemEntity = player.dropItem(itemStack, true);
         assert itemEntity != null;
         itemEntity.setPickupDelayInfinite();

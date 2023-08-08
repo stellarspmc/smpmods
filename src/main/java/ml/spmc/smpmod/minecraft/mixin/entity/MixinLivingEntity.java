@@ -20,13 +20,15 @@ public abstract class MixinLivingEntity {
     @Shadow protected float lastDamageTaken;
 
     @Inject(method = "onDamaged", at = @At("HEAD"))
-    private void onDamaged(DamageSource damageSource, CallbackInfo ci) {
+    private void onDamaged(DamageSource damageSource, CallbackInfo ci) throws InterruptedException {
         Entity entity = damageSource.getSource();
         if (entity != null) {
             ArmorStandEntity indicator = new ArmorStandEntity(entity.getWorld(), entity.getX() + getRandom().nextBetween(-1 ,1) * getRandom().nextDouble(), entity.getY() - 1 + getRandom().nextBetween(-1 ,1) * getRandom().nextDouble(), entity.getZ() + getRandom().nextBetween(-1 ,1) * getRandom().nextDouble());
             indicator.setInvisible(true);
             indicator.setCustomNameVisible(true);
             indicator.setCustomName(Text.literal("-" + lastDamageTaken).formatted(Formatting.RED));
+            wait(1000);
+            indicator.kill();
         }
     }
 }

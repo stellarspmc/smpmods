@@ -1,17 +1,13 @@
 package ml.spmc.smpmod;
 
-import ml.spmc.smpmod.utils.ConfigLoader;
 import ml.spmc.smpmod.utils.UtilClass;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -21,7 +17,6 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -146,18 +141,5 @@ public class EventHandler extends ListenerAdapter {
         Message message = message1.complete();
         message.addReaction(Emoji.fromCustom("tell", 970358692648206477L, false)).queue();
         message.addReaction(Emoji.fromCustom("untell", 969424392947900496L, false)).queue();
-    }
-
-    @Override
-    public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
-        try {
-            if (Objects.requireNonNull(event.getMember()).getRoles().contains(bot.getRoleById("964789877541589053"))) {
-                if (event.getChannel().asTextChannel().equals(bot.getTextChannelById("1068520925068271687"))) {
-                    if (event.getEmoji().asCustom().equals(Emoji.fromCustom("bfg50", 1018537301602738256L, false))) event.getChannel().deleteMessageById(event.getMessageId());
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
