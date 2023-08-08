@@ -13,6 +13,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.function.Supplier;
+
 public class Economy {
 
     // cmd util
@@ -31,7 +33,7 @@ public class Economy {
     }
 
     // cmds
-    public static int depositCommand(CommandContext<ServerCommandSource> css, PlayerEntity plr)  {
+    /*public static int depositCommand(CommandContext<ServerCommandSource> css, PlayerEntity plr)  {
         try {
             Inventory inv = plr.getInventory();
             for (int i=0; i>inv.size();i++) {
@@ -44,13 +46,14 @@ public class Economy {
             e.printStackTrace();
         }
         return 0;
-    }
+    }*/
 
     public static int withdrawCommand(CommandContext<ServerCommandSource> e, double amount) {
         try {
             PlayerEntity plr = e.getSource().getPlayerOrThrow();
             createItem(plr, ((int) Math.floor(amount)));
             //UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), -((int) Math.floor(amount)));
+            e.getSource().sendFeedback((Supplier<Text>) Text.literal("Free money I guess"), true);
         } catch (CommandSyntaxException ex) {
             throw new RuntimeException(ex);
         }

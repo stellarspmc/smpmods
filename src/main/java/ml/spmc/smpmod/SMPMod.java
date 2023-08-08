@@ -22,7 +22,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
@@ -46,7 +45,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         CompatChecks.checkAndAnnounce();
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> AllCommands.register(dispatcher, registryAccess));
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> AllCommands.register(dispatcher));
         } catch (Exception e) {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
