@@ -17,7 +17,6 @@ public class ConfigLoader {
     public static String MESSAGE_CHANNEL_ID;
     public static String MUSIC_CHANNEL_ID;
     public static String GUILD_ID;
-    public static String APPEAL_CHANNEL_ID;
 
 
     // ran when start
@@ -29,17 +28,17 @@ public class ConfigLoader {
                 Files.createFile(configFilePath);
 
                 FileWriter myWriter = new FileWriter(configFilePath.toFile());
-               myWriter.write(
-                       "// URLs\n" +
-                          "webhook_url=null\n" +
-                          "avatar_url=null\n" +
-                          "// Discord Stuff\n" +
-                          "bot_token=null\n" +
-                          "message_channel_id=null\n" +
-                          "music_channel_id=null\n" +
-                          "guild_id=null\n" +
-                          "appeal_channel_id=null");
-               myWriter.close();
+                myWriter.write("""
+                                // URLs
+                                webhook_url=null
+                                avatar_url=null
+                                // Discord Stuff
+                                bot_token=null
+                                message_channel_id=null
+                                music_channel_id=null
+                                guild_id=null
+                                """);
+                myWriter.close();
             }
 
             FileInputStream propsInput = new FileInputStream(configFilePath.toFile());
@@ -52,7 +51,6 @@ public class ConfigLoader {
             MESSAGE_CHANNEL_ID = prop.getProperty("message_channel_id");
             MUSIC_CHANNEL_ID = prop.getProperty("music_channel_id");
             GUILD_ID = prop.getProperty("guild_id");
-            APPEAL_CHANNEL_ID = prop.getProperty("appeal_channel_id");
         } catch (IOException e) {
             modLogger.error("==============================================");
             modLogger.error("");

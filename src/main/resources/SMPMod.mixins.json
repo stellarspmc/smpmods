@@ -17,7 +17,9 @@
     "util.ench.MixinEnchantment",
     "util.ench.MixinMendingEnchantment",
     "util.ench.MixinQuickChargeEnchantment",
-    "util.ench.MixinMultishotEnchantment"
+    "util.ench.MixinMultishotEnchantment",
+
+    "entity.MixinLivingEntity"
   ],
   "client": [
   ],

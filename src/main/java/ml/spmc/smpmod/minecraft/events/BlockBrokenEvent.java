@@ -35,7 +35,7 @@ public class BlockBrokenEvent {
                     LightningEntity entity = new LightningEntity(EntityType.LIGHTNING_BOLT, world);
                     entity.setPos(player.getX(), player.getY(), player.getZ());
                     world.spawnEntity(entity);
-                    player.sendMessage(Text.literal("The gods of the TREE has stricken you...").formatted(Formatting.DARK_RED));
+                    player.sendMessage(Text.literal("The gods of the trees has decided to strike you...").formatted(Formatting.DARK_RED));
                 }
             }
         }
@@ -46,7 +46,7 @@ public class BlockBrokenEvent {
             Block block = state.getBlock();
 
             if (block.equals(Blocks.STONE) || block.equals(Blocks.DEEPSLATE) || block.equals(Blocks.TUFF)) {
-                if (UtilClass.probabilityCalc(0.89)) {
+                if (UtilClass.probabilityCalc(0.89, player)) {
                     player.dropItem(new ItemStack(Items.COAL, 50).getItem());
                     player.sendMessage(Text.literal("You got the basic treasure."));
                 }

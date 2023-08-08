@@ -15,7 +15,7 @@ import static ml.spmc.smpmod.SMPMod.messageChannel;
 public class MixinServerPlayerEntity {
     @Inject(method = "onDeath", at = @At(value = "TAIL"))
     private void die(DamageSource damageSource, CallbackInfo ci) {
-        messageChannel.sendMessage(MarkdownSanitizer.escape("☠ " + ((PlayerEntity) (Object) this).getName().getString() + " died in the " + ((PlayerEntity) (Object) this).getWorld().getDimension().toString() + "at " + ((PlayerEntity) (Object) this).getX() + ", " + ((PlayerEntity) (Object) this).getY() + ", " + ((PlayerEntity) (Object) this).getZ())).queue();
+        messageChannel.sendMessage(MarkdownSanitizer.escape("☠ " + ((PlayerEntity) (Object) this).getName().getString() + " died in " + ((PlayerEntity) (Object) this).getX() + ", " + ((PlayerEntity) (Object) this).getY() + ", " + ((PlayerEntity) (Object) this).getZ())).queue();
         /* TODO: fix this code
         double rand = new Random().nextDouble();
         if (rand > 0.9) {
