@@ -7,7 +7,7 @@ import ml.spmc.smpmod.utils.CompatChecks;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
 import ml.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 import ml.spmc.smpmod.utils.ConfigLoader;
-import ml.spmc.smpmod.music.MusicPlayer;
+//import ml.spmc.smpmod.music.MusicPlayer;
 import ml.spmc.smpmod.utils.UtilClass;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
