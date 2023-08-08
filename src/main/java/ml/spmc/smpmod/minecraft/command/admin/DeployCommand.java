@@ -22,8 +22,8 @@ public class DeployCommand {
     }
 
     private static int deployConfirm(String version) {
-        SMPMod.minecraftServer.getPlayerManager().getPlayerList().forEach((player) -> player.sendMessage(Text.literal("SMP Update " + version + " coming out in 1-5 minutes!"), false));
-        SMPMod.messageChannel.sendMessage("SMP Update " + version + " coming out in 1-5 minutes!").queue();
+        SMPMod.minecraftServer.getPlayerManager().getPlayerList().forEach((player) -> player.sendMessage(Text.literal("SMP Update " + version + " will be rolling out."), false));
+        SMPMod.messageChannel.sendMessage("SMP Update " + version + " will be rolling out.").queue();
         return 1;
     }
 }

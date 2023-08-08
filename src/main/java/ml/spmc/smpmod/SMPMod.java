@@ -80,7 +80,7 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> MobSpawnedEvent.onEntityJoin(world, entity));
 
-        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> BlockBrokenEvent.onBreakBlock((ServerWorld) world, player, state));
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> BlockBrokenEvent.onBreakBlock((ServerWorld) world, player, state, pos));
     }
 
     public static void sendWebhookMessage(String message, String playerName, String playerUUID) {

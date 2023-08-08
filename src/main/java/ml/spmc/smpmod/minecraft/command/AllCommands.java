@@ -3,6 +3,7 @@ package ml.spmc.smpmod.minecraft.command;
 import com.mojang.brigadier.CommandDispatcher;
 import ml.spmc.smpmod.minecraft.command.admin.DeployCommand;
 import ml.spmc.smpmod.minecraft.command.screen.command.ECCommand;
+import ml.spmc.smpmod.minecraft.command.screen.command.GarbageCommand;
 import net.minecraft.server.command.ServerCommandSource;
 
 public class AllCommands {
@@ -14,5 +15,6 @@ public class AllCommands {
         dispatcher.register(SurfaceCommand.buildCommand());
         dispatcher.register(MyIPCommand.buildCommand());
         dispatcher.register(ECCommand.buildCommand());
+        dispatcher.register(GarbageCommand.buildCommand());
     }
 }

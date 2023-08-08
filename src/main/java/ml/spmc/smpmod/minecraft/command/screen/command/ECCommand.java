@@ -16,7 +16,7 @@ public class ECCommand extends Screen {
         return CommandManager.literal("enderchest").executes(new ECCommand());
     }
     private static final ScreenHandlerFactory SCREEN_HANDLER_FACTORY = (syncId, inventory, player) ->
-            GenericContainerScreenHandler.createGeneric9x6(syncId, inventory, player.getEnderChestInventory());
+            GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, player.getEnderChestInventory());
 
     @Override
     protected Text getScreenTitle() {
