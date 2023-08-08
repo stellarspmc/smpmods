@@ -18,7 +18,7 @@ public abstract class MixinServerPlayNetworkHandler {
 
     @Inject(method = "onChatMessage", at = @At("HEAD"))
     private void handleMessage(ChatMessageC2SPacket packet, CallbackInfo ci) {
-        SMPMod.sendWebhookMessage(MarkdownParser.parseMarkdown(packet.chatMessage()), player.getName().getString(), player.getUuidAsString());
+        SMPMod.sendWebhookMessage(packet.chatMessage(), player.getName().getString(), player.getUuidAsString());
     }
 
 }

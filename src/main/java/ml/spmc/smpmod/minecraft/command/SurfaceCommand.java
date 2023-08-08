@@ -16,19 +16,15 @@ public class SurfaceCommand {
         return CommandManager.literal("surface").executes(SurfaceCommand::surface);
     }
 
-    public static LiteralArgumentBuilder<ServerCommandSource> buildAlise(){
-        return CommandManager.literal("s").executes(SurfaceCommand::surface);
-    }
-
     public static int surface(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         PlayerEntity player = context.getSource().getPlayerOrThrow();
         ServerWorld world = context.getSource().getWorld();
 
         assert player != null;
 
-        double x = player.getX();
-        double z = player.getZ();
-        double y = world.getTopY(Heightmap.Type.WORLD_SURFACE, (int) x, (int) z);
+        int x = (int) Math.round(player.getX());
+        int z = (int) Math.round(player.getZ());
+        int y = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
 
         player.teleport(x, y, z);
         player.playSound(SoundEvents.ENTITY_WITHER_SHOOT, 10, 1);

@@ -5,15 +5,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
-import java.util.function.Supplier;
 
 public class Economy {
 
@@ -28,7 +25,6 @@ public class Economy {
         itemStack.setCustomName(Text.literal("$1").formatted(Formatting.BOLD, Formatting.AQUA));
         ItemEntity itemEntity = player.dropItem(itemStack, true);
         assert itemEntity != null;
-        itemEntity.setPickupDelayInfinite();
         itemEntity.setOwner(player.getUuid());
     }
 
@@ -53,7 +49,7 @@ public class Economy {
             PlayerEntity plr = e.getSource().getPlayerOrThrow();
             createItem(plr, ((int) Math.floor(amount)));
             //UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), -((int) Math.floor(amount)));
-            e.getSource().sendFeedback((Supplier<Text>) Text.literal("Free money I guess"), true);
+            plr.sendMessage(Text.literal("Free money for now..."));
         } catch (CommandSyntaxException ex) {
             throw new RuntimeException(ex);
         }

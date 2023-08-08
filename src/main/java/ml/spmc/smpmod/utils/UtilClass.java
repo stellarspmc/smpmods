@@ -11,7 +11,7 @@ public class UtilClass {
 
     public static void broadcastMessage(String discordTags, String message) {
         modLogger.info(("[Discord] " + discordTags + ": " + message));
-        minecraftServer.getPlayerManager().getPlayerList().forEach(player -> player.sendMessage(TextParserUtils.formatText("[<dark_purple>Discord</dark_purple>] <dark_purple>" + MarkdownParser.parseMarkdown(discordTags + "</dark_purple>: " + MarkdownParser.parseMarkdown(message)))));
+        minecraftServer.getPlayerManager().getPlayerList().forEach(player -> player.sendMessage(TextParserUtils.formatText("[<dark_purple>Discord</dark_purple>] <dark_purple>" + discordTags + "</dark_purple>: " + MarkdownParser.parseMarkdown(message))));
     }
 
     public static boolean probabilityCalc(double percentage, PlayerEntity player) {
