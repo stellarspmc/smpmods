@@ -35,7 +35,7 @@ public class BalanceCommand {
             //DatabaseManager dm = UtilClass.getDatabaseManager();
             //double bal = dm.getBalance(player);
             //ctx.getSource().sendFeedback(Text.literal(player + " has $" + bal), false);
-            ctx.getSource().sendFeedback((Supplier<Text>) Text.literal(player + " has $0"), false);
+            ctx.getSource().sendMessage(Text.literal(player + " has $0"));
             return 1;
         }
 }

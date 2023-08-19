@@ -7,7 +7,6 @@ import ml.spmc.smpmod.utils.CompatChecks;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
 import ml.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 import ml.spmc.smpmod.utils.ConfigLoader;
-//import ml.spmc.smpmod.music.MusicPlayer;
 import ml.spmc.smpmod.utils.UtilClass;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -65,7 +64,6 @@ public class SMPMod implements DedicatedServerModInitializer {
                 bot.awaitReady();
                 messageChannel = bot.getTextChannelById(ConfigLoader.MESSAGE_CHANNEL_ID);
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
-                //MusicPlayer.playMusic();
                 messageChannel.sendMessage("Server has opened!").queue();
             } catch (Exception e) {
                 UtilClass.errorLog("Put Information into the Config");

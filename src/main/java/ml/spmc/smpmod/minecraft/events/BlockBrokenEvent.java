@@ -1,13 +1,16 @@
 package ml.spmc.smpmod.minecraft.events;
 
 import ml.spmc.smpmod.utils.UtilClass;
+import ml.spmc.smpmod.utils.treasure.TreasureRarities;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -37,6 +40,16 @@ public class BlockBrokenEvent {
                     entity.setPos(pos.getX(), pos.getY(), pos.getZ());
                     world.spawnEntity(entity);
                     player.sendMessage(Text.literal("The gods of the trees has decided to strike you...").formatted(Formatting.DARK_RED));
+                    if (player.getRandom().nextDouble() >= 0.95) {
+                        ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE, 1);
+                        item.getOrCreateSubNbt("display").putInt("color", 0);
+                        item.getOrCreateSubNbt("Trim").putString("material", "minecraft:diamond");
+                        item.getOrCreateSubNbt("Trim").putString("pattern", "minecraft:silence");
+                        item.addEnchantment(Enchantments.PROTECTION, 8);
+                        item.addEnchantment(Enchantments.UNBREAKING, 10);
+                        player.dropItem(item.getItem());
+                        player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's a chestplate for you!").formatted(Formatting.BLUE));
+                    }
                 }
             }
         }
@@ -48,12 +61,99 @@ public class BlockBrokenEvent {
 
             if (block.equals(Blocks.STONE) || block.equals(Blocks.DEEPSLATE) || block.equals(Blocks.TUFF)) {
                 if (UtilClass.probabilityCalc(0.89, player)) {
-                    ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropItem(Items.COAL, 5); entity.setPos(pos.getX(), pos.getY(), pos.getZ());
-                    player.sendMessage(Text.literal("You got the basic treasure."));
+                    common(world, player, pos);
+                    if (UtilClass.probabilityCalc(0.2, player)) {
+                        rare(world, player, pos);
+                        if (UtilClass.probabilityCalc(0.082, player)) {
+                            epic(world, player, pos);
+                            if (UtilClass.probabilityCalc(0.2, player)) {
+                                legendary(world, player, pos);
+                                if (UtilClass.probabilityCalc(0.2, player)) {
+                                    ultimate(world, player, pos);
+                                }
+                            }
+                        }
+                    }
                 }
-            } else if (state.getBlock().equals(Blocks.DIAMOND_ORE)) {
-
+            } else if (state.getBlock().equals(Blocks.DIAMOND_ORE) || state.getBlock().equals(Blocks.EMERALD_ORE) || state.getBlock().equals(Blocks.GOLD_ORE) || state.getBlock().equals(Blocks.IRON_ORE) || state.getBlock().equals(Blocks.COPPER_ORE) || state.getBlock().equals(Blocks.COAL_ORE) || state.getBlock().equals(Blocks.LAPIS_ORE) || state.getBlock().equals(Blocks.REDSTONE_ORE)) {
+                if (UtilClass.probabilityCalc(8.9, player)) {
+                    common(world, player, pos);
+                    if (UtilClass.probabilityCalc(1.2, player)) {
+                        rare(world, player, pos);
+                        if (UtilClass.probabilityCalc(0.22, player)) {
+                            epic(world, player, pos);
+                            if (UtilClass.probabilityCalc(0.066, player)) {
+                                    legendary(world, player, pos);
+                                    if (UtilClass.probabilityCalc(0.000846, player)) {
+                                        ultimate(world, player, pos);
+                                    }
+                            }
+                        }
+                    }
+            } else if (state.getBlock().equals(Blocks.DEEPSLATE_DIAMOND_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_EMERALD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_GOLD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_IRON_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_COPPER_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_COAL_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_LAPIS_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_REDSTONE_ORE)) {
+                    if (UtilClass.probabilityCalc(16.9, player)) {
+                            common(world, player, pos);
+                            player.sendMessage(Text.literal("You got the basic treasure."));
+                            if (UtilClass.probabilityCalc(2.2, player)) {
+                                rare(world, player, pos);
+                                if (UtilClass.probabilityCalc(0.682, player)) {
+                                    epic(world, player, pos);
+                                    if (UtilClass.probabilityCalc(0.02086, player)) {
+                                        legendary(world, player, pos);
+                                        if (UtilClass.probabilityCalc(0.00246, player)) {
+                                            ultimate(world, player, pos);
+                                        }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private static void rare(ServerWorld world, PlayerEntity player, BlockPos pos) {
+        for (ItemStack item : TreasureRarities.RARE.rollStack(TreasureRarities.COMMON, player)) {
+            ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropStack(item);
+            assert entity != null;
+            entity.setPos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        player.sendMessage(Text.literal("You got the RARE treasure."));
+    }
+
+    private static void epic(ServerWorld world, PlayerEntity player, BlockPos pos) {
+        for (ItemStack item : TreasureRarities.EPIC.rollStack(TreasureRarities.COMMON, player)) {
+            ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropStack(item);
+            assert entity != null;
+            entity.setPos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        player.sendMessage(Text.literal("You got the EPIC treasure!"));
+    }
+
+    private static void common(ServerWorld world, PlayerEntity player, BlockPos pos) {
+        for (ItemStack item : TreasureRarities.COMMON.rollStack(TreasureRarities.COMMON, player)) {
+            ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropStack(item);
+            assert entity != null;
+            entity.setPos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        player.sendMessage(Text.literal("You got the basic treasure."));
+    }
+
+    private static void legendary(ServerWorld world, PlayerEntity player, BlockPos pos) {
+        for (ItemStack item : TreasureRarities.LEGENDARY.rollStack(TreasureRarities.COMMON, player)) {
+            ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropStack(item);
+            assert entity != null;
+            entity.setPos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        player.sendMessage(Text.literal("You got the LEGENDARY treasure!").formatted(Formatting.GOLD));
+    }
+
+    private static void ultimate(ServerWorld world, PlayerEntity player, BlockPos pos) {
+        for (ItemStack item : TreasureRarities.ULTIMATE.rollStack(TreasureRarities.COMMON, player)) {
+            ItemEntity entity = new ItemEntity(EntityType.ITEM, world).dropStack(item);
+            assert entity != null;
+            entity.setPos(pos.getX(), pos.getY(), pos.getZ());
+        }
+        player.sendMessage(Text.literal("You got the ULTIMATE treasure!").formatted(Formatting.GOLD, Formatting.BOLD));
     }
 }

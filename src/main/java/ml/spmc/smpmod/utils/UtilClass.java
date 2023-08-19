@@ -2,6 +2,7 @@ package ml.spmc.smpmod.utils;
 
 import eu.pb4.placeholders.api.TextParserUtils;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 
 import static ml.spmc.smpmod.SMPMod.modLogger;
 import static ml.spmc.smpmod.SMPMod.minecraftServer;
@@ -25,5 +26,10 @@ public class UtilClass {
         modLogger.error("");
         modLogger.error("==============================================");
 
+    }
+
+    public static ItemStack getAndSetCount(ItemStack item, int count) {
+        item.setCount(count);
+        return item;
     }
 }

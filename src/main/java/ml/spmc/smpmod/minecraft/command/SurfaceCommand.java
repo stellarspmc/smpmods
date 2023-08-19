@@ -22,8 +22,8 @@ public class SurfaceCommand {
 
         assert player != null;
 
-        int x = (int) Math.round(player.getX());
-        int z = (int) Math.round(player.getZ());
+        int x = (int) Math.floor(player.getX());
+        int z = (int) Math.floor(player.getZ());
         int y = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
 
         player.teleport(x, y, z);
