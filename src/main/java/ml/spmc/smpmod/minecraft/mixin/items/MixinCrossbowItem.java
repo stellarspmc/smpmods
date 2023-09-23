@@ -39,7 +39,7 @@ public class MixinCrossbowItem {
     @Overwrite
     private static boolean loadProjectiles(LivingEntity livingEntity, ItemStack itemStack) {
         int i = EnchantmentHelper.getLevel(Enchantments.MULTISHOT, itemStack);
-        int j = i > 0 ? i*5 : 1;
+        int j = i > 0 ? i*2 : 1;
         boolean bl = livingEntity instanceof PlayerEntity && ((PlayerEntity)livingEntity).getAbilities().creativeMode;
         ItemStack itemStack2 = livingEntity.getProjectileType(itemStack);
         ItemStack itemStack3 = itemStack2.copy();

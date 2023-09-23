@@ -7,6 +7,8 @@ import net.minecraft.item.Items;
 
 import java.util.ArrayList;
 
+import static ml.spmc.smpmod.SMPMod.modLogger;
+
 public enum TreasureRarities {
     COMMON(
             new ItemStackWithMaxMin(new ItemStack(Items.COAL), 5, 1),
@@ -43,7 +45,7 @@ public enum TreasureRarities {
             new ItemStackWithMaxMin(new ItemStack(Items.EXPERIENCE_BOTTLE), 175, 35)
     );
 
-    ItemStackWithMaxMin[] stacks;
+    final ItemStackWithMaxMin[] stacks;
 
     TreasureRarities(ItemStackWithMaxMin... items) {
         stacks = items;
@@ -54,17 +56,17 @@ public enum TreasureRarities {
         if (rarity == ULTIMATE) return ItemStackWithMaxMin.convert(ULTIMATE.stacks);
         else {
             for (ItemStackWithMaxMin i : rarity.stacks) {
-                if (UtilClass.probabilityCalc(50, player)) {
+                if (UtilClass.probabilityCalc(95, player)) {
                     ItemStack item = i.getStack();
                     if (i.getMax() == i.getMin()) rolled.add(UtilClass.getAndSetCount(item, i.getMin()));
                     else {
                         int len = i.getMax() - i.getMin() + 1;
                         double pie = player.getRandom().nextDouble();
-
-                        for (int b = 1; b==len; b++) {
+                        for (int b = 1; b<len; b++) {
                             double upper = Math.pow(2, (-b)+1);
                             double lower = Math.pow(2, -b);
-                            if ((upper <= pie) && (pie > lower)) {
+                            if ((b+1) < len) lower = 0;
+                            if ((upper >= pie) && (pie > lower)) {
                                 rolled.add(UtilClass.getAndSetCount(item, b));
                                 break;
                             }

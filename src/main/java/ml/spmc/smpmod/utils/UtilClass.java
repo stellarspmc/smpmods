@@ -8,7 +8,6 @@ import static ml.spmc.smpmod.SMPMod.modLogger;
 import static ml.spmc.smpmod.SMPMod.minecraftServer;
 
 public class UtilClass {
-    public static boolean lockdown = false;
 
     public static void broadcastMessage(String discordTags, String message) {
         modLogger.info(("[Discord] " + discordTags + ": " + message));
