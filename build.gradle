@@ -11,6 +11,7 @@ repositories {
     maven { url 'https://m2.dv8tion.net/releases' }
     maven { url "https://jitpack.io" }
     jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -18,6 +19,7 @@ dependencies {
     mappings("net.fabricmc:yarn:${project.yarn_mappings}")
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+
 
     include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
     include modImplementation("net.dv8tion:JDA:${project.JDA_version}")
@@ -29,6 +31,18 @@ dependencies {
     include modImplementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
     include modImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     include modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.13.3")
+
+    antlr("org.antlr:antlr4:4.12.0")
+    include(modApi(fabricApi.module("fabric-api-base", fabric_api_version)))
+    include(modApi(fabricApi.module("fabric-networking-api-v1", fabric_api_version)))
+    modImplementation(fabricApi.module("fabric-registry-sync-v0", fabric_api_version))
+    modImplementation(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
+
+    include modImplementation("org.antlr:antlr4-runtime:4.12.0")
+
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:9.0.491") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
 }
 
 processResources {
