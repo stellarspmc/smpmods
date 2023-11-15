@@ -41,18 +41,40 @@ public class BlockBrokenEvent {
                     world.spawnEntity(entity);
                     player.sendMessage(Text.literal("The gods of the trees has decided to strike you...").formatted(Formatting.DARK_RED));
                     if (UtilClass.probabilityCalc(5, player)) {
-                        ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE, 1);
-                        item.getOrCreateSubNbt("display").putInt("color", 0);
-                        item.getOrCreateSubNbt("Trim").putString("material", "minecraft:diamond");
-                        item.getOrCreateSubNbt("Trim").putString("pattern", "minecraft:silence");
-                        item.addEnchantment(Enchantments.PROTECTION, 8);
-                        item.addEnchantment(Enchantments.UNBREAKING, 10);
-                        player.getInventory().setStack(player.getInventory().getEmptySlot(), item);
-                        player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's a chestplate for you!").formatted(Formatting.BLUE));
+                        double random = player.getRandom().nextDouble();
+                        if (random >= 0.75) {
+                            ItemStack item = new ItemStack(Items.LEATHER_HELMET, 1);
+                            treeTreasure(player, item);
+                            player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's a helmet for you!").formatted(Formatting.BLUE));
+                        } else if (random < 0.75 && random >= 0.5) {
+                            ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE, 1);
+                            treeTreasure(player, item);
+                            player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's a chestplate for you!").formatted(Formatting.BLUE));
+
+                        } else if (random < 0.5 && random >= 0.25) {
+                            ItemStack item = new ItemStack(Items.LEATHER_LEGGINGS, 1);
+                            treeTreasure(player, item);
+                            player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's leggings for you!").formatted(Formatting.BLUE));
+
+                        } else {
+                            ItemStack item = new ItemStack(Items.LEATHER_BOOTS, 1);
+                            treeTreasure(player, item);
+                            player.sendMessage(Text.literal("It seems like you have been struck by the gods, so here's boots for you!").formatted(Formatting.BLUE));
+
+                        }
                     }
                 }
             }
         }
+    }
+
+    private static void treeTreasure(PlayerEntity player, ItemStack item) {
+        item.getOrCreateSubNbt("display").putInt("color", 0);
+        item.getOrCreateSubNbt("Trim").putString("material", "minecraft:diamond");
+        item.getOrCreateSubNbt("Trim").putString("pattern", "minecraft:silence");
+        item.addEnchantment(Enchantments.PROTECTION, 8);
+        item.addEnchantment(Enchantments.UNBREAKING, 10);
+        player.getInventory().setStack(player.getInventory().getEmptySlot(), item);
     }
 
     private static void treasure(ServerWorld world, PlayerEntity player, BlockState state, BlockPos pos) {
