@@ -30,8 +30,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-
 @Environment(EnvType.SERVER)
 public class SMPMod implements DedicatedServerModInitializer {
 
@@ -74,7 +72,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             bot.shutdownNow();
         });
 
-        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> MobSpawnedEvent.onEntityJoin(world, entity));
+        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> MobSpawnedEvent.onEntityJoin(entity));
 
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> BlockBrokenEvent.onBreakBlock((ServerWorld) world, player, state, pos));
     }
