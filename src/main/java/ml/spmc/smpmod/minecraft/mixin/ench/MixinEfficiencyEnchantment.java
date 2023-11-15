@@ -1,7 +1,6 @@
 package ml.spmc.smpmod.minecraft.mixin.ench;
 
 import net.minecraft.enchantment.EfficiencyEnchantment;
-import net.minecraft.enchantment.Enchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
