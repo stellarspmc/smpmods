@@ -54,9 +54,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 ConfigLoader.checkConfigs();
 
                 minecraftServer = server;
-                bot = JDABuilder.createDefault(ConfigLoader.BOT_TOKEN).setHttpClient(new OkHttpClient.Builder()
-                                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-                                .build())
+                bot = JDABuilder.createDefault(ConfigLoader.BOT_TOKEN)
                         .setMemberCachePolicy(MemberCachePolicy.ALL)
                         .enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES)
                         .addEventListeners(new EventHandler())

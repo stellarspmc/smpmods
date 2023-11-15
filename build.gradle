@@ -1,14 +1,14 @@
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
-    id 'maven-publish'
+    id "fabric-loom" version "1.3-SNAPSHOT"
+    id "maven-publish"
 }
 
 version = project.mod_version
 group = project.maven_group
 
 repositories {
-    maven { url 'https://maven.nucleoid.xyz' }
-    maven { url 'https://m2.dv8tion.net/releases' }
+    maven { url "https://maven.nucleoid.xyz" }
+    maven { url "https://m2.dv8tion.net/releases" }
     maven { url "https://jitpack.io" }
     jcenter()
     mavenCentral()
@@ -23,14 +23,15 @@ dependencies {
 
     include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
     include modImplementation("net.dv8tion:JDA:${project.JDA_version}")
-    include modImplementation("com.neovisionaries:nv-websocket-client:2.14")
-    include modImplementation("com.squareup.okhttp3:okhttp:4.10.0")
-    include modImplementation("com.squareup.okio:okio:2.10.0")
-    include modImplementation("net.sf.trove4j:trove4j:3.0.3")
-    include modImplementation("org.apache.commons:commons-collections4:4.4")
-    include modImplementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
-    include modImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
-    include modImplementation("com.fasterxml.jackson.core:jackson-annotations:2.13.3")
+    include("com.fasterxml.jackson.core:jackson-databind:2.15.3")
+    include("net.sf.trove4j:trove4j:3.0.3")
+    include("org.apache.commons:commons-collections4:4.3")
+    include("org.jetbrains:annotations:16.0.1")
+    include("com.neovisionaries:nv-websocket-client:2.14")
+    include("com.squareup.okhttp3:okhttp:4.10.0")
+    include("com.fasterxml.jackson.core:jackson-annotations:2.15.3")
+    include("com.fasterxml.jackson.core:jackson-core:2.15.3")
+    include("com.squareup.okio:okio:2.10.0")
 }
 
 processResources {
@@ -69,22 +70,5 @@ java {
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
-    }
-}
-
-// configure the maven publication
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
     }
 }

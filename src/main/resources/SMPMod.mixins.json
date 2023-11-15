@@ -4,18 +4,21 @@
   "package": "ml.spmc.smpmod.minecraft.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ench.MixinEfficiencyEnchantment",
+    "ench.MixinEnchantment",
+    "ench.MixinFortuneEnchantment",
+    "ench.MixinMendingEnchantment",
+    "ench.MixinMultishotEnchantment",
+    "ench.MixinQuickChargeEnchantment",
+    "ench.MixinSharpnessEnchantment",
+    "ench.MixinUnbreakingEnchantment",
     "entity.MixinLivingEntity",
     "items.MixinBowItem",
     "items.MixinCrossbowItem",
     "player.MixinPlayerAdvancementTracker",
     "player.MixinPlayerManager",
     "player.MixinServerPlayerEntity",
-    "player.MixinServerPlayNetworkHandler",
-    "util.ench.MixinEnchantment",
-    "util.ench.MixinMendingEnchantment",
-    "util.ench.MixinMultishotEnchantment",
-    "util.ench.MixinQuickChargeEnchantment",
-    "util.ench.MixinUnbreakingEnchantment"
+    "player.MixinServerPlayNetworkHandler"
   ],
   "client": [
   ],

@@ -69,11 +69,11 @@ public class BlockBrokenEvent {
         common(world, player, pos);
         if (UtilClass.probabilityCalc(20, player)) {
             rare(world, player, pos);
-            if (UtilClass.probabilityCalc(20, player)) {
+            if (UtilClass.probabilityCalc(40, player)) {
                 epic(world, player, pos);
-                if (UtilClass.probabilityCalc(2, player)) {
+                if (UtilClass.probabilityCalc(40, player)) {
                     legendary(world, player, pos);
-                    if (UtilClass.probabilityCalc(2, player)) ultimate(world, player, pos);
+                    if (UtilClass.probabilityCalc(15, player)) ultimate(world, player, pos);
                 }
             }
         }

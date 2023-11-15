@@ -9,32 +9,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import static ml.spmc.smpmod.SMPMod.messageChannel;
 import static ml.spmc.smpmod.SMPMod.minecraftServer;
 
 @Mixin(PlayerManager.class)
 public class MixinPlayerManager {
 
-    @Inject(method = "onPlayerConnect", at = @At("RETURN"))
-    private void onPlayerConnect(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
+    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
+    private void onPlayerConnect(ClientConnection clientConnection, ServerPlayerEntity player, CallbackInfo ci) {
         if (minecraftServer == null) minecraftServer = player.server;
-        //cache.put(player.getUuid(), System.nanoTime());
-        //if (!UtilClass.getDatabaseManager().playerExists(player.getUuidAsString()))
-        //    UtilClass.getDatabaseManager().addPlayer(player.getUuidAsString(), player.getName().getString(), player.getIp());
         messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
     }
 
-    private static HashMap<UUID, Long> cache = new HashMap<>();
-
     @Inject(method = "remove", at = @At("HEAD"))
     private void remove(ServerPlayerEntity player, CallbackInfo ci) {
-        //UtilClass.getDatabaseManager().updatePlaytime(player.getUuidAsString(), (UtilClass.getDatabaseManager().getPlaytime(player.getUuidAsString()) + (System.nanoTime() - cache.get(player.getUuid())))/1000000);
         messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
-        //UtilClass.getDatabaseManager().updateLastEntered(player.getUuidAsString());
     }
-
-
 }

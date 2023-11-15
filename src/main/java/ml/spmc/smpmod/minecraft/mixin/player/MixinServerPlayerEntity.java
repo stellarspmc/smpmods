@@ -16,11 +16,5 @@ public class MixinServerPlayerEntity {
     @Inject(method = "onDeath", at = @At(value = "TAIL"))
     private void die(DamageSource damageSource, CallbackInfo ci) {
         messageChannel.sendMessage(MarkdownSanitizer.escape("☠ " + ((PlayerEntity) (Object) this).getName().getString() + " died in " + ((PlayerEntity) (Object) this).getX() + ", " + ((PlayerEntity) (Object) this).getY() + ", " + ((PlayerEntity) (Object) this).getZ())).queue();
-        /* TODO: fix this code
-        double rand = new Random().nextDouble();
-        if (rand > 0.9) {
-            UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), rand);
-            plr.sendSystemMessage(Component.literal("You lost " + rand + " coins!").withStyle(ChatFormatting.DARK_RED));
-        } if (rand > 0.99999983) UtilClass.getDatabaseManager().changeBalance(plr.getName().getString(), 1);*/
     }
 }

@@ -27,9 +27,8 @@ public class ItemStackWithMaxMin {
     }
 
     public static ArrayList<ItemStack> convert(ItemStackWithMaxMin... items) {
-        ItemStackWithMaxMin[] item = items;
         ArrayList<ItemStack> stack = new ArrayList<>();
-        for (ItemStackWithMaxMin i: item) {
+        for (ItemStackWithMaxMin i: items) {
             stack.add(i.getStack());
         }
         return stack;
