@@ -1,5 +1,7 @@
 package ml.spmc.smpmod.minecraft.mixin.player;
 
+import ml.spmc.smpmod.SMPMod;
+import ml.spmc.smpmod.utils.ConfigLoader;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.advancement.*;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,6 +35,6 @@ public abstract class MixinPlayerAdvancementTracker {
             case CHALLENGE -> sent = "Nice, " + owner.getName().getString() + " has finished [" + advancementName + "]";
             default -> sent = "Nice, " + owner.getName().getString() + " has done [" + advancementName + "]";
         }
-        Objects.requireNonNull(bot.getNewsChannelById("1168068095311618178")).sendMessage(MarkdownSanitizer.escape(sent)).queue();
+        messageChannel.sendMessage(MarkdownSanitizer.escape(sent)).queue();
     }
 }

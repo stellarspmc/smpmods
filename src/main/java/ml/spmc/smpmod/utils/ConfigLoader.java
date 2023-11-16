@@ -15,7 +15,6 @@ public class ConfigLoader {
     public static String AVATAR_URL;
     public static String BOT_TOKEN;
     public static String MESSAGE_CHANNEL_ID;
-    public static String MUSIC_CHANNEL_ID;
     public static String GUILD_ID;
 
 
@@ -35,7 +34,6 @@ public class ConfigLoader {
                                 // Discord Stuff
                                 bot_token=null
                                 message_channel_id=null
-                                music_channel_id=null
                                 guild_id=null
                                 """);
                 myWriter.close();
@@ -49,16 +47,9 @@ public class ConfigLoader {
             AVATAR_URL = prop.getProperty("avatar_url");
             BOT_TOKEN = prop.getProperty("bot_token");
             MESSAGE_CHANNEL_ID = prop.getProperty("message_channel_id");
-            MUSIC_CHANNEL_ID = prop.getProperty("music_channel_id");
             GUILD_ID = prop.getProperty("guild_id");
         } catch (IOException e) {
-            modLogger.error("==============================================");
-            modLogger.error("");
             modLogger.error("PLEASE PUT INFORMATION INTO CONFIG");
-            modLogger.error("");
-            modLogger.error("==============================================");
-
-            e.printStackTrace();
         }
     }
 }
