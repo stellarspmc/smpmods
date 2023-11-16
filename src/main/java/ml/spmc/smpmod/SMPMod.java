@@ -7,7 +7,6 @@ import ml.spmc.smpmod.utils.CompatChecks;
 import ml.spmc.smpmod.minecraft.command.AllCommands;
 import ml.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 import ml.spmc.smpmod.utils.ConfigLoader;
-import ml.spmc.smpmod.utils.UtilClass;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -62,7 +61,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
             } catch (Exception e) {
-                UtilClass.errorLog("Put Information into the Config");
+                modLogger.error("Put Information into the Config");
                 throw new RuntimeException(e);
             }
         });

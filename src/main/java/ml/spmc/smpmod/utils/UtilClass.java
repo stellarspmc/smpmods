@@ -18,15 +18,6 @@ public class UtilClass {
         return player.getRandom().nextDouble() <= (percentage * 0.01);
     }
 
-    public static void errorLog(String message) {
-        modLogger.error("==============================================");
-        modLogger.error("");
-        modLogger.error(message);
-        modLogger.error("");
-        modLogger.error("==============================================");
-
-    }
-
     public static ItemStack getAndSetCount(ItemStack item, int count) {
         item.setCount(count);
         return item;
