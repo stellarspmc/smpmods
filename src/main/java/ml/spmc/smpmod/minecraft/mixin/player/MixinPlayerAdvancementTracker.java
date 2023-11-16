@@ -9,8 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Objects;
-
 import static ml.spmc.smpmod.SMPMod.messageChannel;
 
 @Mixin(PlayerAdvancementTracker.class)
@@ -21,9 +19,9 @@ public abstract class MixinPlayerAdvancementTracker {
 
     @Inject(method = "grantCriterion", at = @At(value = "TAIL"))
     private void grantCriterion(Advancement advancement, String string, CallbackInfoReturnable<Boolean> cir) {
-        if (advancement.getDisplay() == null) return;
-        if (Objects.requireNonNull(advancement.getDisplay()).isHidden()) return;
-        if (!getProgress(advancement).isDone()) return;
+        if (advancement.getDisplay() == null ||
+                advancement.getDisplay().isHidden() ||
+                !getProgress(advancement).isDone()) return;
         AdvancementDisplay frame = advancement.getDisplay();
         String advancementName = frame.getTitle().getString();
         String sent;
