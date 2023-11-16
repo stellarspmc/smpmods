@@ -1,7 +1,5 @@
 package ml.spmc.smpmod.minecraft.mixin.player;
 
-import ml.spmc.smpmod.SMPMod;
-import ml.spmc.smpmod.utils.ConfigLoader;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.advancement.*;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
 
-import static ml.spmc.smpmod.SMPMod.bot;
 import static ml.spmc.smpmod.SMPMod.messageChannel;
 
 @Mixin(PlayerAdvancementTracker.class)
