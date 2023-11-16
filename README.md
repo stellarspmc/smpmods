@@ -2,11 +2,8 @@
 This suite of mods (combined and modified with many other) is for my minecraft server (mc.spmc.tk). It is built around the discord and minecraft server.
 
 ### Features
-- Music Bot (24/7)
 - Some commands (/surface, /myip...)
-- Economy (WIP)
 - Discord Notifications
-- Discord Commands (/role, /idea...)
 - More incoming!
 
 # Config
