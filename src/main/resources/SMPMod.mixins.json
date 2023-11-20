@@ -6,21 +6,18 @@
   "mixins": [
     "ench.MixinEfficiencyEnchantment",
     "ench.MixinEnchantment",
-    "ench.MixinFortuneEnchantment",
+    "ench.MixinLuckEnchantment",
     "ench.MixinMendingEnchantment",
     "ench.MixinMultishotEnchantment",
     "ench.MixinQuickChargeEnchantment",
-    "ench.MixinSharpnessEnchantment",
+    "ench.MixinDamageEnchantment",
     "ench.MixinUnbreakingEnchantment",
     "entity.MixinLivingEntity",
-    "items.MixinBowItem",
     "items.MixinCrossbowItem",
     "player.MixinPlayerAdvancementTracker",
     "player.MixinPlayerManager",
     "player.MixinServerPlayerEntity",
     "player.MixinServerPlayNetworkHandler"
-  ],
-  "client": [
   ],
   "injectors": {
     "defaultRequire": 1
