@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "smpmod",
-  "version": "3.5",
-  "name": "SMPMod",
-  "description": "",
+  "version": "4.1.6",
+  "name": "SMPMods",
+  "description": "Mods for the SpaceMC SMP to function!",
   "authors": ["tcfplayz"],
   "contact": {},
   "license": "MIT",

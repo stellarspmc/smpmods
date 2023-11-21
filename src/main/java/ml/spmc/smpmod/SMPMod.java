@@ -2,9 +2,9 @@ package ml.spmc.smpmod;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import ml.spmc.smpmod.minecraft.command.CommandRegister;
 import ml.spmc.smpmod.minecraft.events.BlockBrokenEvent;
 import ml.spmc.smpmod.utils.CompatChecks;
-import ml.spmc.smpmod.minecraft.command.AllCommands;
 import ml.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 import ml.spmc.smpmod.utils.ConfigLoader;
 import net.dv8tion.jda.api.JDA;
@@ -41,7 +41,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         CompatChecks.checkAndAnnounce();
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> AllCommands.register(dispatcher));
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandRegister.register(dispatcher));
         } catch (Exception e) {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
