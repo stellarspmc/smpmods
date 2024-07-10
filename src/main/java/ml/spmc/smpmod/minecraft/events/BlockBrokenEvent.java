@@ -1,10 +1,12 @@
 package ml.spmc.smpmod.minecraft.events;
 
+import ml.spmc.smpmod.utils.RegistryEntryTool;
 import ml.spmc.smpmod.utils.UtilClass;
 import ml.spmc.smpmod.utils.treasure.TreasureRarities;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
@@ -12,8 +14,12 @@ import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.trim.ArmorTrim;
+import net.minecraft.item.trim.ArmorTrimMaterials;
+import net.minecraft.item.trim.ArmorTrimPatterns;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
@@ -69,11 +75,10 @@ public class BlockBrokenEvent {
     }
 
     private static void treeTreasure(PlayerEntity player, ItemStack item) {
-        item.getOrCreateSubNbt("display").putInt("color", 0);
-        item.getOrCreateSubNbt("Trim").putString("material", "minecraft:diamond");
-        item.getOrCreateSubNbt("Trim").putString("pattern", "minecraft:silence");
-        item.addEnchantment(Enchantments.PROTECTION, 8);
-        item.addEnchantment(Enchantments.UNBREAKING, 10);
+        item.set(DataComponentTypes.BASE_COLOR, DyeColor.byId(0));
+        item.set(DataComponentTypes.TRIM, new ArmorTrim(RegistryEntryTool.getMaterial(ArmorTrimMaterials.DIAMOND), RegistryEntryTool.getPattern(ArmorTrimPatterns.SILENCE)));
+        item.addEnchantment(RegistryEntryTool.getEnchantment(Enchantments.PROTECTION), 8);
+        item.addEnchantment(RegistryEntryTool.getEnchantment(Enchantments.UNBREAKING), 10);
         player.getInventory().setStack(player.getInventory().getEmptySlot(), item);
     }
 

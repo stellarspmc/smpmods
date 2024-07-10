@@ -15,14 +15,14 @@ import static ml.spmc.smpmod.SMPMod.messageChannel;
 public abstract class MixinPlayerAdvancementTracker {
     @Shadow private ServerPlayerEntity owner;
 
-    @Shadow public abstract AdvancementProgress getProgress(Advancement advancementEntry);
+    @Shadow public AdvancementProgress getProgress(AdvancementEntry advancementEntry) { return null; }
 
-    @Inject(method = "grantCriterion", at = @At(value = "TAIL"))
-    private void grantCriterion(Advancement advancement, String string, CallbackInfoReturnable<Boolean> cir) {
-        if (advancement.getDisplay() == null ||
-                advancement.getDisplay().isHidden() ||
-                !getProgress(advancement).isDone()) return;
-        AdvancementDisplay frame = advancement.getDisplay();
+    @Inject(method = "grantCriterion", at = @At("TAIL"))
+    private void grantCriterion(AdvancementEntry advancementEntry, String string, CallbackInfoReturnable<Boolean> cir) {
+        if (advancementEntry.value().comp_1913().isEmpty() ||
+                !advancementEntry.value().comp_1913().get().shouldAnnounceToChat() ||
+                !getProgress(advancementEntry).isDone()) return;
+        AdvancementDisplay frame = advancementEntry.value().comp_1913().get();
         String advancementName = frame.getTitle().getString();
         String sent;
         switch (frame.getFrame()) {
