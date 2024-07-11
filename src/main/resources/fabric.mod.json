@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "smpmod",
-  "version": "v3-1.1",
+  "version": "6.1.2",
   "name": "SMPMods",
   "description": "Mods for the SpaceMC SMP to function!",
   "authors": ["tcfplayz"],
@@ -11,15 +11,16 @@
   "environment": "*",
   "entrypoints": {
     "server": [
-      "ml.spmc.smpmod.SMPMod"
+      "fun.spmc.smpmod.SMPMod"
     ]
   },
   "mixins": [
-    "SMPMod.mixins.json"
+    "smpmod.mixins.json"
   ],
   "depends": {
     "fabricloader": "*",
     "fabric": "*",
     "minecraft": "1.21"
-  }
+  },
+  "accessWidener": "smpmod.accesswidener"
 }

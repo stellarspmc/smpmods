@@ -1,5 +1,4 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "fabric-loom" version "1.7-SNAPSHOT"
     id "maven-publish"
 }
@@ -45,6 +44,10 @@ processResources {
     }
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/smpmod.accesswidener")
+}
+
 def targetJavaVersion = 21
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -73,8 +76,4 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
-}
-
-tasks.shadowJar {
-    setProperty("zip64", true)
 }

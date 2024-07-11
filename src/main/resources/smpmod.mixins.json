@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fun.spmc.smpmod.minecraft.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "enchantment.MixinEnchantment",
+    "enchantment.MixinEnchantments",
+    "player.MixinPlayerAdvancementTracker",
+    "player.MixinPlayerManager",
+    "player.MixinServerPlayerEntity",
+    "player.MixinServerPlayNetworkHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
