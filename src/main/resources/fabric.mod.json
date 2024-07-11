@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "smpmod",
-  "version": "4.1.6",
+  "version": "v3-1.1",
   "name": "SMPMods",
   "description": "Mods for the SpaceMC SMP to function!",
   "authors": ["tcfplayz"],
@@ -20,6 +20,6 @@
   "depends": {
     "fabricloader": "*",
     "fabric": "*",
-    "minecraft": "*"
+    "minecraft": "1.21"
   }
 }

@@ -3,6 +3,7 @@ package ml.spmc.smpmod.minecraft.mixin.player;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +17,7 @@ import static ml.spmc.smpmod.SMPMod.minecraftServer;
 public class MixinPlayerManager {
 
     @Inject(method = "onPlayerConnect", at = @At("TAIL"))
-    private void onPlayerConnect(ClientConnection clientConnection, ServerPlayerEntity player, CallbackInfo ci) {
+    private void onPlayerConnect(ClientConnection clientConnection, ServerPlayerEntity player, ConnectedClientData connectedClientData, CallbackInfo ci) {
         if (minecraftServer == null) minecraftServer = player.server;
         messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
     }

@@ -1,7 +1,6 @@
 package ml.spmc.smpmod.utils;
 
 import eu.pb4.placeholders.api.TextParserUtils;
-import eu.pb4.placeholders.api.parsers.ParserBuilder;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
