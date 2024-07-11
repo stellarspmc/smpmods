@@ -5,7 +5,6 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "enchantment.MixinEnchantment",
-    "enchantment.MixinEnchantments",
     "player.MixinPlayerAdvancementTracker",
     "player.MixinPlayerManager",
     "player.MixinServerPlayerEntity",
