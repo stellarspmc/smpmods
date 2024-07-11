@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "smpmod",
-  "version": "6.1.2",
+  "version": "${version}",
   "name": "SMPMods",
   "description": "Mods for the SpaceMC SMP to function!",
   "authors": ["tcfplayz"],

@@ -67,7 +67,6 @@ public class SMPMod implements DedicatedServerModInitializer {
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
 
-                modLogger.info(String.valueOf(RegistryEntryTool.getEnchantment(Enchantments.AQUA_AFFINITY).comp_349().comp_2687()));
             } catch (Exception e) {
                 modLogger.error("Put Information into the Config");
                 throw new RuntimeException(e);
@@ -79,7 +78,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (entity instanceof LivingEntity livingEntity) {
                 if (UtilClass.probabilityCalc(15, player))
-                    livingEntity.setHealth(((float) (livingEntity.getHealth() * 1.25)));
+                    livingEntity.setHealth(livingEntity.getHealth());
             }
             return ActionResult.PASS;
         });
