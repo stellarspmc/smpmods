@@ -100,9 +100,8 @@ public class SMPMod implements DedicatedServerModInitializer {
         JsonObject body = new JsonObject();
         body.addProperty("content", message);
         body.addProperty("username", playerName);
-        body.addProperty("avatar_url", "https://crafatar.com/renders/head/%player%".replace("%player%", playerUUID));
+        body.addProperty("avatar_url", "https://mc-heads.net/head/%player%/512.png".replace("%player%", playerUUID));
         body.add("allowed_mentions", new Gson().fromJson("{\"parse\":[]}", JsonObject.class));
-
         Request request = new Request.Builder()
                 .url(ConfigLoader.WEBHOOK_URL)
                 .post(RequestBody.create(body.toString(), MediaType.get("application/json")))
