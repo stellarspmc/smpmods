@@ -12,7 +12,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.Heightmap;
 
 public class SurfaceCommand {
-    public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
+    public static LiteralArgumentBuilder<ServerCommandSource> buildCommand() {
         return CommandManager.literal("surface").executes(SurfaceCommand::surface);
     }
 
