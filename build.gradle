@@ -19,8 +19,6 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
-
-    include modImplementation("eu.pb4:placeholder-api:${project.placeholder_version}")
     include modImplementation("net.dv8tion:JDA:5.0.0")
     include("com.neovisionaries:nv-websocket-client:2.14")
     include("org.jetbrains:annotations:16.0.1")

@@ -2,13 +2,15 @@ package fun.spmc.smpmod;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import fun.spmc.smpmod.minecraft.command.CommandRegister;
 import fun.spmc.smpmod.minecraft.events.BlockBrokenEvent;
-import fun.spmc.smpmod.utils.CompatChecks;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
+
+import fun.spmc.smpmod.utils.CompatChecks;
 import fun.spmc.smpmod.utils.ConfigLoader;
-import fun.spmc.smpmod.utils.RegistryEntryTool;
 import fun.spmc.smpmod.utils.UtilClass;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -16,22 +18,28 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.enchantment.Enchantments;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+
 import net.minecraft.util.ActionResult;
 import okhttp3.*;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +100,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         JsonObject body = new JsonObject();
         body.addProperty("content", message);
         body.addProperty("username", playerName);
-        body.addProperty("avatar_url", ConfigLoader.AVATAR_URL.replace("%player%", playerUUID));
+        body.addProperty("avatar_url", "https://crafatar.com/renders/head/%player%".replace("%player%", playerUUID));
         body.add("allowed_mentions", new Gson().fromJson("{\"parse\":[]}", JsonObject.class));
 
         Request request = new Request.Builder()
