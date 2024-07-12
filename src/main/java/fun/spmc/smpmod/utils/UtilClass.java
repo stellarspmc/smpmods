@@ -12,9 +12,9 @@ public class UtilClass {
     public static void broadcastMessage(String discordTags, String message) {
         modLogger.info(String.format("[Discord] %s: %s", discordTags, message));
         minecraftServer.getPlayerManager().getPlayerList().forEach(player -> player.sendMessage(Text.literal("[")
-                .append(Text.literal("Discord").withColor(118 * 65536 + 15 * 256 + 191))
-                .append(Text.literal("]"))
-                .append(Text.literal(discordTags).withColor(118 * 65536 + 15 * 256 + 191))
+                .append(Text.literal("Discord").withColor(88 * 65536 + 101 * 256 + 242))
+                .append(Text.literal("] "))
+                .append(Text.literal(discordTags).withColor(88 * 65536 + 101 * 256 + 242))
                 .append(Text.literal(": "))
                 .append(Text.literal(MarkdownParser.parseMarkdown(message)))));
     }
