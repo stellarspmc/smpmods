@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.minecraft.mixin.enchantment;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import fun.spmc.smpmod.utils.RegistryEntryTool;
+import fun.spmc.smpmod.minecraft.utils.RegistryEntryTool;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;

@@ -1,8 +1,7 @@
 package fun.spmc.smpmod.minecraft.events;
 
-import fun.spmc.smpmod.utils.RegistryEntryTool;
-import fun.spmc.smpmod.utils.UtilClass;
-import fun.spmc.smpmod.utils.treasure.TreasureRarities;
+import fun.spmc.smpmod.minecraft.utils.RegistryEntryTool;
+import fun.spmc.smpmod.minecraft.treasure.TreasureRarities;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -41,12 +40,12 @@ public class BlockBrokenEvent {
                     block.equals(Blocks.ACACIA_LOG) ||
                     block.equals(Blocks.MANGROVE_LOG) ||
                     block.equals(Blocks.CHERRY_LOG)) {
-                if (UtilClass.probabilityCalc(5, player)) {
+                if (player.getRandom().nextDouble() <= 0.05) {
                     LightningEntity entity = new LightningEntity(EntityType.LIGHTNING_BOLT, world);
                     entity.setPos(pos.getX(), pos.getY(), pos.getZ());
                     world.spawnEntity(entity);
                     player.sendMessage(Text.literal("The gods of the trees has decided to strike you...").formatted(Formatting.DARK_RED));
-                    if (UtilClass.probabilityCalc(5, player)) {
+                    if (player.getRandom().nextDouble() <= 0.05) {
                         double random = player.getRandom().nextDouble();
                         if (random >= 0.75) {
                             ItemStack item = new ItemStack(Items.LEATHER_HELMET, 1);
@@ -86,21 +85,21 @@ public class BlockBrokenEvent {
         if (!(player.isCreative() || player.isInLava() || player.isClimbing())) {
             Block block = state.getBlock();
 
-            if (block.equals(Blocks.STONE) || block.equals(Blocks.DEEPSLATE) || block.equals(Blocks.TUFF)) if (UtilClass.probabilityCalc(0.89, player)) treasures(world, player, pos);
-            else if (block.equals(Blocks.DIAMOND_ORE) || block.equals(Blocks.EMERALD_ORE) || block.equals(Blocks.GOLD_ORE) || block.equals(Blocks.IRON_ORE) || block.equals(Blocks.COPPER_ORE) || block.equals(Blocks.COAL_ORE) || block.equals(Blocks.LAPIS_ORE) || block.equals(Blocks.REDSTONE_ORE)) if (UtilClass.probabilityCalc(8.9, player)) treasures(world, player, pos);
-            else if (block.equals(Blocks.DEEPSLATE_DIAMOND_ORE) || block.equals(Blocks.DEEPSLATE_EMERALD_ORE) || block.equals(Blocks.DEEPSLATE_GOLD_ORE) || block.equals(Blocks.DEEPSLATE_IRON_ORE) || block.equals(Blocks.DEEPSLATE_COPPER_ORE) || block.equals(Blocks.DEEPSLATE_COAL_ORE) || block.equals(Blocks.DEEPSLATE_LAPIS_ORE) || block.equals(Blocks.DEEPSLATE_REDSTONE_ORE)) if (UtilClass.probabilityCalc(32.9, player)) treasures(world, player, pos);
+            if (block.equals(Blocks.STONE) || block.equals(Blocks.DEEPSLATE) || block.equals(Blocks.TUFF)) if (player.getRandom().nextDouble() <= 0.0089) treasures(world, player, pos);
+            else if (block.equals(Blocks.DIAMOND_ORE) || block.equals(Blocks.EMERALD_ORE) || block.equals(Blocks.GOLD_ORE) || block.equals(Blocks.IRON_ORE) || block.equals(Blocks.COPPER_ORE) || block.equals(Blocks.COAL_ORE) || block.equals(Blocks.LAPIS_ORE) || block.equals(Blocks.REDSTONE_ORE)) if (player.getRandom().nextDouble() <= 0.089) treasures(world, player, pos);
+            else if (block.equals(Blocks.DEEPSLATE_DIAMOND_ORE) || block.equals(Blocks.DEEPSLATE_EMERALD_ORE) || block.equals(Blocks.DEEPSLATE_GOLD_ORE) || block.equals(Blocks.DEEPSLATE_IRON_ORE) || block.equals(Blocks.DEEPSLATE_COPPER_ORE) || block.equals(Blocks.DEEPSLATE_COAL_ORE) || block.equals(Blocks.DEEPSLATE_LAPIS_ORE) || block.equals(Blocks.DEEPSLATE_REDSTONE_ORE)) if (player.getRandom().nextDouble() <= 0.329) treasures(world, player, pos);
         }
     }
 
     private static void treasures(ServerWorld world, PlayerEntity player, BlockPos pos) {
         common(world, player, pos);
-        if (UtilClass.probabilityCalc(20, player)) {
+        if (player.getRandom().nextDouble() <= 0.2) {
             rare(world, player, pos);
-            if (UtilClass.probabilityCalc(40, player)) {
+            if (player.getRandom().nextDouble() <= 0.4) {
                 epic(world, player, pos);
-                if (UtilClass.probabilityCalc(40, player)) {
+                if (player.getRandom().nextDouble() <= 0.4) {
                     legendary(world, player, pos);
-                    if (UtilClass.probabilityCalc(15, player)) ultimate(world, player, pos);
+                    if (player.getRandom().nextDouble() <= 0.15) ultimate(world, player, pos);
                 }
             }
         }

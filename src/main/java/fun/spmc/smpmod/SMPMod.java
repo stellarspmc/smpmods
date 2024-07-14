@@ -3,13 +3,12 @@ package fun.spmc.smpmod;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import fun.spmc.smpmod.minecraft.command.CommandRegister;
+import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
 import fun.spmc.smpmod.minecraft.events.BlockBrokenEvent;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 
-import fun.spmc.smpmod.utils.CompatChecks;
-import fun.spmc.smpmod.utils.ConfigLoader;
-import fun.spmc.smpmod.utils.UtilClass;
+import fun.spmc.smpmod.discord.utils.ConfigLoader;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -53,9 +52,8 @@ public class SMPMod implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        CompatChecks.checkAndAnnounce();
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandRegister.register(dispatcher));
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandRegistry.register(dispatcher));
         } catch (Exception e) {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
@@ -85,7 +83,7 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (entity instanceof LivingEntity livingEntity) {
-                if (UtilClass.probabilityCalc(15, player))
+                if (player.getRandom().nextDouble() <= (0.15))
                     livingEntity.setHealth(livingEntity.getHealth());
             }
             return ActionResult.PASS;

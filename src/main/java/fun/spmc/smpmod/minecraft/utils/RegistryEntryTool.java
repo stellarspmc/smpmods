@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.utils;
+package fun.spmc.smpmod.minecraft.utils;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.trim.ArmorTrimMaterial;

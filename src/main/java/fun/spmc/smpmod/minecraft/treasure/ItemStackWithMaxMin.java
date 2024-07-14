@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.utils.treasure;
+package fun.spmc.smpmod.minecraft.treasure;
 
 import net.minecraft.item.ItemStack;
 

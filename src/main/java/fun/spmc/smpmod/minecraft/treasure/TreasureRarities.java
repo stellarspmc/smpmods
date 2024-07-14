@@ -1,6 +1,5 @@
-package fun.spmc.smpmod.utils.treasure;
+package fun.spmc.smpmod.minecraft.treasure;
 
-import fun.spmc.smpmod.utils.UtilClass;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -49,14 +48,19 @@ public enum TreasureRarities {
         stacks = items;
     }
 
+    private static ItemStack getAndSetCount(ItemStack item, int count) {
+        item.setCount(count);
+        return item;
+    }
+
     public ArrayList<ItemStack> rollStack(TreasureRarities rarity, PlayerEntity player) {
         ArrayList<ItemStack> rolled = new ArrayList<>();
         if (rarity == ULTIMATE) return ItemStackWithMaxMin.convert(ULTIMATE.stacks);
         else {
             for (ItemStackWithMaxMin i : rarity.stacks) {
-                if (UtilClass.probabilityCalc(95, player)) {
+                if (player.getRandom().nextDouble() <= 0.95) {
                     ItemStack item = i.getStack();
-                    if (i.getMax() == i.getMin()) rolled.add(UtilClass.getAndSetCount(item, i.getMin()));
+                    if (i.getMax() == i.getMin()) rolled.add(getAndSetCount(item, i.getMin()));
                     else {
                         int len = i.getMax() - i.getMin() + 1;
                         double pie = player.getRandom().nextDouble();
@@ -65,7 +69,7 @@ public enum TreasureRarities {
                             double lower = Math.pow(2, -b);
                             if ((b+1) < len) lower = 0;
                             if ((upper >= pie) && (pie > lower)) {
-                                rolled.add(UtilClass.getAndSetCount(item, b));
+                                rolled.add(getAndSetCount(item, b));
                                 break;
                             }
                         }

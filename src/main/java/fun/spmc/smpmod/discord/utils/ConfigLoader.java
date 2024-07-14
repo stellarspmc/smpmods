@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.utils;
+package fun.spmc.smpmod.discord.utils;
 
 import net.fabricmc.loader.api.FabricLoader;
 
