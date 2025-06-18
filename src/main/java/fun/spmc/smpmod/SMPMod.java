@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 
 import fun.spmc.smpmod.discord.EventHandler;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
-import fun.spmc.smpmod.minecraft.events.BlockBrokenEvent;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 
 import fun.spmc.smpmod.discord.utils.ConfigLoader;
@@ -26,7 +25,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -79,19 +77,20 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register((server) -> bot.shutdownNow());
+        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> {
+            messageChannel.sendMessage("Server has closed!").queue();
+            bot.shutdownNow();
+        });
 
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        AttackEntityCallback.EVENT.register((player, _, _, entity, _) -> {
             if (entity instanceof LivingEntity livingEntity) {
-                if (player.getRandom().nextDouble() <= (0.15))
+                if (player.getRandom().nextDouble() <= (0.05))
                     livingEntity.setHealth(livingEntity.getHealth());
             }
             return ActionResult.PASS;
         });
 
-        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> MobSpawnedEvent.onEntityJoin(entity));
-
-        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> BlockBrokenEvent.onBreakBlock((ServerWorld) world, player, state, pos));
+        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld _) -> MobSpawnedEvent.onEntityJoin(entity));
     }
 
     public static void sendWebhookMessage(String message, String playerName, String playerUUID) {

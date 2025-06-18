@@ -15,17 +15,15 @@ import static fun.spmc.smpmod.SMPMod.messageChannel;
 public abstract class MixinPlayerAdvancementTracker {
     @Shadow private ServerPlayerEntity owner;
 
-    @Shadow public AdvancementProgress getProgress(AdvancementEntry advancementEntry) { return null; }
+    @Shadow public abstract AdvancementProgress getProgress(Advancement advancement);
 
-    @Inject(method = "grantCriterion", at = @At("TAIL"))
-    private void grantCriterion(AdvancementEntry advancementEntry, String string, CallbackInfoReturnable<Boolean> cir) {
-        if (advancementEntry.value().comp_1913().isEmpty() ||
-                !advancementEntry.value().comp_1913().get().shouldAnnounceToChat() ||
-                !getProgress(advancementEntry).isDone()) return;
-        AdvancementDisplay frame = advancementEntry.value().comp_1913().get();
-        String advancementName = frame.getTitle().getString();
+    @Inject(method = "grantCriterion", at = @At(value = "TAIL"))
+    private void addMessage(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
+        if (advancement.getDisplay() == null) return;
+        if(!this.getProgress(advancement).isDone()) return;
+        String advancementName = advancement.getDisplay().getTitle().getString();
         String sent;
-        switch (frame.getFrame()) {
+        switch (advancement.getDisplay().getFrame()) {
             case GOAL -> sent = "Nice, " + owner.getName().getString() + " has achieved [" + advancementName + "]";
             case CHALLENGE -> sent = "Nice, " + owner.getName().getString() + " has finished [" + advancementName + "]";
             default -> sent = "Nice, " + owner.getName().getString() + " has done [" + advancementName + "]";

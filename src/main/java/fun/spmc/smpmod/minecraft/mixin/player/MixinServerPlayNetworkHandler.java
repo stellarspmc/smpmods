@@ -20,5 +20,4 @@ public abstract class MixinServerPlayNetworkHandler {
     private void handleMessage(ChatMessageC2SPacket packet, CallbackInfo ci) {
         SMPMod.sendWebhookMessage(packet.chatMessage(), player.getName().getString(), player.getUuidAsString());
     }
-
 }
