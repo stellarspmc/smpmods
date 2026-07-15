@@ -18,13 +18,13 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public class TreasureEvents {
     private static final float COMMON_PERCENTAGE = 65;
     private static final float RARE_PERCENTAGE = 25 + COMMON_PERCENTAGE;
-    private static final float EPIC_PERCENTAGE = 5 + RARE_PERCENTAGE;
+    private static final float EPIC_PERCENTAGE = 7.5f + RARE_PERCENTAGE;
 
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity ignoredBlockEntity) {
         ResourceKey<Level> dimension = world.dimension();
         boolean isValidBlock = false;
 
-        if (player.getRandom().nextFloat() <= .9f) return;
+        if (player.getRandom().nextFloat() > .03f) return;
         if (dimension == Level.OVERWORLD) isValidBlock = state.is(BlockTags.STONE_ORE_REPLACEABLES)
                     || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)
                     || state.is(Blocks.DEEPSLATE_COAL_ORE) || state.is(Blocks.COAL_ORE)
@@ -57,11 +57,11 @@ public class TreasureEvents {
 
         String rarity = "legendary";
         float random = player.getRandom().nextFloat();
-        if (random < COMMON_PERCENTAGE * 0.01f) {
+        if (random < COMMON_PERCENTAGE * .01f) {
             rarity = "common";
-        } else if (random < RARE_PERCENTAGE * 0.01f) {
+        } else if (random < RARE_PERCENTAGE * .01f) {
             rarity = "rare";
-        } else if (random < EPIC_PERCENTAGE * 0.01f) {
+        } else if (random < EPIC_PERCENTAGE * .01f) {
             rarity = "epic";
         }
 
