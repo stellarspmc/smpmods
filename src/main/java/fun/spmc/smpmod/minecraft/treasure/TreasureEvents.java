@@ -24,7 +24,7 @@ public class TreasureEvents {
         ResourceKey<Level> dimension = world.dimension();
         boolean isValidBlock = false;
 
-        if (player.getRandom().nextFloat() > .03f) return;
+        if (player.getRandom().nextFloat() > .05f) return;
         if (dimension == Level.OVERWORLD) isValidBlock = state.is(BlockTags.STONE_ORE_REPLACEABLES)
                     || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)
                     || state.is(Blocks.DEEPSLATE_COAL_ORE) || state.is(Blocks.COAL_ORE)
