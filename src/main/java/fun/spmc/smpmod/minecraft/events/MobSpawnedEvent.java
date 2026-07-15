@@ -1,5 +1,7 @@
 package fun.spmc.smpmod.minecraft.events;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -21,19 +23,18 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class MobSpawnedEvent {
     public static void onEntityJoin(Entity entity, ServerLevel level) {
         if (entity instanceof Zombie zombie) {
-            if (zombie.getRandom().nextFloat() >= .978f) spawnEyeBoss(zombie, level);
-            else if (zombie.getRandom().nextFloat() >= .911f) spawnNickBoss(zombie);
+            if (zombie.getRandom().nextFloat() >= .9978f) spawnEyeBoss(zombie, level);
+            else if (zombie.getRandom().nextFloat() >= .9911f) spawnNickBoss(zombie, level);
         }
     }
 
     private static void spawnEyeBoss(Zombie boss, ServerLevel level) {
         boss.setCustomName(Component.literal("eyelol").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-        boss.setCustomNameVisible(true);
-        boss.setPersistenceRequired();
 
         Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(50);
         boss.setHealth(50f);
@@ -49,26 +50,33 @@ public class MobSpawnedEvent {
         var enchantmentRegistry = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         var protectionEnchant = enchantmentRegistry.getOrThrow(Enchantments.PROTECTION);
 
+        UUID headUuid = UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378");
+
+// 2. Create the GameProfile and load the custom skin texture into its properties
+        GameProfile gameProfile = new GameProfile(headUuid, "eyelol");
+        String textureValue = "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0=";
+        gameProfile.properties().put("textures", new Property("textures", textureValue));
+
+// 3. Create the ItemStack and apply the profile component
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
-        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("eyelol"));
-        playerHead.enchant(protectionEnchant, 8);
+        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createResolved(gameProfile));
         boss.setItemSlot(EquipmentSlot.HEAD, playerHead);
-        boss.setDropChance(EquipmentSlot.HEAD, 1);
+        boss.setDropChance(EquipmentSlot.HEAD, .15f);
 
         ItemStack chestplate = new ItemStack(Items.DIAMOND_CHESTPLATE);
         chestplate.enchant(protectionEnchant, 8);
         boss.setItemSlot(EquipmentSlot.CHEST, chestplate);
-        boss.setDropChance(EquipmentSlot.CHEST, 0);
+        boss.setDropChance(EquipmentSlot.CHEST, .01f);
 
         ItemStack leggings = new ItemStack(Items.DIAMOND_LEGGINGS);
         leggings.enchant(protectionEnchant, 8);
         boss.setItemSlot(EquipmentSlot.LEGS, leggings);
-        boss.setDropChance(EquipmentSlot.LEGS, 0);
+        boss.setDropChance(EquipmentSlot.LEGS, .01f);
 
         ItemStack boots = new ItemStack(Items.DIAMOND_BOOTS);
         boots.enchant(protectionEnchant, 8);
         boss.setItemSlot(EquipmentSlot.FEET, boots);
-        boss.setDropChance(EquipmentSlot.FEET, 0);
+        boss.setDropChance(EquipmentSlot.FEET, .01f);
 
         ItemStack weapon = new ItemStack(Items.NETHERITE_HOE);
         ItemAttributeModifiers modifiers = ItemAttributeModifiers.builder()
@@ -81,16 +89,23 @@ public class MobSpawnedEvent {
 
         boss.setItemSlot(EquipmentSlot.MAINHAND, weapon);
         boss.setDropChance(EquipmentSlot.MAINHAND, 0);
+
+        var sharpness = enchantmentRegistry.getOrThrow(Enchantments.SHARPNESS);
+        var fire = enchantmentRegistry.getOrThrow(Enchantments.FIRE_ASPECT);
+
+        ItemStack drop = new ItemStack(Items.DIRT);
+        drop.enchant(sharpness, 8);
+        drop.enchant(fire, 8);
+        drop.set(DataComponents.CUSTOM_NAME, Component.literal("kidney stone"));
+        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
+        boss.setDropChance(EquipmentSlot.SADDLE, .1f);
     }
 
-    private static void spawnNickBoss(Zombie boss) {
-        boss.setCustomName(Component.literal("Nickwong0910").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
-        boss.setCustomNameVisible(true);
-        boss.setPersistenceRequired();
+    private static void spawnNickBoss(Zombie boss, ServerLevel level) {
+        boss.setCustomName(Component.literal("Nickwong0910").withStyle(ChatFormatting.GREEN));
 
         Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(35);
         boss.setHealth(35f);
-
 
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
         playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("spmc"));
@@ -98,15 +113,23 @@ public class MobSpawnedEvent {
         boss.setDropChance(EquipmentSlot.HEAD, 1f);
 
         ItemStack weapon = new ItemStack(Items.NETHERITE_BLOCK);
-        ItemAttributeModifiers modifiers = ItemAttributeModifiers.builder()
+        ItemAttributeModifiers mod = ItemAttributeModifiers.builder()
                 .add(Attributes.ATTACK_DAMAGE,
                         new AttributeModifier(Identifier.fromNamespaceAndPath("minecraft", "effect.attack_damage"), 15, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND)
                 .build();
 
-        weapon.set(DataComponents.ATTRIBUTE_MODIFIERS, modifiers);
-
+        weapon.set(DataComponents.ATTRIBUTE_MODIFIERS, mod);
         boss.setItemSlot(EquipmentSlot.MAINHAND, weapon);
         boss.setDropChance(EquipmentSlot.MAINHAND, 0);
+
+        var enchantmentRegistry = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        var enchant = enchantmentRegistry.getOrThrow(Enchantments.INFINITY);
+
+        ItemStack drop = new ItemStack(Items.MILK_BUCKET);
+        drop.enchant(enchant, 1);
+        drop.set(DataComponents.CUSTOM_NAME, Component.literal("nick's cum"));
+        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
+        boss.setDropChance(EquipmentSlot.SADDLE, .11f);
     }
 }

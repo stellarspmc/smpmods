@@ -65,7 +65,7 @@ public class TreasureEvents {
             rarity = "epic";
         }
 
-        Identifier tableLocation = Identifier.fromNamespaceAndPath("mt", "chests/" + folderName + "/" + rarity);
+        Identifier tableLocation = Identifier.fromNamespaceAndPath("treasure", "chests/" + folderName + "/" + rarity);
         ResourceKey<LootTable> lootTableUri = ResourceKey.create(Registries.LOOT_TABLE, tableLocation);
 
         TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarity, lootTableUri);
