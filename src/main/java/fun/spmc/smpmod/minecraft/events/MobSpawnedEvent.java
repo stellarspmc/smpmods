@@ -1,7 +1,10 @@
 package fun.spmc.smpmod.minecraft.events;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -52,10 +55,13 @@ public class MobSpawnedEvent {
 
         UUID headUuid = UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378");
 
-// 2. Create the GameProfile and load the custom skin texture into its properties
-        GameProfile gameProfile = new GameProfile(headUuid, "eyelol");
         String textureValue = "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0=";
-        gameProfile.properties().put("textures", new Property("textures", textureValue));
+        Multimap<String, Property> propertiesMultimap = HashMultimap.create();
+        propertiesMultimap.put("textures", new Property("textures", textureValue));
+
+        PropertyMap properties = new PropertyMap(propertiesMultimap);
+
+        GameProfile gameProfile = new GameProfile(headUuid, "eyelol", properties);
 
 // 3. Create the ItemStack and apply the profile component
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
