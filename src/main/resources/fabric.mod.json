@@ -17,10 +17,10 @@
   "mixins": [
     "smpmod.mixins.json"
   ],
+  "accessWidener": "smpmod.classtweaker",
   "depends": {
     "fabricloader": "*",
-    "fabric": "*",
-    "minecraft": "1.20.1"
-  },
-  "accessWidener": "smpmod.accesswidener"
+    "minecraft": "26.2",
+    "fabric-api": "*"
+  }
 }

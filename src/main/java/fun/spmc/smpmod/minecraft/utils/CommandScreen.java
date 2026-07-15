@@ -3,31 +3,32 @@ package fun.spmc.smpmod.minecraft.utils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandlerFactory;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.fabricmc.fabric.api.menu.v1.FabricMenuProvider;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.MenuConstructor;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class CommandScreen implements Command<ServerCommandSource> {
+public abstract class CommandScreen implements Command<CommandSourceStack> {
     @Override
-    public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var senderPlayer = context.getSource().getPlayerOrThrow();
-        senderPlayer.openHandledScreen(createNamedScreenHandlerFactory());
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var senderPlayer = context.getSource().getPlayerOrException();
+        senderPlayer.openMenu(createNamedScreenHandlerFactory());
         onOpen(senderPlayer);
         return 0;
     }
 
-    protected NamedScreenHandlerFactory createNamedScreenHandlerFactory() {
-        return new SimpleNamedScreenHandlerFactory(getScreenHandlerFactory(), getScreenTitle());
+    protected MenuProvider createNamedScreenHandlerFactory() {
+        return new SimpleMenuProvider(getScreenHandlerFactory(), getScreenTitle());
     }
 
-    protected abstract Text getScreenTitle();
+    protected abstract Component getScreenTitle();
 
-    protected abstract @NotNull ScreenHandlerFactory getScreenHandlerFactory();
+    protected abstract @NotNull MenuConstructor getScreenHandlerFactory();
 
-    protected abstract void onOpen(ServerPlayerEntity player);
+    protected abstract void onOpen(ServerPlayer player);
 }
 

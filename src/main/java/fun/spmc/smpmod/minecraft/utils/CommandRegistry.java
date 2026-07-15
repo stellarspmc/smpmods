@@ -3,10 +3,10 @@ package fun.spmc.smpmod.minecraft.utils;
 import fun.spmc.smpmod.minecraft.command.*;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public class CommandRegistry {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(SurfaceCommand.buildCommand());
         dispatcher.register(EnderChestCommand.buildCommand());
     }

@@ -2,34 +2,34 @@ package fun.spmc.smpmod.minecraft.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fun.spmc.smpmod.minecraft.utils.CommandScreen;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerFactory;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stats;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuConstructor;
 import org.jetbrains.annotations.NotNull;
 
 public class EnderChestCommand extends CommandScreen {
-    public static LiteralArgumentBuilder<ServerCommandSource> buildCommand(){
-        return CommandManager.literal("enderchest").executes(new EnderChestCommand());
+    public static LiteralArgumentBuilder<CommandSourceStack> buildCommand(){
+        return Commands.literal("enderchest").executes(new EnderChestCommand());
     }
-    private static final ScreenHandlerFactory SCREEN_HANDLER_FACTORY = (syncId, inventory, player) ->
-            GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, player.getEnderChestInventory());
+    private static final MenuConstructor SCREEN_HANDLER_FACTORY = (syncId, inventory, player) ->
+            ChestMenu.threeRows(syncId, inventory, player.getEnderChestInventory());
 
     @Override
-    protected Text getScreenTitle() {
-        return Text.translatable("block.minecraft.ender_chest");
+    protected Component getScreenTitle() {
+        return Component.translatable("block.minecraft.ender_chest");
     }
 
     @Override
-    protected @NotNull ScreenHandlerFactory getScreenHandlerFactory() {
+    protected @NotNull MenuConstructor getScreenHandlerFactory() {
         return SCREEN_HANDLER_FACTORY;
     }
 
     @Override
-    protected void onOpen(ServerPlayerEntity player) {
-        player.increaseStat(Stats.OPEN_ENDERCHEST, 1);
+    protected void onOpen(ServerPlayer player) {
+        player.awardStat(Stats.OPEN_ENDERCHEST, 1);
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 
@@ -14,6 +15,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
@@ -22,17 +24,19 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 
-import net.minecraft.util.ActionResult;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 import okhttp3.*;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -51,7 +55,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandRegistry.register(dispatcher));
+            CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> CommandRegistry.register(dispatcher));
         } catch (Exception e) {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
@@ -71,26 +75,24 @@ public class SMPMod implements DedicatedServerModInitializer {
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
 
+                bot.updateCommands().addCommands(Commands.slash("players", "Get the number of players.")).queue();
+
             } catch (Exception e) {
                 modLogger.error("Put Information into the Config");
                 throw new RuntimeException(e);
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> {
-            messageChannel.sendMessage("Server has closed!").queue();
-            bot.shutdownNow();
-        });
-
-        AttackEntityCallback.EVENT.register((player, _, _, entity, _) -> {
-            if (entity instanceof LivingEntity livingEntity) {
-                if (player.getRandom().nextDouble() <= (0.05))
-                    livingEntity.setHealth(livingEntity.getHealth());
+        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> bot.shutdownNow());
+        PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
+        ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, from, to) -> {
+            if (to.dimension() == ServerLevel.END) {
+                player.teleport(new TeleportTransition(from, new Vec3(76, from.getHeight(Heightmap.Types.WORLD_SURFACE, 76, 229), 229), Vec3.ZERO, 0, 0, TeleportTransition.PLAY_PORTAL_SOUND));
+                player.sendSystemMessage(Component.literal("The End is currently locked by the server!")
+                        .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
             }
-            return ActionResult.PASS;
         });
-
-        ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld _) -> MobSpawnedEvent.onEntityJoin(entity));
     }
 
     public static void sendWebhookMessage(String message, String playerName, String playerUUID) {
