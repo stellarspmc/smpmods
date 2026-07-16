@@ -12,7 +12,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -205,17 +207,28 @@ public class EconomyCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
         return Commands.literal("top")
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                        .executes(ctx -> topCommand(ctx, IntegerArgumentType.getInteger(ctx, "page"))))
+                        .executes(ctx -> {
+                            int page = IntegerArgumentType.getInteger(ctx, "page");
+                            return topCommand(ctx, page);
+                        }))
                 .executes(ctx -> topCommand(ctx, 1));
     }
 
     private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
-        EconomySavedData eco = EconomySavedData.get(ctx.getSource().getLevel());
-        String output = eco.top(page);
-        ctx.getSource().sendSuccess(() -> Component.literal(" ----").withStyle(ChatFormatting.YELLOW)
-                .append(" Economy Top ").withStyle(ChatFormatting.GOLD)
-                .append("----").withStyle(ChatFormatting.YELLOW)
-                .append("\n" + output), false);
-        return 1;
+        try {
+            ServerLevel level = ctx.getSource().getLevel();
+            EconomySavedData eco = EconomySavedData.get(level);
+
+            String output = eco.top(page);
+
+            ctx.getSource().sendSuccess(() -> Component.literal(" ----").withStyle(ChatFormatting.YELLOW)
+                    .append(" Economy Top ").withStyle(ChatFormatting.GOLD)
+                    .append("----").withStyle(ChatFormatting.YELLOW)
+                    .append("\n" + output), false);
+            return 1;
+        } catch (Exception e) {
+            ctx.getSource().sendFailure(Component.literal("Failed to load leaderboards: " + e.getMessage()));
+            return 0;
+        }
     }
 }

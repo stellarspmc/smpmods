@@ -20,25 +20,6 @@
           ]
         },
         {
-          "type": "minecraft:item",
-          "weight": 2,
-          "name": "minecraft:light_gray_shulker_box",
-          "functions": [
-            {
-              "function": "minecraft:set_loot_table",
-              "type": "minecraft:shulker_box",
-              "name": "mt:chests/mushroom/rare_loot"
-            },
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 1,
-                "max": 2
-              }
-            }
-          ]
-        },
-        {
           "type": "item",
           "name": "minecraft:splash_potion",
           "functions": [

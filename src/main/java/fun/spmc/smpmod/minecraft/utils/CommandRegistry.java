@@ -11,10 +11,10 @@ public class CommandRegistry {
         dispatcher.register(SurfaceCommand.buildCommand());
         dispatcher.register(EnderChestCommand.buildCommand());
 
+        dispatcher.register(EconomyCommands.buildTop());
         dispatcher.register(EconomyCommands.buildBalance());
         dispatcher.register(EconomyCommands.buildDeposit());
         dispatcher.register(EconomyCommands.buildWithdraw());
         dispatcher.register(EconomyCommands.buildSend());
-        dispatcher.register(EconomyCommands.buildTop());
     }
 }

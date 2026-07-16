@@ -63,43 +63,6 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:chest",
-          "functions": [
-            {
-              "function": "minecraft:set_loot_table",
-              "type": "minecraft:chest",
-              "name": "mt:chests/desert/desert_pyramid"
-            },
-            {
-              "function": "minecraft:set_name",
-              "name": [
-                {
-                  "text": "Desert Temple Loot",
-                  "color": "aqua",
-                  "italic": false
-                }
-              ]
-            },
-            {
-              "function": "set_lore",
-              "lore": [
-                {
-                  "text": "Contains the Desert ",
-                  "color": "gray",
-                  "italic": false
-                },
-                {
-                  "text": "Temple loot table. ",
-                  "color": "gray",
-                  "italic": false
-                }
-              ],
-              "mode": "replace_all"
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
           "name": "minecraft:tinted_glass",
           "weight": 3,
           "functions": [

@@ -23,18 +23,6 @@
         },
         {
           "type": "minecraft:item",
-          "weight": 2,
-          "name": "minecraft:brown_shulker_box",
-          "functions": [
-            {
-              "function": "minecraft:set_loot_table",
-              "type": "minecraft:shulker_box",
-              "name": "mt:chests/mountain/mineshaft"
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
           "name": "minecraft:enchanted_golden_apple",
           "functions": [
             {

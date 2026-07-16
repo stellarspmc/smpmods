@@ -49,7 +49,7 @@
               "modifiers": [
                 {
                   "id": "axe_damage",
-                  "attribute": "minecraft:generic.attack_damage",
+                  "attribute": "minecraft:attack_damage",
                   "amount": 12,
                   "operation": "add_value",
                   "slot": "mainhand"
