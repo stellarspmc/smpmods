@@ -12,9 +12,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -206,6 +206,10 @@ public class EconomyCommands {
     // --- /top ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
         return Commands.literal("top")
+                .requires(source -> source.checkPermission(
+                        Identifier.fromNamespaceAndPath("smpmod", "command.top"),
+                        true
+                ))
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
                             int page = IntegerArgumentType.getInteger(ctx, "page");

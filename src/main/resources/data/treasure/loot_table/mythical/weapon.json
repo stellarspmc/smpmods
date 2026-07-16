@@ -56,7 +56,7 @@
                 },
                 {
                   "id": "axe_speed",
-                  "attribute": "minecraft:generic.attack_speed",
+                  "attribute": "minecraft:attack_speed",
                   "amount": -1.4,
                   "operation": "add_value",
                   "slot": "mainhand"

@@ -223,50 +223,6 @@
               "chance": 0.2
             }
           ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:chest",
-          "functions": [
-            {
-              "function": "minecraft:limit_count",
-              "limit": {
-                "min": 1,
-                "max": 1
-              }
-            },
-            {
-              "function": "minecraft:set_name",
-              "name": [
-                {
-                  "text": "Mineshaft Loot Chest",
-                  "color": "aqua",
-                  "italic": false
-                }
-              ]
-            },
-            {
-              "function": "minecraft:set_lore",
-              "lore": [
-                {
-                  "text": "Holds the Mineshaft ",
-                  "color": "gray",
-                  "italic": false
-                },
-                {
-                  "text": "loot table. ",
-                  "color": "gray",
-                  "italic": false
-                }
-              ],
-              "mode": "replace_all"
-            },
-            {
-              "function": "minecraft:set_loot_table",
-              "type": "minecraft:chest",
-              "name": "mt:chests/badlands/mineshaft"
-            }
-          ]
         }
       ]
     }

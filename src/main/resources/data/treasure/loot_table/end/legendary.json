@@ -59,21 +59,6 @@
         },
         {
           "type": "minecraft:item",
-          "weight": 2,
-          "name": "minecraft:shulker_box",
-          "functions": [
-            {
-              "function": "minecraft:set_components",
-              "components": {
-                "minecraft:container_loot": {
-                  "loot_table": "mt:chests/end/shulker_shells"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
           "name": "minecraft:enchanted_golden_apple",
           "functions": [
             {
