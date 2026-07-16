@@ -22,7 +22,7 @@ dependencies {
     implementation("org.geysermc.floodgate:api:2.2.5-SNAPSHOT")
     implementation("org.geysermc.cumulus:cumulus:2.0.0-SNAPSHOT")
 
-    include implementation("net.dv8tion:JDA:6.4.1")
+    include implementation("net.dv8tion:JDA:6.4.2")
     include("com.neovisionaries:nv-websocket-client:2.14")
     include("org.jetbrains:annotations:26.0.2")
 

@@ -12,8 +12,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -206,22 +204,18 @@ public class EconomyCommands {
     // --- /top ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
         return Commands.literal("top")
-                .requires(source -> source.checkPermission(
-                        Identifier.fromNamespaceAndPath("smpmod", "command.top"),
-                        true
-                ))
+                .executes(ctx -> topCommand(ctx, 1))
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
                             int page = IntegerArgumentType.getInteger(ctx, "page");
                             return topCommand(ctx, page);
-                        }))
-                .executes(ctx -> topCommand(ctx, 1));
+                        }));
     }
 
     private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
         try {
-            ServerLevel level = ctx.getSource().getLevel();
-            EconomySavedData eco = EconomySavedData.get(level);
+            ServerPlayer sender = ctx.getSource().getPlayerOrException();
+            EconomySavedData eco = EconomySavedData.get(sender.level());
 
             String output = eco.top(page);
 

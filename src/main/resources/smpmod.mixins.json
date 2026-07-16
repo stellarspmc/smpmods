@@ -4,6 +4,7 @@
   "package": "fun.spmc.smpmod.minecraft.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "ChunkMapInvoker",
     "player.MixinPlayerAdvancementTracker"
   ],
   "injectors": {

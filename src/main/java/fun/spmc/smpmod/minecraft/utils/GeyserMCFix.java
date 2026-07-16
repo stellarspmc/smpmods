@@ -1,20 +1,24 @@
 package fun.spmc.smpmod.minecraft.utils;
 
-import com.google.gson.Gson;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import fun.spmc.smpmod.minecraft.mixin.ChunkMapInvoker;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -64,7 +68,9 @@ public class GeyserMCFix {
 
         scheduler.schedule(() -> server.execute(() -> {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player != null && Objects.requireNonNull(player.connection).isAcceptingMessages()) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
+            if (player != null && player.connection != null && player.connection.isAcceptingMessages()) {
+                fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
+            }
         }), RETRY_DELAY_MS, TimeUnit.MILLISECONDS);
     }
 
@@ -73,9 +79,28 @@ public class GeyserMCFix {
         if (player == null) return;
 
         GameProfile profile = player.getGameProfile();
+        PropertyMap currentProperties = profile.properties();
 
-        profile.properties().removeAll("textures");
-        profile.properties().put("textures", new Property("textures", skin.value(), skin.signature()));
+        Multimap<String, Property> map = LinkedHashMultimap.create();
+
+        for (Map.Entry<String, Property> entry : currentProperties.entries()) {
+            if (!entry.getKey().equals("textures")) {
+                map.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        map.put("textures", new Property("textures", skin.value(), skin.signature()));
+
+        PropertyMap newProperties = new PropertyMap(map);
+
+        try {
+            Field propertiesField = GameProfile.class.getDeclaredField("properties");
+            propertiesField.setAccessible(true);
+            propertiesField.set(profile, newProperties);
+        } catch (Exception e) {
+            modLogger.error("Failed to inject new PropertyMap into GameProfile for {}", player.getScoreboardName(), e);
+            return;
+        }
 
         resyncPlayerSkinToClients(server, player);
         modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
@@ -92,13 +117,17 @@ public class GeyserMCFix {
             other.connection.send(removePacket);
             other.connection.send(addPacket);
         }
+
+        if (player.level() instanceof ServerLevel serverLevel) {
+            ChunkMapInvoker chunkMap = (ChunkMapInvoker) serverLevel.getChunkSource().chunkMap;
+            chunkMap.invokeRemoveEntity(player);
+            chunkMap.invokeAddEntity(player);
+        }
     }
 
     private record SkinProperty(String value, String signature) {}
 
-    // --- HTTP Geyser API Client ---
     private static class GeyserSkinClient {
-        private static final Gson GSON = new Gson();
         private static final HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(SKIN_REQUEST_TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
@@ -120,17 +149,20 @@ public class GeyserMCFix {
         private static Optional<SkinProperty> parseSkinResponse(HttpResponse<String> response) {
             int statusCode = response.statusCode();
             if (statusCode == 404) return Optional.empty();
-            else if (statusCode >= 200 && statusCode < 300) {
+
+            if (statusCode >= 200 && statusCode < 300) {
                 try (Reader reader = new StringReader(response.body())) {
                     JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                    if (!json.has("value")) return Optional.empty();
+                    if (!json.has("value") || json.get("value").isJsonNull()) return Optional.empty();
 
-                    String value = GSON.fromJson(json.get("value"), String.class);
-                    String signature = json.has("signature") ? GSON.fromJson(json.get("signature"), String.class) : null;
+                    String value = json.get("value").getAsString();
+                    String signature = (json.has("signature") && !json.get("signature").isJsonNull())
+                            ? json.get("signature").getAsString()
+                            : null;
 
-                    if (value == null || value.isBlank()) return Optional.empty();
+                    if (value.isBlank()) return Optional.empty();
                     return Optional.of(new SkinProperty(value, signature));
-                } catch (IllegalStateException | IOException error) {
+                } catch (Exception error) {
                     throw new IllegalArgumentException("Invalid Geyser skin API response", error);
                 }
             } else throw new IllegalStateException("Geyser skin API returned HTTP " + statusCode);

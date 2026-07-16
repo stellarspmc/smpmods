@@ -17,7 +17,6 @@
   "mixins": [
     "smpmod.mixins.json"
   ],
-  "accessWidener": "smpmod.classtweaker",
   "depends": {
     "fabricloader": "*",
     "minecraft": "26.2",

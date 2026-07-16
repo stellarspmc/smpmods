@@ -1,4 +1,0 @@
-classTweaker v1 official
-accessible method net/minecraft/world/entity/decoration/ArmorStand setSmall (Z)V
-accessible method net/minecraft/world/entity/decoration/ArmorStand addAdditionalSaveData (Lnet/minecraft/world/level/storage/ValueOutput;)V
-accessible method net/minecraft/world/entity/decoration/ArmorStand readAdditionalSaveData (Lnet/minecraft/world/level/storage/ValueInput;)V
