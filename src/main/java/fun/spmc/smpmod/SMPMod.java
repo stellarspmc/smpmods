@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -25,15 +27,21 @@ import net.fabricmc.api.Environment;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
@@ -80,6 +88,43 @@ public class SMPMod implements DedicatedServerModInitializer {
             } catch (Exception e) {
                 modLogger.error("Put Information into the Config");
                 throw new RuntimeException(e);
+            }
+        });
+
+        ServerPlayConnectionEvents.JOIN.register((handler, _, _) -> {
+            ServerPlayer player = handler.getPlayer();
+            EconomySavedData eco = EconomySavedData.get(player.level());
+            eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
+
+            if (messageChannel != null) {
+                messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
+            }
+        });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, _) -> {
+            ServerPlayer player = handler.getPlayer();
+            if (messageChannel != null) {
+                messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
+            }
+        });
+
+        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> sendWebhookMessage(message.signedContent(), sender.getName().getString(), sender.getStringUUID()));
+
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+            if (entity instanceof ServerPlayer player && messageChannel != null) {
+                String deathMessage = damageSource.getLocalizedDeathMessage(player).getString();
+                String fullMessage = "☠ " + deathMessage + " (at " + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
+                messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
+            }
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
+                if (playTime > 0 && playTime % 18000 == 0) {
+                    EconomySavedData eco = EconomySavedData.get(player.level());
+                    eco.changeBalance(player.getUUID(), 1);
+                }
             }
         });
 

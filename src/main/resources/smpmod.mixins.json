@@ -4,10 +4,7 @@
   "package": "fun.spmc.smpmod.minecraft.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "player.MixinPlayerAdvancementTracker",
-    "player.MixinPlayerManager",
-    "player.MixinServerPlayer",
-    "player.MixinServerPlayNetworkHandler"
+    "player.MixinPlayerAdvancementTracker"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -13,11 +13,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,6 +33,10 @@ public class MobSpawnedEvent {
         if (entity instanceof Zombie zombie) {
             if (zombie.getRandom().nextFloat() >= .9978f) spawnEyeBoss(zombie, level);
             else if (zombie.getRandom().nextFloat() >= .9931f) spawnNickBoss(zombie, level);
+        } else if (entity instanceof Creeper creeper) {
+            if (creeper.getRandom().nextFloat() >= .991f) spawnCKCBoss(creeper, level);
+        } else if (entity instanceof WitherSkeleton witherSkeleton) {
+            if (witherSkeleton.getRandom().nextFloat() >= .999f) spawnHomelessDeity(witherSkeleton, level);
         }
     }
 
@@ -110,8 +114,8 @@ public class MobSpawnedEvent {
     private static void spawnNickBoss(Zombie boss, ServerLevel level) {
         boss.setCustomName(Component.literal("Nickwong0910").withStyle(ChatFormatting.GREEN));
 
-        Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(35);
-        boss.setHealth(35f);
+        Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(12f);
+        boss.setHealth(12f);
 
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
         playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("spmc"));
@@ -137,5 +141,56 @@ public class MobSpawnedEvent {
         drop.set(DataComponents.CUSTOM_NAME, Component.literal("nick's cum"));
         boss.setItemSlot(EquipmentSlot.OFFHAND, drop);
         boss.setDropChance(EquipmentSlot.OFFHAND, 0.4f);
+    }
+
+    private static void spawnCKCBoss(Creeper boss, ServerLevel level) {
+        boss.setCustomName(Component.literal("tcfplayz weakened").withStyle(ChatFormatting.GREEN));
+
+        Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(6);
+        boss.setHealth(6f);
+        boss.thunderHit(level, new LightningBolt(EntityTypes.LIGHTNING_BOLT, level));
+
+        ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("tcfplayz"));
+        playerHead.set(DataComponents.CUSTOM_NAME, Component.literal("not ckc's head"));
+        boss.setItemSlot(EquipmentSlot.HEAD, playerHead);
+        boss.setDropChance(EquipmentSlot.HEAD, 1f);
+
+        var enchantmentRegistry = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        var enchant = enchantmentRegistry.getOrThrow(Enchantments.BINDING_CURSE);
+
+        ItemStack drop = new ItemStack(Items.APPLE);
+        drop.enchant(enchant, 1);
+        drop.set(DataComponents.CUSTOM_NAME, Component.literal("bad apple"));
+        boss.setItemSlot(EquipmentSlot.MAINHAND, drop);
+        boss.setDropChance(EquipmentSlot.MAINHAND, 0.9f);
+    }
+
+    private static void spawnHomelessDeity(WitherSkeleton boss, ServerLevel level) {
+        boss.setCustomName(Component.literal("Nickwong0910").withStyle(ChatFormatting.GREEN));
+
+        Objects.requireNonNull(boss.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(32);
+        boss.setHealth(32f);
+
+        ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("BoJo2000"));
+        playerHead.set(DataComponents.CUSTOM_NAME, Component.literal("ultimate deity head"));
+        boss.setItemSlot(EquipmentSlot.HEAD, playerHead);
+        boss.setDropChance(EquipmentSlot.HEAD, 1f);
+
+        var enchantmentRegistry = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        var enchant = enchantmentRegistry.getOrThrow(Enchantments.INFINITY);
+
+        ItemStack drop = new ItemStack(Items.APPLE);
+        drop.enchant(enchant, 1);
+        ItemAttributeModifiers modifiers = ItemAttributeModifiers.builder()
+                .add(Attributes.ATTACK_DAMAGE,
+                        new AttributeModifier(Identifier.fromNamespaceAndPath("minecraft", "effect.attack_damage"), 8, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND)
+                .build();
+        drop.set(DataComponents.ATTRIBUTE_MODIFIERS, modifiers);
+        drop.set(DataComponents.CUSTOM_NAME, Component.literal("good apple"));
+        boss.setItemSlot(EquipmentSlot.MAINHAND, drop);
+        boss.setDropChance(EquipmentSlot.MAINHAND, 0.3f);
     }
 }
