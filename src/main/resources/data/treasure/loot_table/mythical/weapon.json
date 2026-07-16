@@ -1,0 +1,137 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:crossbow",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_attributes",
+              "modifiers": [
+                {
+                  "id": "crossbow_speed_main",
+                  "attribute": "minecraft:movement_speed",
+                  "amount": 0.05,
+                  "operation": "add_multiplied_total",
+                  "slot": "mainhand"
+                },
+                {
+                  "id": "crossbow_speed_off",
+                  "attribute": "minecraft:movement_speed",
+                  "amount": 0.05,
+                  "operation": "add_multiplied_total",
+                  "slot": "offhand"
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "minecraft:piercing": { "min": 5, "max": 10 },
+                "minecraft:quick_charge": 5,
+                "minecraft:unbreaking": { "min": 5, "max": 10 },
+                "minecraft:mending": 1,
+                "minecraft:multishot": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond_axe",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_attributes",
+              "modifiers": [
+                {
+                  "id": "axe_damage",
+                  "attribute": "minecraft:generic.attack_damage",
+                  "amount": 12,
+                  "operation": "add_value",
+                  "slot": "mainhand"
+                },
+                {
+                  "id": "axe_speed",
+                  "attribute": "minecraft:generic.attack_speed",
+                  "amount": -1.4,
+                  "operation": "add_value",
+                  "slot": "mainhand"
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "minecraft:sharpness": { "min": 5, "max": 8 },
+                "minecraft:unbreaking": 5,
+                "minecraft:mending": 1
+              }
+            },
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "minecraft:repair_cost": 9999,
+                "minecraft:unbreakable": {},
+                "minecraft:custom_name": {
+                  "text": "Refined Diamond Axe",
+                  "color": "light_purple",
+                  "italic": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:netherite_sword",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:enchant_with_levels",
+              "levels": 50
+            },
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "minecraft:unbreakable": {},
+                "minecraft:custom_name": {
+                  "text": "Mythic Netherite Blade",
+                  "color": "dark_purple",
+                  "italic": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:arrow",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_components",
+              "components": {
+                "minecraft:custom_name": {
+                  "text": "Glowy Arrow",
+                  "color": "yellow",
+                  "italic": false
+                },
+                "minecraft:custom_data": {
+                  "item_type": "glowy_arrow"
+                }
+              }
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 16, "max": 64 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

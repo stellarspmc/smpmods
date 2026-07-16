@@ -6,6 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -16,38 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public class TreasureEvents {
-    private static final float COMMON_PERCENTAGE = 65;
-    private static final float RARE_PERCENTAGE = 25 + COMMON_PERCENTAGE;
-    private static final float EPIC_PERCENTAGE = 7.5f + RARE_PERCENTAGE;
-
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity ignoredBlockEntity) {
-        ResourceKey<Level> dimension = world.dimension();
-        boolean isValidBlock = false;
-
-        if (player.getRandom().nextFloat() > .05f) return;
-        if (dimension == Level.OVERWORLD) isValidBlock = state.is(BlockTags.STONE_ORE_REPLACEABLES)
-                    || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)
-                    || state.is(Blocks.DEEPSLATE_COAL_ORE) || state.is(Blocks.COAL_ORE)
-                    || state.is(BlockTags.COPPER_ORES)
-                    || state.is(BlockTags.IRON_ORES)
-                    || state.is(BlockTags.GOLD_ORES)
-                    || state.is(Blocks.DEEPSLATE_DIAMOND_ORE) || state.is(Blocks.DIAMOND_ORE)
-                    || state.is(Blocks.DEEPSLATE_EMERALD_ORE) || state.is(Blocks.EMERALD_ORE)
-                    || state.is(Blocks.DEEPSLATE_REDSTONE_ORE) || state.is(Blocks.REDSTONE_ORE)
-                    || state.is(Blocks.DEEPSLATE_LAPIS_ORE) || state.is(Blocks.LAPIS_ORE);
-        else if (dimension == Level.NETHER) isValidBlock = state.is(Blocks.NETHERRACK)
-                    || state.is(Blocks.NETHER_QUARTZ_ORE)
-                    || state.is(Blocks.NETHER_GOLD_ORE)
-                    || state.is(Blocks.ANCIENT_DEBRIS)
-                    || state.is(Blocks.BLACKSTONE)
-                    || state.is(Blocks.BASALT)
-                    || state.is(Blocks.SMOOTH_BASALT)
-                    || state.is(Blocks.GILDED_BLACKSTONE)
-                    || state.is(BlockTags.NYLIUM);
-        else if (dimension == Level.END) isValidBlock = state.is(Blocks.END_STONE);
-
-        if (!isValidBlock) return;
-
         ResourceKey<Biome> biomeKey = world.registryAccess()
                 .lookupOrThrow(Registries.BIOME)
                 .getResourceKey(world.getBiome(pos).value())
@@ -55,20 +25,61 @@ public class TreasureEvents {
 
         String folderName = getFolderFromBiome(biomeKey);
 
-        String rarity = "legendary";
-        float random = player.getRandom().nextFloat();
-        if (random < COMMON_PERCENTAGE * .01f) {
-            rarity = "common";
-        } else if (random < RARE_PERCENTAGE * .01f) {
-            rarity = "rare";
-        } else if (random < EPIC_PERCENTAGE * .01f) {
-            rarity = "epic";
-        }
+        String rarity = rollTreasureRarity(state, player.getRandom(), world.dimension());
+        if (rarity == null) return;
 
-        Identifier tableLocation = Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarity);
+        Identifier tableLocation = rarity.equals("mythical") ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical") : Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarity);
         ResourceKey<LootTable> lootTableUri = ResourceKey.create(Registries.LOOT_TABLE, tableLocation);
 
         TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarity, lootTableUri);
+    }
+
+    private static String rollTreasureRarity(BlockState state, RandomSource random, ResourceKey<Level> dimension) {
+        float commonChance = getBaseCommonChance(state, dimension);
+        if (commonChance <= 0.0f) return null;
+
+        float roll = random.nextFloat() * 100f;
+
+        float mythicalThreshold = commonChance * .004f;
+        float legendaryThreshold = mythicalThreshold + (commonChance * .016f);
+        float epicThreshold = legendaryThreshold + (commonChance * .032f);
+        float rareThreshold = epicThreshold + (commonChance * .25f);
+        float commonThreshold = rareThreshold + commonChance;
+
+        if (roll < mythicalThreshold) return "mythical";
+        else if (roll < legendaryThreshold) return "legendary";
+        else if (roll < epicThreshold) return "epic";
+        else if (roll < rareThreshold) return "rare";
+        else if (roll < commonThreshold) return "common";
+
+        return null;
+    }
+
+    private static float getBaseCommonChance(BlockState state, ResourceKey<Level> dimension) {
+        if (dimension == Level.OVERWORLD) {
+            if (state.is(Blocks.DIAMOND_ORE) || state.is(Blocks.DEEPSLATE_DIAMOND_ORE) ||
+                    state.is(Blocks.EMERALD_ORE) || state.is(Blocks.DEEPSLATE_EMERALD_ORE)) return 1.4f;
+            if (state.is(Blocks.DEEPSLATE_COAL_ORE) || state.is(Blocks.DEEPSLATE_IRON_ORE) ||
+                    state.is(Blocks.DEEPSLATE_COPPER_ORE) || state.is(Blocks.DEEPSLATE_GOLD_ORE) ||
+                    state.is(Blocks.DEEPSLATE_REDSTONE_ORE) || state.is(Blocks.DEEPSLATE_LAPIS_ORE)) return 1.2f;
+            if (state.is(Blocks.COAL_ORE) || state.is(Blocks.IRON_ORE) ||
+                    state.is(Blocks.COPPER_ORE) || state.is(Blocks.GOLD_ORE) ||
+                    state.is(Blocks.REDSTONE_ORE) || state.is(Blocks.LAPIS_ORE)) return 1f;
+            if (state.is(Blocks.STONE) || state.is(Blocks.TUFF) || state.is(Blocks.ANDESITE) || state.is(Blocks.GRANITE) ||
+                    state.is(Blocks.AMETHYST_BLOCK) || state.is(Blocks.DRIPSTONE_BLOCK) ||
+                    state.is(BlockTags.TERRACOTTA) || state.is(Blocks.DIORITE) || state.is(Blocks.DEEPSLATE)) return .7f;
+            if (state.is(Blocks.CALCITE) || state.is(Blocks.SANDSTONE)) return .3f;
+        }
+
+        if (dimension == Level.NETHER) {
+            if (state.is(Blocks.NETHER_GOLD_ORE) || state.is(Blocks.NETHER_QUARTZ_ORE)) return 1f;
+            if (state.is(Blocks.BASALT) || state.is(Blocks.BLACKSTONE) || state.is(Blocks.SMOOTH_BASALT) || state.is(Blocks.MAGMA_BLOCK)) return .7f;
+            if (state.is(Blocks.NETHERRACK) || state.is(Blocks.SOUL_SAND) || state.is(Blocks.SOUL_SOIL)) return .05f;
+        }
+
+        if (dimension == Level.END || state.is(Blocks.END_STONE)) return 1f;
+
+        return 0f; // Not a valid block
     }
 
     private static String getFolderFromBiome(ResourceKey<Biome> biomeKey) {

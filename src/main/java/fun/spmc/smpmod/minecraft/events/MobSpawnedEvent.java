@@ -32,7 +32,7 @@ public class MobSpawnedEvent {
     public static void onEntityJoin(Entity entity, ServerLevel level) {
         if (entity instanceof Zombie zombie) {
             if (zombie.getRandom().nextFloat() >= .9978f) spawnEyeBoss(zombie, level);
-            else if (zombie.getRandom().nextFloat() >= .9911f) spawnNickBoss(zombie, level);
+            else if (zombie.getRandom().nextFloat() >= .9931f) spawnNickBoss(zombie, level);
         }
     }
 
@@ -103,8 +103,8 @@ public class MobSpawnedEvent {
         drop.enchant(sharpness, 8);
         drop.enchant(fire, 8);
         drop.set(DataComponents.CUSTOM_NAME, Component.literal("kidney stone"));
-        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
-        boss.setDropChance(EquipmentSlot.SADDLE, .1f);
+        boss.setItemSlot(EquipmentSlot.OFFHAND, drop);
+        boss.setDropChance(EquipmentSlot.OFFHAND, .1f);
     }
 
     private static void spawnNickBoss(Zombie boss, ServerLevel level) {
@@ -135,7 +135,7 @@ public class MobSpawnedEvent {
         ItemStack drop = new ItemStack(Items.MILK_BUCKET);
         drop.enchant(enchant, 1);
         drop.set(DataComponents.CUSTOM_NAME, Component.literal("nick's cum"));
-        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
-        boss.setDropChance(EquipmentSlot.SADDLE, .11f);
+        boss.setItemSlot(EquipmentSlot.OFFHAND, drop);
+        boss.setDropChance(EquipmentSlot.OFFHAND, 0.4f);
     }
 }
