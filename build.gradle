@@ -10,6 +10,7 @@ repositories {
     maven { url "https://maven.nucleoid.xyz" }
     maven { url "https://m2.dv8tion.net/releases" }
     maven { url "https://jitpack.io" }
+    maven { url "https://repo.opencollab.dev/maven-snapshots" }
     mavenCentral()
 }
 
@@ -18,6 +19,8 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loader:${project.loader_version}")
     implementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}")
+    implementation("org.geysermc.floodgate:api:2.2.5-SNAPSHOT")
+    implementation("org.geysermc.cumulus:cumulus:2.0.0-SNAPSHOT")
 
     include implementation("net.dv8tion:JDA:6.4.1")
     include("com.neovisionaries:nv-websocket-client:2.14")

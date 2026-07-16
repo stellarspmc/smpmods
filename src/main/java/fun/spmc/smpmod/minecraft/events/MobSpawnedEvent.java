@@ -107,8 +107,8 @@ public class MobSpawnedEvent {
         drop.enchant(sharpness, 8);
         drop.enchant(fire, 8);
         drop.set(DataComponents.CUSTOM_NAME, Component.literal("kidney stone"));
-        boss.setItemSlot(EquipmentSlot.OFFHAND, drop);
-        boss.setDropChance(EquipmentSlot.OFFHAND, .1f);
+        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
+        boss.setDropChance(EquipmentSlot.SADDLE, .1f);
     }
 
     private static void spawnNickBoss(Zombie boss, ServerLevel level) {
@@ -139,8 +139,8 @@ public class MobSpawnedEvent {
         ItemStack drop = new ItemStack(Items.MILK_BUCKET);
         drop.enchant(enchant, 1);
         drop.set(DataComponents.CUSTOM_NAME, Component.literal("nick's cum"));
-        boss.setItemSlot(EquipmentSlot.OFFHAND, drop);
-        boss.setDropChance(EquipmentSlot.OFFHAND, 0.4f);
+        boss.setItemSlot(EquipmentSlot.SADDLE, drop);
+        boss.setDropChance(EquipmentSlot.SADDLE, 0.4f);
     }
 
     private static void spawnCKCBoss(Creeper boss, ServerLevel level) {

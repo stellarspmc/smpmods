@@ -11,6 +11,7 @@ import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 
 import fun.spmc.smpmod.discord.utils.ConfigLoader;
 
+import fun.spmc.smpmod.minecraft.utils.GeyserMCFix;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -91,8 +92,9 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
-        ServerPlayConnectionEvents.JOIN.register((handler, _, _) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
+            GeyserMCFix.restoreSkin(server, player);
             EconomySavedData eco = EconomySavedData.get(player.level());
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
 
@@ -121,7 +123,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0 && playTime % 18000 == 0) {
+                if (playTime > 0 && playTime % 1800 == 0) {
                     EconomySavedData eco = EconomySavedData.get(player.level());
                     eco.changeBalance(player.getUUID(), 1);
                 }
