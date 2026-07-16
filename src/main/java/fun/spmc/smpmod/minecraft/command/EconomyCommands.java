@@ -12,6 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -23,7 +24,7 @@ public class EconomyCommands {
 
     // --- /balance ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildBalance() {
-        return Commands.literal("balance")
+        return Commands.literal("bal")
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(ctx -> balanceCommand(ctx, EntityArgument.getPlayer(ctx, "player"))))
                 .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException()));
@@ -204,6 +205,7 @@ public class EconomyCommands {
     // --- /top ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
         return Commands.literal("top")
+                .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "command.top"), true))
                 .executes(ctx -> topCommand(ctx, 1))
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
@@ -212,21 +214,16 @@ public class EconomyCommands {
                         }));
     }
 
-    private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
-        try {
-            ServerPlayer sender = ctx.getSource().getPlayerOrException();
-            EconomySavedData eco = EconomySavedData.get(sender.level());
+    private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) throws CommandSyntaxException {
+        ServerPlayer sender = ctx.getSource().getPlayerOrException();
+        EconomySavedData eco = EconomySavedData.get(sender.level());
 
-            String output = eco.top(page);
+        String output = eco.top(page);
 
-            ctx.getSource().sendSuccess(() -> Component.literal(" ----").withStyle(ChatFormatting.YELLOW)
-                    .append(" Economy Top ").withStyle(ChatFormatting.GOLD)
-                    .append("----").withStyle(ChatFormatting.YELLOW)
-                    .append("\n" + output), false);
-            return 1;
-        } catch (Exception e) {
-            ctx.getSource().sendFailure(Component.literal("Failed to load leaderboards: " + e.getMessage()));
-            return 0;
-        }
+        ctx.getSource().sendSuccess(() -> Component.literal(" ----").withStyle(ChatFormatting.YELLOW)
+                .append(" Economy Top ").withStyle(ChatFormatting.GOLD)
+                .append("----").withStyle(ChatFormatting.YELLOW)
+                .append("\n" + output), false);
+        return 1;
     }
 }
