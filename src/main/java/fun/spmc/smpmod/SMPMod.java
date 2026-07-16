@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
@@ -84,7 +85,11 @@ public class SMPMod implements DedicatedServerModInitializer {
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
 
-                bot.updateCommands().addCommands(Commands.slash("players", "Get the number of players.")).queue();
+                bot.updateCommands().addCommands(
+                        Commands.slash("players", "Get the number of players."),
+                        Commands.slash("top", "Get the economy leaderboard.")
+                                .addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
+                ).queue();
 
             } catch (Exception e) {
                 modLogger.error("Put Information into the Config");

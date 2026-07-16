@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import fun.spmc.smpmod.minecraft.mixin.ChunkMapInvoker;
+import fun.spmc.smpmod.minecraft.mixin.GameProfileAccessor;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
@@ -93,14 +94,7 @@ public class GeyserMCFix {
 
         PropertyMap newProperties = new PropertyMap(map);
 
-        try {
-            Field propertiesField = GameProfile.class.getDeclaredField("properties");
-            propertiesField.setAccessible(true);
-            propertiesField.set(profile, newProperties);
-        } catch (Exception e) {
-            modLogger.error("Failed to inject new PropertyMap into GameProfile for {}", player.getScoreboardName(), e);
-            return;
-        }
+        ((GameProfileAccessor) (Object) profile).setProperties(newProperties);
 
         resyncPlayerSkinToClients(server, player);
         modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
