@@ -5,9 +5,10 @@ import com.google.gson.JsonObject;
 
 import fun.spmc.smpmod.discord.EventHandler;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import fun.spmc.smpmod.minecraft.economy.shop.ShopInteractionHandler;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
-import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
+import fun.spmc.smpmod.minecraft.MobSpawnedEvent;
 
 import fun.spmc.smpmod.discord.utils.ConfigLoader;
 
@@ -65,7 +66,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         try {
-            CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> CommandRegistry.register(dispatcher));
+            CommandRegistrationCallback.EVENT.register(CommandRegistry::register);
         } catch (Exception e) {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
@@ -97,22 +98,20 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
+        ShopInteractionHandler.register();
+
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
             GeyserMCFix.restoreSkin(server, player);
             EconomySavedData eco = EconomySavedData.get(player.level());
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
 
-            if (messageChannel != null) {
-                messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
-            }
+            if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, _) -> {
             ServerPlayer player = handler.getPlayer();
-            if (messageChannel != null) {
-                messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
-            }
+            if (messageChannel != null) messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });
 
         ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> sendWebhookMessage(message.signedContent(), sender.getName().getString(), sender.getStringUUID()));
@@ -128,7 +127,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0 && playTime % 1800 == 0) {
+                if (playTime > 0 && playTime % 2400 == 0) {
                     EconomySavedData eco = EconomySavedData.get(player.level());
                     eco.changeBalance(player.getUUID(), 1);
                 }
@@ -140,7 +139,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
         ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, from, to) -> {
             if (to.dimension() == ServerLevel.END) {
-                player.teleport(new TeleportTransition(from, new Vec3(76, from.getHeight(Heightmap.Types.WORLD_SURFACE, 76, 229), 229), Vec3.ZERO, 0, 0, TeleportTransition.PLAY_PORTAL_SOUND));
+                player.teleport(new TeleportTransition(from, new Vec3(0, from.getHeight(Heightmap.Types.WORLD_SURFACE, 0, 0), 0), Vec3.ZERO, 0, 0, TeleportTransition.PLAY_PORTAL_SOUND));
                 player.sendSystemMessage(Component.literal("The End is currently locked by the server!")
                         .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
             }

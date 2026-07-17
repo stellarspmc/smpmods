@@ -6,6 +6,7 @@
   "mixins": [
     "ChunkMapInvoker",
     "GameProfileAccessor",
+    "MixinServerGamePacketListenerImpl",
     "player.MixinPlayerAdvancementTracker"
   ],
   "injectors": {

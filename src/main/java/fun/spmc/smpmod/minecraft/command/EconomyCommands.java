@@ -8,11 +8,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fun.spmc.smpmod.minecraft.economy.EconomyConfig;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -22,7 +23,6 @@ import java.util.Map;
 
 public class EconomyCommands {
 
-    // --- /balance ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildBalance() {
         return Commands.literal("bal")
                 .then(Commands.argument("player", EntityArgument.player())
@@ -42,7 +42,6 @@ public class EconomyCommands {
         return 1;
     }
 
-    // --- /deposit ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildDeposit() {
         return Commands.literal("deposit")
                 .executes(EconomyCommands::depositHand)
@@ -105,14 +104,77 @@ public class EconomyCommands {
         return -1;
     }
 
-    // --- /withdraw ---
-    public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw() {
+    public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {
         return Commands.literal("withdraw")
                 .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
                         .executes(ctx -> {
                             double amount = DoubleArgumentType.getDouble(ctx, "amount");
                             return withdrawCommand(ctx, amount);
-                        }));
+                        }))
+                .then(Commands.argument("item", ItemArgument.item(buildContext))
+                        // /withdraw emerald -> default count = 1
+                        .executes(ctx -> {
+                            Item item = ItemArgument.getItem(ctx, "item").item().value();
+                            return withdrawItemCommand(ctx, item, 1);
+                        })
+                        // /withdraw emerald 10
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
+                                .executes(ctx -> {
+                                    Item item = ItemArgument.getItem(ctx, "item").item().value();
+                                    int count = IntegerArgumentType.getInteger(ctx, "count");
+                                    return withdrawItemCommand(ctx, item, count);
+                                })));
+    }
+
+    private static int withdrawItemCommand(CommandContext<CommandSourceStack> ctx, Item item, int count) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        EconomySavedData eco = EconomySavedData.get(player.level());
+
+        // Look up the value of the requested item in your economy config
+        Double val = EconomyConfig.getSortedCurrencyValues().get(item);
+
+        // 1. Make sure the item is actually registered as currency
+        if (val == null || val <= 0) {
+            ctx.getSource().sendFailure(Component.literal("ERR: ")
+                    .withStyle(ChatFormatting.DARK_RED)
+                    .append(Component.literal(item.getDescriptionId() + " is not a valid currency item.")
+                            .withStyle(ChatFormatting.RED)));
+            return -1;
+        }
+
+        double totalCost = Math.round((val * count) * 100.0) / 100.0;
+
+        // 2. Try deducting totalCost from economy
+        if (eco.changeBalance(player.getUUID(), -totalCost)) {
+            // Give the exact requested item and quantity
+            giveExactItems(player, item, count);
+
+            ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal("You withdrew ").withStyle(ChatFormatting.GOLD))
+                    .append(Component.literal(count + "x " + item.getDescriptionId()).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(" for ").withStyle(ChatFormatting.GOLD))
+                    .append(Component.literal(String.format("$%.2f", totalCost)).withStyle(ChatFormatting.RED))
+                    .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
+            return 1;
+        } else {
+            ctx.getSource().sendFailure(Component.literal("ERR: Insufficient balance. You need ").withStyle(ChatFormatting.DARK_RED)
+                    .append(Component.literal(String.format("$%.2f", totalCost)).withStyle(ChatFormatting.GOLD))
+                    .append(Component.literal(" to withdraw " + count + "x " + item.getDescriptionId() + ".").withStyle(ChatFormatting.DARK_RED)));
+            return -1;
+        }
+    }
+
+    private static void giveExactItems(ServerPlayer player, Item item, int totalCount) {
+        int maxStack = item.getDefaultMaxStackSize();
+        while (totalCount > 0) {
+            int stackSize = Math.min(totalCount, maxStack);
+            ItemStack stack = new ItemStack(item, stackSize);
+            if (!player.getInventory().add(stack)) {
+                ItemEntity itemEntity = player.drop(stack, false);
+                if (itemEntity != null) itemEntity.setNoPickUpDelay();
+            }
+            totalCount -= stackSize;
+        }
     }
 
     private static int withdrawCommand(CommandContext<CommandSourceStack> ctx, double amount) throws CommandSyntaxException {
@@ -167,7 +229,6 @@ public class EconomyCommands {
         return amount;
     }
 
-    // --- /send ---
     public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
         return Commands.literal("send")
                 .then(Commands.argument("player", EntityArgument.player())
@@ -200,30 +261,5 @@ public class EconomyCommands {
                                         return -1;
                                     }
                                 })));
-    }
-
-    // --- /top ---
-    public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
-        return Commands.literal("top")
-                .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "command.top"), true))
-                .executes(ctx -> topCommand(ctx, 1))
-                .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                        .executes(ctx -> {
-                            int page = IntegerArgumentType.getInteger(ctx, "page");
-                            return topCommand(ctx, page);
-                        }));
-    }
-
-    private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) throws CommandSyntaxException {
-        ServerPlayer sender = ctx.getSource().getPlayerOrException();
-        EconomySavedData eco = EconomySavedData.get(sender.level());
-
-        String output = eco.top(page);
-
-        ctx.getSource().sendSuccess(() -> Component.literal(" ----").withStyle(ChatFormatting.YELLOW)
-                .append(" Economy Top ").withStyle(ChatFormatting.GOLD)
-                .append("----").withStyle(ChatFormatting.YELLOW)
-                .append("\n" + output), false);
-        return 1;
     }
 }
