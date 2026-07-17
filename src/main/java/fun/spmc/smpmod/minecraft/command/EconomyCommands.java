@@ -62,7 +62,7 @@ public class EconomyCommands {
         EconomySavedData eco = EconomySavedData.get(player.level());
 
         if (eco.changeBalance(player.getUUID(), totalValue)) {
-            player.getInventory().removeFromSelected(true); // Remove hand stack
+            player.getInventory().removeFromSelected(true);
             ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Added ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(String.format("$%.2f", totalValue)).withStyle(ChatFormatting.RED))
@@ -112,12 +112,10 @@ public class EconomyCommands {
                             return withdrawCommand(ctx, amount);
                         }))
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
-                        // /withdraw emerald -> default count = 1
                         .executes(ctx -> {
                             Item item = ItemArgument.getItem(ctx, "item").item().value();
                             return withdrawItemCommand(ctx, item, 1);
                         })
-                        // /withdraw emerald 10
                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
                                 .executes(ctx -> {
                                     Item item = ItemArgument.getItem(ctx, "item").item().value();
@@ -129,11 +127,8 @@ public class EconomyCommands {
     private static int withdrawItemCommand(CommandContext<CommandSourceStack> ctx, Item item, int count) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         EconomySavedData eco = EconomySavedData.get(player.level());
-
-        // Look up the value of the requested item in your economy config
         Double val = EconomyConfig.getSortedCurrencyValues().get(item);
 
-        // 1. Make sure the item is actually registered as currency
         if (val == null || val <= 0) {
             ctx.getSource().sendFailure(Component.literal("✖: ")
                     .withStyle(ChatFormatting.DARK_RED)
@@ -144,9 +139,7 @@ public class EconomyCommands {
 
         double totalCost = Math.round((val * count) * 100.0) / 100.0;
 
-        // 2. Try deducting totalCost from economy
         if (eco.changeBalance(player.getUUID(), -totalCost)) {
-            // Give the exact requested item and quantity
             giveExactItems(player, item, count);
 
             ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)

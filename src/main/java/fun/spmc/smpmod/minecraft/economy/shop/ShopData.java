@@ -85,12 +85,16 @@ public class ShopData {
 
     public Component getFormattedInfoComponent(ServerLevel level) {
         int available = getAvailableStock(level);
-        return Component.literal("--- SHOP INFO ---").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("\nSelling: ").withStyle(ChatFormatting.GRAY))
+
+        return Component.literal("\uD83D\uDED2 ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal("shop details\n").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal("• selling ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(stack + "x ").withStyle(ChatFormatting.AQUA))
-                .append(itemSold.getHoverName())
-                .append(Component.literal(String.format("\nPrice: $%.2f", price)).withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(String.format("\nAvailable Stock: %d purchases", available)).withStyle(ChatFormatting.YELLOW));
+                .append(itemSold.getHoverName().copy().withStyle(ChatFormatting.AQUA))
+                .append(Component.literal("\n• price ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(String.format("$%.2f", price)).withStyle(ChatFormatting.GOLD))
+                .append(Component.literal("\n• stock ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(available + " batches").withStyle(ChatFormatting.GREEN));
     }
 
     public void processPurchase(ServerPlayer buyer) {
@@ -116,7 +120,7 @@ public class ShopData {
             ItemStack itemsToGive = itemSold.copyWithCount(stack);
             if (!buyer.getInventory().add(itemsToGive)) buyer.drop(itemsToGive, false);
 
-            buyer.sendSystemMessage(Component.literal("SHOP: ").withStyle(ChatFormatting.GREEN)
+            buyer.sendSystemMessage(Component.literal("🏢: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Bought ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(stack + "x " + itemSold.getHoverName().getString()).withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(String.format(" for $%.2f!", price)).withStyle(ChatFormatting.GOLD)));

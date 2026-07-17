@@ -56,7 +56,6 @@ public class MixinServerGamePacketListenerImpl {
             return;
         }
 
-        // 3. Check held item
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
             player.sendSystemMessage(Component.literal("✖: Hold the item you want to sell in your main hand!").withStyle(ChatFormatting.RED));
@@ -66,6 +65,6 @@ public class MixinServerGamePacketListenerImpl {
         ShopManager.createShop(player.getUUID(), barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
 
-        player.sendSystemMessage(Component.literal("SHOP: Shop created successfully!").withStyle(ChatFormatting.GREEN));
+        player.sendSystemMessage(Component.literal("🏢: Shop created successfully!").withStyle(ChatFormatting.GREEN));
     }
 }

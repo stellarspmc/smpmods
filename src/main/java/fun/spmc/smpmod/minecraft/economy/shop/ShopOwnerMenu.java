@@ -33,9 +33,6 @@ public class ShopOwnerMenu extends ChestMenu {
         refreshGui();
     }
 
-    /**
-     * Re-populates the GUI slots with buttons and current shop information.
-     */
     public void refreshGui() {
         ItemStack filler = new ItemStack(Items.STAINED_GLASS_PANE.gray());
         filler.set(DataComponents.CUSTOM_NAME, Component.literal(" "));
@@ -80,7 +77,6 @@ public class ShopOwnerMenu extends ChestMenu {
 
     @Override
     public void clicked(int slotId, int button, @NonNull ContainerInput input, @NonNull Player player) {
-        // Intercept clicks on the top 27 GUI slots (0 to 26)
         if (slotId >= 0 && slotId < 27 && player instanceof ServerPlayer serverPlayer) {
             handleButtonClick(slotId, button, serverPlayer);
             return;

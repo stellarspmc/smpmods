@@ -49,7 +49,6 @@ public class EconomySavedData extends SavedData {
         return overworld.getDataStorage().computeIfAbsent(TYPE);
     }
 
-    // Call this whenever a player interacts or joins
     public void registerPlayer(UUID uuid, String name) {
         if (!balances.containsKey(uuid)) {
             balances.put(uuid, 0d);
@@ -59,7 +58,6 @@ public class EconomySavedData extends SavedData {
     }
 
     public String resolveName(UUID uuid) {
-        // Look up the name from our custom saved data map
         return names.getOrDefault(uuid, uuid.toString().substring(0, 8));
     }
 
@@ -84,20 +82,20 @@ public class EconomySavedData extends SavedData {
         return false;
     }
 
-    // Updated Leaderboard: No MinecraftServer or UserCache parameter needed!
     public String top(int page) {
         List<Map.Entry<UUID, Double>> sorted = getSortedBalances();
+        List<Map.Entry<UUID, Double>> filtered = sorted.stream().filter(entry -> !Objects.equals(resolveName(entry.getKey()), "spmc")).toList();
         StringBuilder rankings = new StringBuilder();
-
         int pageSize = 10;
         int startIndex = (page - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, sorted.size());
+        int endIndex = Math.min(startIndex + pageSize, filtered.size());
 
+        if (startIndex >= filtered.size() || startIndex < 0) return "*No data available for this page.*";
         for (int i = startIndex; i < endIndex; i++) {
-            Map.Entry<UUID, Double> entry = sorted.get(i);
+            Map.Entry<UUID, Double> entry = filtered.get(i);
             String name = resolveName(entry.getKey());
-            if (Objects.equals(name, "spmc")) continue;
-            rankings.append(i + 1).append(". ").append(name).append(": $").append(entry.getValue()).append("\n");
+
+            rankings.append(String.format("`#%02d` **%s** • $%,.2f\n", i + 1, name, entry.getValue()));
         }
 
         return rankings.toString();

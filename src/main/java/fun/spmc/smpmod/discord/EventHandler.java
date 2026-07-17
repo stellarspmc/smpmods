@@ -2,6 +2,8 @@ package fun.spmc.smpmod.discord;
 
 import fun.spmc.smpmod.discord.utils.MarkdownParser;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -41,29 +43,40 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("players")) {
-            event.reply(minecraftServer.getPlayerCount() + " Players, Players inside: `" +
-                    minecraftServer.getPlayerList().getPlayers().stream()
-                            .map(player -> player.getGameProfile().name())
-                            .collect(Collectors.joining(", ")) + "`").queue();
+            int onlineCount = minecraftServer.getPlayerCount();
+            String playerList = minecraftServer.getPlayerList().getPlayers().stream()
+                    .map(player -> player.getGameProfile().name())
+                    .collect(Collectors.joining(", "));
+
+            if (playerList.isEmpty()) {
+                playerList = "*No players online right now.*";
+            }
+
+            MessageEmbed embed = new EmbedBuilder()
+                    .setTitle("🟢 Server Status")
+                    .setColor(0x2F3136) // Sleek dark gray palette
+                    .setDescription(String.format("**%d** players currently exploring.", onlineCount))
+                    .addField("Online List", playerList, false)
+                    .build();
+
+            event.replyEmbeds(embed).queue();
 
         } else if (event.getName().equals("top")) {
-            // 1. Get optional page argument (defaults to 1)
             OptionMapping pageOption = event.getOption("page");
             int page = pageOption != null ? pageOption.getAsInt() : 1;
 
-            // 2. Fetch economy data using the overworld level reference
             ServerLevel overworld = minecraftServer.overworld();
             EconomySavedData eco = EconomySavedData.get(overworld);
+            String leaderboardData = eco.top(page);
 
-            String output = eco.top(page);
+            MessageEmbed embed = new EmbedBuilder()
+                    .setTitle("🏆 Wealth Leaderboard")
+                    .setColor(0xDFC66F) // Classic gold emblem color
+                    .setDescription(leaderboardData)
+                    .setFooter(String.format("Page %d", page), null)
+                    .build();
 
-            // 3. Send formatted as a Discord codeblock so alignment looks clean
-            String formattedMessage = "```text\n" +
-                    " ---- Economy Top (Page " + page + ") ----\n" +
-                    output + "\n" +
-                    "```";
-
-            event.reply(formattedMessage).queue();
+            event.replyEmbeds(embed).queue();
         }
     }
 }
