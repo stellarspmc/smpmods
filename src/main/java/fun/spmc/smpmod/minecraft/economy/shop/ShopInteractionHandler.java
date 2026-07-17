@@ -57,7 +57,7 @@ public class ShopInteractionHandler {
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
                 if (!shop.isOwner(serverPlayer)) {
                     serverPlayer.sendSystemMessage(
-                            Component.literal("ERR: You cannot open someone else's shop barrel!")
+                            Component.literal("✖: You cannot open someone else's shop barrel!")
                                     .withStyle(ChatFormatting.RED)
                     );
                     return InteractionResult.FAIL;
@@ -74,7 +74,7 @@ public class ShopInteractionHandler {
             // If the block is a shop barrel and the player is NOT the owner
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
                 serverPlayer.sendSystemMessage(
-                        Component.literal("ERR: You cannot break someone else's shop!")
+                        Component.literal("✖: You cannot break someone else's shop!")
                                 .withStyle(ChatFormatting.RED)
                 );
                 return false;

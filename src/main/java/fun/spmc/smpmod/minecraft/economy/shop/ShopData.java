@@ -98,14 +98,14 @@ public class ShopData {
 
         int availableBatches = getAvailableStock(level);
         if (availableBatches < 1) {
-            buyer.sendSystemMessage(Component.literal("ERR: This shop is out of stock!").withStyle(ChatFormatting.RED));
+            buyer.sendSystemMessage(Component.literal("✖: This shop is out of stock!").withStyle(ChatFormatting.RED));
             return;
         }
 
         EconomySavedData eco = EconomySavedData.get(level);
 
         if (eco.getBalance(buyer.getUUID()) < price) {
-            buyer.sendSystemMessage(Component.literal(String.format("ERR: Insufficient funds! You need $%.2f.", price)).withStyle(ChatFormatting.RED));
+            buyer.sendSystemMessage(Component.literal(String.format("✖: Insufficient funds! You need $%.2f.", price)).withStyle(ChatFormatting.RED));
             return;
         }
 

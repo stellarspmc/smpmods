@@ -52,14 +52,14 @@ public class MixinServerGamePacketListenerImpl {
             price = Double.parseDouble(priceText.replace("$", "").trim());
             if (price < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            player.sendSystemMessage(Component.literal("ERR: Invalid price format on line 2! Use e.g. $10.50").withStyle(ChatFormatting.RED));
+            player.sendSystemMessage(Component.literal("✖: Invalid price format on line 2! Use e.g. $10.50").withStyle(ChatFormatting.RED));
             return;
         }
 
         // 3. Check held item
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
-            player.sendSystemMessage(Component.literal("ERR: Hold the item you want to sell in your main hand!").withStyle(ChatFormatting.RED));
+            player.sendSystemMessage(Component.literal("✖: Hold the item you want to sell in your main hand!").withStyle(ChatFormatting.RED));
             return;
         }
 

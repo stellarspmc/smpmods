@@ -35,7 +35,7 @@ public class EconomyCommands {
         double bal = eco.getBalance(target.getUUID());
         boolean isSelf = ctx.getSource().getEntity() == target;
 
-        ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal((isSelf ? "You" : target.getName().getString()) + " have ").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(String.format("$%.2f", bal)).withStyle(ChatFormatting.RED))
                 .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
@@ -54,7 +54,7 @@ public class EconomyCommands {
         double itemValue = EconomyConfig.getItemValue(hand.getItem());
 
         if (hand.isEmpty() || itemValue <= 0) {
-            ctx.getSource().sendFailure(Component.literal("ERR: Hold a valid currency item or use /deposit all.").withStyle(ChatFormatting.DARK_RED));
+            ctx.getSource().sendFailure(Component.literal("✖: Hold a valid currency item or use /deposit all.").withStyle(ChatFormatting.DARK_RED));
             return -1;
         }
 
@@ -63,14 +63,14 @@ public class EconomyCommands {
 
         if (eco.changeBalance(player.getUUID(), totalValue)) {
             player.getInventory().removeFromSelected(true); // Remove hand stack
-            ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Added ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(String.format("$%.2f", totalValue)).withStyle(ChatFormatting.RED))
                     .append(Component.literal(" to your account.").withStyle(ChatFormatting.GOLD)), false);
             return 1;
         }
 
-        ctx.getSource().sendFailure(Component.literal("ERR: Max balance reached.").withStyle(ChatFormatting.DARK_RED));
+        ctx.getSource().sendFailure(Component.literal("✖: Max balance reached.").withStyle(ChatFormatting.DARK_RED));
         return -1;
     }
 
@@ -93,14 +93,14 @@ public class EconomyCommands {
         if (totalDeposited > 0) {
             eco.changeBalance(player.getUUID(), totalDeposited);
             double finalTotal = totalDeposited;
-            ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Deposited ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(String.format("$%.2f", finalTotal)).withStyle(ChatFormatting.RED))
                     .append(Component.literal(" to your account.").withStyle(ChatFormatting.GOLD)), false);
             return 1;
         }
 
-        ctx.getSource().sendFailure(Component.literal("ERR: No valid currency items found in inventory.").withStyle(ChatFormatting.DARK_RED));
+        ctx.getSource().sendFailure(Component.literal("✖: No valid currency items found in inventory.").withStyle(ChatFormatting.DARK_RED));
         return -1;
     }
 
@@ -135,7 +135,7 @@ public class EconomyCommands {
 
         // 1. Make sure the item is actually registered as currency
         if (val == null || val <= 0) {
-            ctx.getSource().sendFailure(Component.literal("ERR: ")
+            ctx.getSource().sendFailure(Component.literal("✖: ")
                     .withStyle(ChatFormatting.DARK_RED)
                     .append(Component.literal(item.getDescriptionId() + " is not a valid currency item.")
                             .withStyle(ChatFormatting.RED)));
@@ -149,7 +149,7 @@ public class EconomyCommands {
             // Give the exact requested item and quantity
             giveExactItems(player, item, count);
 
-            ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("You withdrew ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(count + "x " + item.getDescriptionId()).withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(" for ").withStyle(ChatFormatting.GOLD))
@@ -157,7 +157,7 @@ public class EconomyCommands {
                     .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
             return 1;
         } else {
-            ctx.getSource().sendFailure(Component.literal("ERR: Insufficient balance. You need ").withStyle(ChatFormatting.DARK_RED)
+            ctx.getSource().sendFailure(Component.literal("✖: Insufficient balance. You need ").withStyle(ChatFormatting.DARK_RED)
                     .append(Component.literal(String.format("$%.2f", totalCost)).withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(" to withdraw " + count + "x " + item.getDescriptionId() + ".").withStyle(ChatFormatting.DARK_RED)));
             return -1;
@@ -189,13 +189,13 @@ public class EconomyCommands {
             if (remainingUnconverted > 0) eco.changeBalance(player.getUUID(), remainingUnconverted);
 
             double withdrawnAmount = amount - remainingUnconverted;
-            ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("You withdrew ").withStyle(ChatFormatting.GOLD))
                     .append(Component.literal(String.format("$%.2f", withdrawnAmount)).withStyle(ChatFormatting.RED))
                     .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
             return 1;
         } else {
-            ctx.getSource().sendFailure(Component.literal("ERR: Insufficient balance to withdraw ").withStyle(ChatFormatting.DARK_RED)
+            ctx.getSource().sendFailure(Component.literal("✖: Insufficient balance to withdraw ").withStyle(ChatFormatting.DARK_RED)
                     .append(Component.literal(String.format("$%.2f", amount)).withStyle(ChatFormatting.GOLD)));
             return -1;
         }
@@ -244,20 +244,20 @@ public class EconomyCommands {
                                         eco.changeBalance(target.getUUID(), amount);
 
                                         double finalAmount = amount;
-                                        target.sendSystemMessage(Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+                                        target.sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                                                 .append(Component.literal("You received ").withStyle(ChatFormatting.GOLD))
                                                 .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.RED))
                                                 .append(Component.literal(" from ").withStyle(ChatFormatting.GOLD))
                                                 .append(Component.literal(sender.getName().getString()).withStyle(ChatFormatting.RED)));
 
-                                        ctx.getSource().sendSuccess(() -> Component.literal("ECO: ").withStyle(ChatFormatting.GREEN)
+                                        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                                                 .append(Component.literal("You sent ").withStyle(ChatFormatting.GOLD))
                                                 .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.RED))
                                                 .append(Component.literal(" to ").withStyle(ChatFormatting.GOLD))
                                                 .append(Component.literal(target.getName().getString()).withStyle(ChatFormatting.RED)), false);
                                         return 1;
                                     } else {
-                                        ctx.getSource().sendFailure(Component.literal("ERR: Insufficient funds.").withStyle(ChatFormatting.DARK_RED));
+                                        ctx.getSource().sendFailure(Component.literal("✖: Insufficient funds.").withStyle(ChatFormatting.DARK_RED));
                                         return -1;
                                     }
                                 })));
