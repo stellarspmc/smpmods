@@ -20,7 +20,7 @@ public abstract class MixinPlayerAdvancementTracker {
     @Shadow public abstract AdvancementProgress getOrStartProgress(AdvancementHolder advancement);
 
     @Inject(method = "award", at = @At(value = "TAIL"))
-    private void addMessage(AdvancementHolder holder, String criterion, CallbackInfoReturnable<Boolean> cir) {
+    private void smpmods$addMessage(AdvancementHolder holder, String criterion, CallbackInfoReturnable<Boolean> cir) {
         if (holder.value().display().isEmpty()) return;
         if(!this.getOrStartProgress(holder).isDone()) return;
         String advancementName = holder.value().display().get().getTitle().getString();

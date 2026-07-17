@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.minecraft.mixin;
+package fun.spmc.smpmod.minecraft.mixin.shop;
 
 import fun.spmc.smpmod.minecraft.economy.shop.ShopManager;
 import net.minecraft.ChatFormatting;
@@ -28,7 +28,7 @@ public class MixinServerGamePacketListenerImpl {
     public ServerPlayer player;
 
     @Inject(method = "updateSignText", at = @At("TAIL"))
-    private void onSignEditFinished(ServerboundSignUpdatePacket packet, List<FilteredText> lines, CallbackInfo ci) {
+    private void smpmods$createShop(ServerboundSignUpdatePacket packet, List<FilteredText> lines, CallbackInfo ci) {
         ServerLevel serverLevel = this.player.level();
         BlockPos signPos = packet.getPos();
 
@@ -39,12 +39,12 @@ public class MixinServerGamePacketListenerImpl {
         String line2 = signText.getMessage(1, false).getString().trim();
 
         if (line1.equalsIgnoreCase("[Shop]")) {
-            handleShopCreation(this.player, serverLevel, signPos, line2);
+            smpmods$handleCreation(this.player, serverLevel, signPos, line2);
         }
     }
 
     @Unique
-    private void handleShopCreation(ServerPlayer player, ServerLevel level, BlockPos signPos, String priceText) {
+    private void smpmods$handleCreation(ServerPlayer player, ServerLevel level, BlockPos signPos, String priceText) {
         BlockPos barrelPos = signPos.below();
 
         double price;

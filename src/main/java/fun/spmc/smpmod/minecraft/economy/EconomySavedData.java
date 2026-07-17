@@ -96,6 +96,7 @@ public class EconomySavedData extends SavedData {
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<UUID, Double> entry = sorted.get(i);
             String name = resolveName(entry.getKey());
+            if (Objects.equals(name, "spmc")) continue;
             rankings.append(i + 1).append(". ").append(name).append(": $").append(entry.getValue()).append("\n");
         }
 

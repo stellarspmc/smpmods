@@ -1,7 +1,12 @@
 package fun.spmc.smpmod.minecraft.economy.shop;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -10,7 +15,7 @@ import net.minecraft.world.entity.Interaction;
 
 public class ShopInteractionHandler {
     public static void register() {
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        UseEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {
@@ -26,8 +31,7 @@ public class ShopInteractionHandler {
             return InteractionResult.PASS;
         });
 
-        // 2. LEFT-CLICK / PUNCH (View Info or Destroy Shop)
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        AttackEntityCallback.EVENT.register((player, world, _, entity, _) -> {
             if (world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {
@@ -41,6 +45,41 @@ public class ShopInteractionHandler {
                 }
             }
             return InteractionResult.PASS;
+        });
+
+        UseBlockCallback.EVENT.register((player, world, _, hitResult) -> {
+            if (world.isClientSide()) return InteractionResult.PASS;
+
+            BlockPos pos = hitResult.getBlockPos();
+            ShopData shop = ShopManager.getByPos(pos);
+
+            // If the block is a shop barrel and the player is NOT the owner
+            if (shop != null && player instanceof ServerPlayer serverPlayer) {
+                if (!shop.isOwner(serverPlayer)) {
+                    serverPlayer.sendSystemMessage(
+                            Component.literal("ERR: You cannot open someone else's shop barrel!")
+                                    .withStyle(ChatFormatting.RED)
+                    );
+                    return InteractionResult.FAIL;
+                }
+            }
+            return InteractionResult.PASS;
+        });
+
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, _, _) -> {
+            if (world.isClientSide()) return true;
+
+            ShopData shop = ShopManager.getByPos(pos);
+
+            // If the block is a shop barrel and the player is NOT the owner
+            if (shop != null && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(
+                        Component.literal("ERR: You cannot break someone else's shop!")
+                                .withStyle(ChatFormatting.RED)
+                );
+                return false;
+            }
+            return true;
         });
     }
 }

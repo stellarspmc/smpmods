@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.minecraft.economy.shop;
 
+import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.Interaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,9 +33,7 @@ public class ShopManager extends SavedData {
                 shopsByInteractionUuid.clear();
                 shopsByBarrelPos.clear();
                 shopsById.clear();
-                for (ShopData shop : shops) {
-                    manager.registerShop(shop);
-                }
+                for (ShopData shop : shops) manager.registerShop(shop);
                 return manager;
             },
             _ -> List.copyOf(shopsById.values())
@@ -62,7 +62,7 @@ public class ShopManager extends SavedData {
         return shopsByBarrelPos.get(pos);
     }
 
-    public static ShopData createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
+    public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 1.0;
         double z = pos.getZ() + 0.5;
@@ -71,6 +71,7 @@ public class ShopManager extends SavedData {
         if (itemDisplay != null) {
             itemDisplay.setPos(x, y + 0.35, z);
             itemDisplay.setItemStack(sellItem.copy());
+            itemDisplay.setTransformation(new Transformation(new Vector3f(0f), null, new Vector3f(0.5f),null));
             level.addFreshEntity(itemDisplay);
         }
 
@@ -91,7 +92,7 @@ public class ShopManager extends SavedData {
             level.addFreshEntity(interaction);
         }
 
-        if (itemDisplay == null || textDisplay == null || interaction == null) return null;
+        if (itemDisplay == null || textDisplay == null || interaction == null) return;
 
         ShopData data = new ShopData(
                 UUID.randomUUID(),
@@ -108,8 +109,6 @@ public class ShopManager extends SavedData {
         ShopManager manager = get(level);
         manager.registerShop(data);
         manager.setDirty();
-
-        return data;
     }
 
     public static void removeShop(ShopData shop, ServerLevel level) {
