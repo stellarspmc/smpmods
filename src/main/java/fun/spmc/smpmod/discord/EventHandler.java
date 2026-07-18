@@ -54,7 +54,7 @@ public class EventHandler extends ListenerAdapter {
 
             MessageEmbed embed = new EmbedBuilder()
                     .setTitle("🟢 Server Status")
-                    .setColor(0x2F3136) // Sleek dark gray palette
+                    .setColor(0x2F3136)
                     .setDescription(String.format("**%d** players currently exploring.", onlineCount))
                     .addField("Online List", playerList, false)
                     .build();
@@ -71,7 +71,7 @@ public class EventHandler extends ListenerAdapter {
 
             MessageEmbed embed = new EmbedBuilder()
                     .setTitle("🏆 Wealth Leaderboard")
-                    .setColor(0xDFC66F) // Classic gold emblem color
+                    .setColor(0xDFC66F)
                     .setDescription(leaderboardData)
                     .setFooter(String.format("Page %d", page), null)
                     .build();

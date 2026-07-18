@@ -6,7 +6,6 @@ import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -177,7 +176,7 @@ public class ShopData {
         Entity entity = level.getEntity(textDisplayUuid);
         if (entity instanceof Display.TextDisplay textDisplay) {
             int stockBatches = getAvailableStock(level);
-            String label = String.format("%dx %s — $%.2f | Stock: %d",
+            String label = String.format("%dx %s — $%.2f\nStock: %d",
                     stack, itemSold.getHoverName().getString(), price, stockBatches);
             textDisplay.setText(Component.literal(label));
         }

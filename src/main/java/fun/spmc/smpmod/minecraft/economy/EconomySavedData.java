@@ -93,12 +93,17 @@ public class EconomySavedData extends SavedData {
         if (startIndex >= filtered.size() || startIndex < 0) return "*No data available for this page.*";
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<UUID, Double> entry = filtered.get(i);
-            String name = resolveName(entry.getKey());
+            String name = escapeMarkdown(resolveName(entry.getKey()));
 
             rankings.append(String.format("`#%02d` **%s** • $%,.2f\n", i + 1, name, entry.getValue()));
         }
 
         return rankings.toString();
+    }
+
+    private static String escapeMarkdown(String username) {
+        if (username == null) return "";
+        return username.replaceAll("([_`~*>|])", "\\\\$1");
     }
 
     private List<Map.Entry<UUID, Double>> getSortedBalances() {
