@@ -48,6 +48,11 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import okhttp3.*;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -62,6 +67,7 @@ public class SMPMod implements DedicatedServerModInitializer {
     public static JDA bot;
     public static TextChannel messageChannel;
     public static MinecraftServer minecraftServer;
+    private int tickCounter = 0;
 
     @Override
     public void onInitializeServer() {
@@ -125,11 +131,33 @@ public class SMPMod implements DedicatedServerModInitializer {
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter++;
+
+            if (tickCounter % 1200 != 0) return;
+            Scoreboard scoreboard = server.getScoreboard();
+
+            Objective objective = scoreboard.getObjective("play_time");
+            if (objective == null) {
+                objective = scoreboard.addObjective(
+                        "play_time",
+                        ObjectiveCriteria.DUMMY,
+                        Component.literal("hours").withStyle(ChatFormatting.GOLD),
+                        ObjectiveCriteria.RenderType.INTEGER,
+                        false,
+                        null
+                );
+                scoreboard.setDisplayObjective(DisplaySlot.BELOW_NAME, objective);
+            }
+
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0 && playTime % 2400 == 0) {
+                if (playTime > 0 && playTime % 72000 == 0) {
                     EconomySavedData eco = EconomySavedData.get(player.level());
-                    eco.changeBalance(player.getUUID(), 1);
+                    eco.changeBalance(player.getUUID(), 30);
+
+                    int totalHours = playTime / 72000;
+                    ScoreAccess scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective);
+                    scoreAccess.set(totalHours);
                 }
             }
         });

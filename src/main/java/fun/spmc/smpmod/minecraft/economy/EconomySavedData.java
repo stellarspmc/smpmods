@@ -74,7 +74,7 @@ public class EconomySavedData extends SavedData {
 
     public boolean changeBalance(UUID uuid, double money) {
         double current = getBalance(uuid);
-        if (current + money >= 0 && (long) current + money < Integer.MAX_VALUE) {
+        if (current + money >= 0 && current + money < Double.MAX_VALUE) {
             balances.put(uuid, current + money);
             this.setDirty();
             return true;

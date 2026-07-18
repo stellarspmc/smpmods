@@ -11,15 +11,19 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.Map;
+import java.util.Set;
 
 public class EconomyCommands {
 
@@ -48,13 +52,31 @@ public class EconomyCommands {
                 .then(Commands.literal("all").executes(EconomyCommands::depositAll));
     }
 
+    private static double getDepositValue(Item item) {
+        // 1. Check if the item is a compressed block variant
+        Item baseItem = switch (item.getDescriptionId()) {
+            case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
+            case "block.minecraft.diamond_block"   -> Items.DIAMOND;
+            case "block.minecraft.gold_block"      -> Items.GOLD_INGOT;
+            case "block.minecraft.emerald_block"   -> Items.EMERALD;
+            case "block.minecraft.lapis_block"     -> Items.LAPIS_LAZULI;
+            case "block.minecraft.iron_block"      -> Items.IRON_INGOT;
+            case "block.minecraft.copper_block"    -> Items.COPPER_INGOT;
+            default -> null; // Not a currency block
+        };
+
+        if (baseItem != null) return (EconomyConfig.getItemValue(baseItem) * 9) * 0.93;
+        return EconomyConfig.getItemValue(item);
+    }
+
     private static int depositHand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         ItemStack hand = player.getInventory().getSelectedItem();
-        double itemValue = EconomyConfig.getItemValue(hand.getItem());
+        double itemValue = getDepositValue(hand.getItem());
 
         if (hand.isEmpty() || itemValue <= 0) {
-            ctx.getSource().sendFailure(Component.literal("✖: Hold a valid currency item or use /deposit all.").withStyle(ChatFormatting.DARK_RED));
+            ctx.getSource().sendFailure(Component.literal("✖: Hold a valid currency item or use /deposit all.")
+                    .withStyle(ChatFormatting.RED));
             return -1;
         }
 
@@ -63,14 +85,17 @@ public class EconomyCommands {
 
         if (eco.changeBalance(player.getUUID(), totalValue)) {
             player.getInventory().removeFromSelected(true);
-            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("Added ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(String.format("$%.2f", totalValue)).withStyle(ChatFormatting.RED))
-                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GOLD)), false);
+
+            ctx.getSource().sendSuccess(() -> Component.literal("\uD83D\uDCB0: ")
+                    .withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal("Deposited ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(String.format("$%.2f", totalValue)).withStyle(ChatFormatting.GOLD))
+                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GRAY)), false);
             return 1;
         }
 
-        ctx.getSource().sendFailure(Component.literal("✖: Max balance reached.").withStyle(ChatFormatting.DARK_RED));
+        ctx.getSource().sendFailure(Component.literal("✖: Max balance reached.")
+                .withStyle(ChatFormatting.RED));
         return -1;
     }
 
@@ -81,7 +106,7 @@ public class EconomyCommands {
 
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
-            double itemValue = EconomyConfig.getItemValue(stack.getItem());
+            double itemValue = getDepositValue(stack.getItem());
 
             if (itemValue > 0 && !stack.isEmpty()) {
                 double stackValue = stack.getCount() * itemValue;
@@ -93,16 +118,30 @@ public class EconomyCommands {
         if (totalDeposited > 0) {
             eco.changeBalance(player.getUUID(), totalDeposited);
             double finalTotal = totalDeposited;
-            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("Deposited ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(String.format("$%.2f", finalTotal)).withStyle(ChatFormatting.RED))
-                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GOLD)), false);
+
+            ctx.getSource().sendSuccess(() -> Component.literal("\uD83D\uDCB0: ")
+                    .withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal("Deposited ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(String.format("$%.2f", finalTotal)).withStyle(ChatFormatting.GOLD))
+                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GRAY)), false);
             return 1;
         }
 
-        ctx.getSource().sendFailure(Component.literal("✖: No valid currency items found in inventory.").withStyle(ChatFormatting.DARK_RED));
+        ctx.getSource().sendFailure(Component.literal("✖: No valid currency items found in inventory.")
+                .withStyle(ChatFormatting.RED));
         return -1;
     }
+
+    private static final Set<Item> WITHDRAWABLE_CURRENCIES = Set.of(
+            Items.NETHER_STAR,
+            Items.NETHERITE_INGOT,
+            Items.DIAMOND,
+            Items.GOLD_INGOT,
+            Items.EMERALD,
+            Items.LAPIS_LAZULI,
+            Items.IRON_INGOT,
+            Items.COPPER_INGOT
+    );
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {
         return Commands.literal("withdraw")
@@ -112,14 +151,28 @@ public class EconomyCommands {
                             return withdrawCommand(ctx, amount);
                         }))
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
+                                WITHDRAWABLE_CURRENCIES.stream().map(BuiltInRegistries.ITEM::getKey),
+                                builder
+                        ))
                         .executes(ctx -> {
                             Item item = ItemArgument.getItem(ctx, "item").item().value();
+
+                            if (!WITHDRAWABLE_CURRENCIES.contains(item)) {
+                                ctx.getSource().sendFailure(Component.literal("✖: You can only withdraw the designated items.").withStyle(ChatFormatting.RED));
+                                return 0;
+                            }
                             return withdrawItemCommand(ctx, item, 1);
                         })
                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
                                 .executes(ctx -> {
                                     Item item = ItemArgument.getItem(ctx, "item").item().value();
                                     int count = IntegerArgumentType.getInteger(ctx, "count");
+
+                                    if (!WITHDRAWABLE_CURRENCIES.contains(item)) {
+                                        ctx.getSource().sendFailure(Component.literal("✖: You can only withdraw the designated items.").withStyle(ChatFormatting.RED));
+                                        return 0;
+                                    }
                                     return withdrawItemCommand(ctx, item, count);
                                 })));
     }
