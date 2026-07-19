@@ -45,7 +45,7 @@ public class EventHandler extends ListenerAdapter {
         if (event.getName().equals("players")) {
             int onlineCount = minecraftServer.getPlayerCount();
             String playerList = minecraftServer.getPlayerList().getPlayers().stream()
-                    .map(player -> player.getGameProfile().name())
+                    .map(player -> MarkdownParser.escapeMarkdown(player.getGameProfile().name()))
                     .collect(Collectors.joining(", "));
 
             if (playerList.isEmpty()) {

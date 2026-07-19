@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.minecraft.chunk.ChunkLoaderHandler;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import fun.spmc.smpmod.minecraft.economy.shop.ShopInteractionHandler;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
@@ -29,7 +30,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -42,12 +42,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.portal.TeleportTransition;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ScoreAccess;
@@ -105,6 +101,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         });
 
         ShopInteractionHandler.register();
+        ChunkLoaderHandler.register();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
@@ -165,13 +162,6 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register((_) -> bot.shutdownNow());
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
         ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
-        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, from, to) -> {
-            if (to.dimension() == ServerLevel.END) {
-                player.teleport(new TeleportTransition(from, new Vec3(0, from.getHeight(Heightmap.Types.WORLD_SURFACE, 0, 0), 0), Vec3.ZERO, 0, 0, TeleportTransition.PLAY_PORTAL_SOUND));
-                player.sendSystemMessage(Component.literal("The End is currently locked by the server!")
-                        .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-            }
-        });
     }
 
     public static void sendWebhookMessage(String message, String playerName, String playerUUID) {

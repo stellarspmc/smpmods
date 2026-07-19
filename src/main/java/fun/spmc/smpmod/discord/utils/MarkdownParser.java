@@ -64,4 +64,9 @@ public class MarkdownParser {
 
 		return matches;
 	}
+
+	public static String escapeMarkdown(String username) {
+		if (username == null) return "";
+		return username.replaceAll("([_`~*>|])", "\\\\$1");
+	}
 }

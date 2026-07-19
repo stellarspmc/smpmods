@@ -51,7 +51,6 @@ public class TreasureEvents {
         else if (roll < epicThreshold) return "epic";
         else if (roll < rareThreshold) return "rare";
         else if (roll < commonThreshold) return "common";
-
         return null;
     }
 

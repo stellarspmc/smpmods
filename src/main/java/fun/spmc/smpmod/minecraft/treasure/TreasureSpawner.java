@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.minecraft.treasure;
 
+import fun.spmc.smpmod.discord.utils.MarkdownParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -115,6 +116,6 @@ public class TreasureSpawner {
 
         world.getServer().getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
 
-        messageChannel.sendMessage("**" + playerName + "** just got a **" + rarityName + "** loot drop!").queue();
+        messageChannel.sendMessage("**" + MarkdownParser.escapeMarkdown(playerName) + "** just got a **" + rarityName + "** loot drop!").queue();
     }
 }
