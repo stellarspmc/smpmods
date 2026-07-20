@@ -53,16 +53,16 @@ public class EconomyCommands {
     }
 
     private static double getDepositValue(Item item) {
-        // 1. Check if the item is a compressed block variant
         Item baseItem = switch (item.getDescriptionId()) {
             case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
-            case "block.minecraft.diamond_block"   -> Items.DIAMOND;
-            case "block.minecraft.gold_block"      -> Items.GOLD_INGOT;
-            case "block.minecraft.emerald_block"   -> Items.EMERALD;
-            case "block.minecraft.lapis_block"     -> Items.LAPIS_LAZULI;
-            case "block.minecraft.iron_block"      -> Items.IRON_INGOT;
-            case "block.minecraft.copper_block"    -> Items.COPPER_INGOT;
-            default -> null; // Not a currency block
+            case "block.minecraft.diamond_block" -> Items.DIAMOND;
+            case "block.minecraft.gold_block" -> Items.GOLD_INGOT;
+            case "block.minecraft.emerald_block" -> Items.EMERALD;
+            case "block.minecraft.lapis_block" -> Items.LAPIS_LAZULI;
+            case "block.minecraft.iron_block" -> Items.IRON_INGOT;
+            case "block.minecraft.copper_block" -> Items.COPPER_INGOT;
+            case "block.minecraft.redstone_block" -> Items.REDSTONE;
+            default -> null;
         };
 
         if (baseItem != null) return (EconomyConfig.getItemValue(baseItem) * 9) * 0.93;
