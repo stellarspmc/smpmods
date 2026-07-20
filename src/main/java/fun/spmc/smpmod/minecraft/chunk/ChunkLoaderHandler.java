@@ -22,24 +22,24 @@ public class ChunkLoaderHandler {
 
                 if (!data.isLoader(pos)) {
                     data.addLoader(serverLevel, pos);
-                    player.sendSystemMessage(Component.literal(":anchor: ")
+                    player.sendSystemMessage(Component.literal("⚓: ")
                             .withStyle(ChatFormatting.GOLD)
-                            .append(Component.literal("chunk loader activated.").withStyle(ChatFormatting.GRAY)));
+                            .append(Component.literal("Chunk loader activated.").withStyle(ChatFormatting.GRAY)));
                 }
             }
             return InteractionResult.PASS;
         });
 
-        PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) -> {
+        PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, _) -> {
             if (!level.isClientSide() && state.is(Blocks.LODESTONE)) {
                 ServerLevel serverLevel = (ServerLevel) level;
                 ChunkLoaderSavedData data = ChunkLoaderSavedData.get(serverLevel);
 
                 if (data.isLoader(pos)) {
                     data.removeLoader(serverLevel, pos);
-                    player.sendSystemMessage(Component.literal(":warning: ")
+                    player.sendSystemMessage(Component.literal("⚓: ")
                             .withStyle(ChatFormatting.RED)
-                            .append(Component.literal("chunk loader deactivated.").withStyle(ChatFormatting.GRAY)));
+                            .append(Component.literal("Chunk loader deactivated.").withStyle(ChatFormatting.GRAY)));
                 }
             }
             return true;

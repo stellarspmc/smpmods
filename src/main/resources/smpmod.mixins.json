@@ -6,6 +6,7 @@
   "mixins": [
     "ChunkMapInvoker",
     "GameProfileAccessor",
+    "MixinMob",
     "player.MixinPlayerAdvancementTracker",
     "shop.MixinHopperBlockEntity",
     "shop.MixinServerGamePacketListenerImpl"
