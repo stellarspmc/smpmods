@@ -17,5 +17,7 @@ public class CommandRegistry {
         dispatcher.register(EconomyCommands.buildDeposit());
         dispatcher.register(EconomyCommands.buildWithdraw(context));
         dispatcher.register(EconomyCommands.buildSend());
+
+        dispatcher.register(MapArtCommand.buildCommand());
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
@@ -73,30 +74,33 @@ public class ShopOwnerMenu extends ChestMenu {
         plusStack.set(DataComponents.CUSTOM_NAME, Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)));
         container.setItem(16, plusStack);
+
+        ItemStack receiptsButton = new ItemStack(Items.PAPER);
+        receiptsButton.set(DataComponents.CUSTOM_NAME, Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)));
+        container.setItem(22, receiptsButton);
     }
 
     @Override
     public void clicked(int slotId, int button, @NonNull ContainerInput input, @NonNull Player player) {
-        if (slotId >= 0 && slotId < 27 && player instanceof ServerPlayer serverPlayer) {
-            handleButtonClick(slotId, button, serverPlayer);
+        if (slotId >= 0 && slotId < 27 && player instanceof ServerPlayer) {
+            handleButtonClick(slotId, button, (ServerPlayer) player);
             return;
         }
         super.clicked(slotId, button, input, player);
     }
-
-
 
     private void handleButtonClick(int slotId, int button, ServerPlayer player) {
         boolean isRightClick = (button == 1);
 
         switch (slotId) {
             case 10 -> {
-                double step = isRightClick ? 0.10 : 1.00;
-                double newPrice = Math.max(0.0, shopData.getPrice() - step);
+                double step = isRightClick ? .1 : 1;
+                double newPrice = Math.max(0, shopData.getPrice() - step);
                 shopData.setPrice(newPrice, level);
             }
             case 12 -> {
-                double step = isRightClick ? 0.10 : 1.00;
+                double step = isRightClick ? .1 : 1;
                 shopData.setPrice(shopData.getPrice() + step, level);
             }
             case 13 -> {
@@ -111,6 +115,13 @@ public class ShopOwnerMenu extends ChestMenu {
             case 16 -> {
                 int step = isRightClick ? 5 : 1;
                 shopData.setStack(shopData.getStack() + step, level);
+            }
+            case 22 -> {
+                player.openMenu(new SimpleMenuProvider(
+                        (containerId, playerInventory, _) -> new ShopReceiptsMenu(containerId, playerInventory, shopData),
+                        Component.literal("Sales History")
+                ));
+                return;
             }
         }
 

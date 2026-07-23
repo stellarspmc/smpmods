@@ -150,7 +150,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
                 if (playTime > 0) {
                     EconomySavedData eco = EconomySavedData.get(player.level());
-                    eco.changeBalance(player.getUUID(), 1.16);
+                    eco.changeBalance(player.getUUID(), 1.2);
                 }
 
                 int totalHours = playTime / 72000;

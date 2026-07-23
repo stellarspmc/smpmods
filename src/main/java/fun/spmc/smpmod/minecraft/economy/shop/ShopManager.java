@@ -22,19 +22,13 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ShopManager extends SavedData {
-
-    // 1. Instance maps (prevents static memory leaks across server reloads)
     private final Map<UUID, ShopData> shopsByInteractionUuid = new HashMap<>();
     private final Map<BlockPos, ShopData> shopsByBarrelPos = new HashMap<>();
     private final Map<UUID, ShopData> shopsById = new HashMap<>();
-
-    // 2. Codec deserializes data from disk and populates instance maps
     public static final Codec<ShopManager> CODEC = ShopData.CODEC.listOf().xmap(
             shops -> {
                 ShopManager manager = new ShopManager();
-                for (ShopData shop : shops) {
-                    manager.registerShop(shop);
-                }
+                for (ShopData shop : shops) manager.registerShop(shop);
                 return manager;
             },
             manager -> List.copyOf(manager.shopsById.values())
@@ -55,12 +49,10 @@ public class ShopManager extends SavedData {
         shopsByBarrelPos.put(data.getBarrelPos(), data);
     }
 
-    // 3. Guarantees file is loaded from disk before looking up by Interaction UUID
     public static ShopData getByInteraction(ServerLevel level, UUID entityUuid) {
         return get(level).shopsByInteractionUuid.get(entityUuid);
     }
 
-    // 4. Guarantees file is loaded from disk before looking up by BlockPos
     public static ShopData getByPos(ServerLevel level, BlockPos pos) {
         return get(level).shopsByBarrelPos.get(pos);
     }
@@ -89,7 +81,7 @@ public class ShopManager extends SavedData {
 
         Interaction interaction = EntityTypes.INTERACTION.create(level, EntitySpawnReason.TRIGGERED);
         if (interaction != null) {
-            interaction.setPos(x, y, z); // Centered directly on top of the container
+            interaction.setPos(x, y, z);
             interaction.setHeight(1.0f);
             interaction.setWidth(1.0f);
             level.addFreshEntity(interaction);
@@ -97,18 +89,7 @@ public class ShopManager extends SavedData {
 
         if (itemDisplay == null || textDisplay == null || interaction == null) return;
 
-        ShopData data = new ShopData(
-                UUID.randomUUID(),
-                owner,
-                pos,
-                interaction.getUUID(),
-                itemDisplay.getUUID(),
-                textDisplay.getUUID(),
-                sellItem.copyWithCount(1),
-                sellItem.getCount(),
-                price
-        );
-
+        ShopData data = new ShopData(UUID.randomUUID(), owner, pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(), sellItem.copyWithCount(1), sellItem.getCount(), price);
         ShopManager manager = get(level);
         manager.registerShop(data);
         manager.setDirty();
@@ -116,7 +97,6 @@ public class ShopManager extends SavedData {
 
     public static void removeShop(ShopData shop, ServerLevel level) {
         if (shop == null) return;
-
         shop.destroyShop(level);
 
         ShopManager manager = get(level);

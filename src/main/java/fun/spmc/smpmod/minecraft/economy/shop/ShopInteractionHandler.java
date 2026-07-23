@@ -52,8 +52,6 @@ public class ShopInteractionHandler {
 
             BlockPos pos = hitResult.getBlockPos();
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
-
-            // If the block is a shop barrel and the player is NOT the owner
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
                 if (!shop.isOwner(serverPlayer)) {
                     serverPlayer.sendSystemMessage(
@@ -70,8 +68,6 @@ public class ShopInteractionHandler {
             if (world.isClientSide()) return true;
 
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
-
-            // If the block is a shop barrel and the player is NOT the owner
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
                 serverPlayer.sendSystemMessage(
                         Component.literal("✖: You cannot break a shop!")

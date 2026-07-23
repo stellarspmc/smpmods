@@ -14,6 +14,8 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ShopData {
@@ -28,7 +30,8 @@ public class ShopData {
             UUID_CODEC.fieldOf("text_display_id").forGetter(ShopData::getTextDisplayUuid),
             ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold),
             Codec.INT.fieldOf("stack").forGetter(ShopData::getStack),
-            Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice)
+            Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice),
+            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", List.of()).forGetter(ShopData::getReceipts)
     ).apply(instance, ShopData::new));
 
     private final UUID shopId;
@@ -42,8 +45,9 @@ public class ShopData {
     private ItemStack itemSold;
     private int stack;
     private double price;
+    private final List<ShopReceipt> receipts;
 
-    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text, ItemStack itemSold, int stack, double price) {
+    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text, ItemStack itemSold, int stack, double price, List<ShopReceipt> receipts) {
         this.shopId = shopId;
         this.ownerUuid = ownerUuid;
         this.barrelPos = barrelPos;
@@ -55,6 +59,11 @@ public class ShopData {
         this.itemSold = itemSold;
         this.stack = stack;
         this.price = price;
+        this.receipts = new ArrayList<>(receipts);
+    }
+
+    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text, ItemStack itemSold, int stack, double price) {
+        this(shopId, ownerUuid, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>());
     }
 
     public UUID getShopId() { return shopId; }
@@ -66,6 +75,13 @@ public class ShopData {
     public ItemStack getItemSold() { return itemSold; }
     public int getStack() { return stack; }
     public double getPrice() { return price; }
+    public List<ShopReceipt> getReceipts() { return receipts; }
+
+    public void recordReceipt(ShopReceipt receipt, ServerLevel level) {
+        this.receipts.addFirst(receipt);
+        while (this.receipts.size() > 27) this.receipts.removeLast();
+        ShopManager.get(level).setDirty();
+    }
 
     public boolean isOwner(ServerPlayer player) {
         return player.getUUID().equals(ownerUuid);
@@ -115,6 +131,8 @@ public class ShopData {
         if (eco.changeBalance(buyer.getUUID(), -price)) {
             eco.changeBalance(ownerUuid, price);
             removeStockFromBarrel(level, stack);
+
+            recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()), level);
 
             ItemStack itemsToGive = itemSold.copyWithCount(stack);
             if (!buyer.getInventory().add(itemsToGive)) buyer.drop(itemsToGive, false);
