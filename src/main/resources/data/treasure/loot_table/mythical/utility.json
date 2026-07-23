@@ -72,9 +72,6 @@
                   "text": "Nether Driller",
                   "color": "red",
                   "italic": false
-                },
-                "minecraft:custom_data": {
-                  "item_type": "nether_driller"
                 }
               }
             }
@@ -120,9 +117,6 @@
                   "text": "Nether Potion",
                   "color": "dark_red",
                   "italic": false
-                },
-                "minecraft:custom_data": {
-                  "item_type": "nether_potion"
                 }
               }
             }
