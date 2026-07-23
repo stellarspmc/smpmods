@@ -19,7 +19,7 @@ public class ShopInteractionHandler {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {
-                ShopData shop = ShopManager.getByInteraction(interaction.getUUID());
+                ShopData shop = ShopManager.getByInteraction((ServerLevel) world, interaction.getUUID());
 
                 if (shop != null && player instanceof ServerPlayer serverPlayer) {
                     if (serverPlayer.isShiftKeyDown() && shop.isOwner(serverPlayer)) shop.openOwnerMenu(serverPlayer);
@@ -35,7 +35,7 @@ public class ShopInteractionHandler {
             if (world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {
-                ShopData shop = ShopManager.getByInteraction(interaction.getUUID());
+                ShopData shop = ShopManager.getByInteraction((ServerLevel) world, interaction.getUUID());
 
                 if (shop != null && player instanceof ServerPlayer serverPlayer) {
                     if (serverPlayer.isShiftKeyDown() && shop.isOwner(serverPlayer)) ShopManager.removeShop(shop, (ServerLevel) world);
@@ -51,7 +51,7 @@ public class ShopInteractionHandler {
             if (world.isClientSide()) return InteractionResult.PASS;
 
             BlockPos pos = hitResult.getBlockPos();
-            ShopData shop = ShopManager.getByPos(pos);
+            ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
 
             // If the block is a shop barrel and the player is NOT the owner
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
@@ -69,7 +69,7 @@ public class ShopInteractionHandler {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, _, _) -> {
             if (world.isClientSide()) return true;
 
-            ShopData shop = ShopManager.getByPos(pos);
+            ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
 
             // If the block is a shop barrel and the player is NOT the owner
             if (shop != null && player instanceof ServerPlayer serverPlayer) {

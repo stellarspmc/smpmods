@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.minecraft.treasure;
 
 import fun.spmc.smpmod.discord.utils.MarkdownParser;
+import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -104,8 +105,11 @@ public class TreasureSpawner {
         double y = pos.getY() + 0.5;
         double z = pos.getZ() + 0.5;
 
-        ServerPlayer player = (ServerPlayer) world.getNearestPlayer(x, y, z, 10.0, false);
+        ServerPlayer player = (ServerPlayer) world.getNearestPlayer(x, y, z, 5.0, false);
         String playerName = (player != null) ? player.getScoreboardName() : "Someone";
+
+        EconomySavedData eco = EconomySavedData.get(world);
+        if (player != null) eco.changeBalance(player.getUUID(), 15f * Math.min(1, 1000/eco.getBalance(player.getUUID())));
 
         Component chatAnnouncement = Component.literal("★ ")
                 .withStyle(color, ChatFormatting.BOLD)

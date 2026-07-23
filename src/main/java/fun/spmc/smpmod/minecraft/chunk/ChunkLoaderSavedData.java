@@ -41,8 +41,7 @@ public class ChunkLoaderSavedData extends SavedData {
     }
 
     public static ChunkLoaderSavedData get(ServerLevel level) {
-        ServerLevel overworld = level.getServer().overworld();
-        return overworld.getDataStorage().computeIfAbsent(TYPE);
+        return level.getDataStorage().computeIfAbsent(TYPE);
     }
 
     public boolean addLoader(ServerLevel level, BlockPos pos) {

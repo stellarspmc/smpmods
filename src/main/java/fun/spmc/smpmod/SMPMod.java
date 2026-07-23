@@ -148,9 +148,9 @@ public class SMPMod implements DedicatedServerModInitializer {
 
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0 && playTime % 72000 == 0) {
+                if (playTime > 0) {
                     EconomySavedData eco = EconomySavedData.get(player.level());
-                    eco.changeBalance(player.getUUID(), 30);
+                    eco.changeBalance(player.getUUID(), 1.16);
                 }
 
                 int totalHours = playTime / 72000;

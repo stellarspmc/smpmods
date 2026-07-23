@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.minecraft.treasure;
 
+import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -25,7 +26,8 @@ public class TreasureEvents {
 
         String folderName = getFolderFromBiome(biomeKey);
 
-        String rarity = rollTreasureRarity(state, player.getRandom(), world.dimension());
+        EconomySavedData eco = EconomySavedData.get((ServerLevel) world);
+        String rarity = rollTreasureRarity(state, eco.getBalance(player.getUUID()), player.getRandom(), world.dimension());
         if (rarity == null) return;
 
         Identifier tableLocation = rarity.equals("mythical") ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical") : Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarity);
@@ -34,8 +36,9 @@ public class TreasureEvents {
         TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarity, lootTableUri);
     }
 
-    private static String rollTreasureRarity(BlockState state, RandomSource random, ResourceKey<Level> dimension) {
-        float commonChance = getBaseCommonChance(state, dimension);
+    private static String rollTreasureRarity(BlockState state, double cash, RandomSource random, ResourceKey<Level> dimension) {
+
+        float commonChance = (float) (getBaseCommonChance(state, dimension) * Math.min(1, 1000/cash));
         if (commonChance <= 0.0f) return null;
 
         float roll = random.nextFloat() * 100f;
@@ -76,9 +79,8 @@ public class TreasureEvents {
             if (state.is(Blocks.NETHERRACK) || state.is(Blocks.SOUL_SAND) || state.is(Blocks.SOUL_SOIL)) return .01f;
         }
 
-        if (dimension == Level.END || state.is(Blocks.END_STONE)) return 1f;
-
-        return 0f; // Not a valid block
+        if (dimension == Level.END) return .55f;
+        return 0f;
     }
 
     private static String getFolderFromBiome(ResourceKey<Biome> biomeKey) {

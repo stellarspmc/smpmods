@@ -23,20 +23,21 @@ import java.util.UUID;
 
 public class ShopManager extends SavedData {
 
-    private static final Map<UUID, ShopData> shopsByInteractionUuid = new HashMap<>();
-    private static final Map<BlockPos, ShopData> shopsByBarrelPos = new HashMap<>();
-    private static final Map<UUID, ShopData> shopsById = new HashMap<>();
+    // 1. Instance maps (prevents static memory leaks across server reloads)
+    private final Map<UUID, ShopData> shopsByInteractionUuid = new HashMap<>();
+    private final Map<BlockPos, ShopData> shopsByBarrelPos = new HashMap<>();
+    private final Map<UUID, ShopData> shopsById = new HashMap<>();
 
+    // 2. Codec deserializes data from disk and populates instance maps
     public static final Codec<ShopManager> CODEC = ShopData.CODEC.listOf().xmap(
             shops -> {
                 ShopManager manager = new ShopManager();
-                shopsByInteractionUuid.clear();
-                shopsByBarrelPos.clear();
-                shopsById.clear();
-                for (ShopData shop : shops) manager.registerShop(shop);
+                for (ShopData shop : shops) {
+                    manager.registerShop(shop);
+                }
                 return manager;
             },
-            _ -> List.copyOf(shopsById.values())
+            manager -> List.copyOf(manager.shopsById.values())
     );
 
     public static final SavedDataType<ShopManager> TYPE = new SavedDataType<>(
@@ -54,12 +55,14 @@ public class ShopManager extends SavedData {
         shopsByBarrelPos.put(data.getBarrelPos(), data);
     }
 
-    public static ShopData getByInteraction(UUID entityUuid) {
-        return shopsByInteractionUuid.get(entityUuid);
+    // 3. Guarantees file is loaded from disk before looking up by Interaction UUID
+    public static ShopData getByInteraction(ServerLevel level, UUID entityUuid) {
+        return get(level).shopsByInteractionUuid.get(entityUuid);
     }
 
-    public static ShopData getByPos(BlockPos pos) {
-        return shopsByBarrelPos.get(pos);
+    // 4. Guarantees file is loaded from disk before looking up by BlockPos
+    public static ShopData getByPos(ServerLevel level, BlockPos pos) {
+        return get(level).shopsByBarrelPos.get(pos);
     }
 
     public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
@@ -71,7 +74,7 @@ public class ShopManager extends SavedData {
         if (itemDisplay != null) {
             itemDisplay.setPos(x, y + 0.35, z);
             itemDisplay.setItemStack(sellItem.copy());
-            itemDisplay.setTransformation(new Transformation(new Vector3f(0f), null, new Vector3f(0.5f),null));
+            itemDisplay.setTransformation(new Transformation(new Vector3f(0f), null, new Vector3f(0.5f), null));
             level.addFreshEntity(itemDisplay);
         }
 
@@ -116,11 +119,11 @@ public class ShopManager extends SavedData {
 
         shop.destroyShop(level);
 
-        shopsByInteractionUuid.remove(shop.getInteractionEntityUuid());
-        shopsByBarrelPos.remove(shop.getBarrelPos());
-        shopsById.remove(shop.getShopId());
-
-        get(level).setDirty();
+        ShopManager manager = get(level);
+        manager.shopsByInteractionUuid.remove(shop.getInteractionEntityUuid());
+        manager.shopsByBarrelPos.remove(shop.getBarrelPos());
+        manager.shopsById.remove(shop.getShopId());
+        manager.setDirty();
     }
 
     public static ShopManager get(ServerLevel level) {
