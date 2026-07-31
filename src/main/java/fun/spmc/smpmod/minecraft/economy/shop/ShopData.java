@@ -201,12 +201,7 @@ public class ShopData {
     }
 
     public void openOwnerMenu(ServerPlayer owner) {
-        ServerLevel level = owner.level();
-
-        owner.openMenu(new SimpleMenuProvider(
-                (containerId, playerInventory, _) -> new ShopOwnerMenu(containerId, playerInventory, this, level),
-                Component.literal("Shop Settings")
-        ));
+        ShopOwnerMenu.open(owner, this);
     }
 
     public void destroyShop(ServerLevel level) {

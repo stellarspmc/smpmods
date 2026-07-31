@@ -7,7 +7,8 @@
     "ChunkMapInvoker",
     "GameProfileAccessor",
     "MixinEnchantment",
-    "MixinServerLevel",
+    "bedrock.MixinSimpleGui",
+    "chunk.MixinServerLevel",
     "player.MixinPlayerAdvancementTracker",
     "shop.MixinHopperBlockEntity",
     "shop.MixinServerGamePacketListenerImpl"

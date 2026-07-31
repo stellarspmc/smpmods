@@ -11,29 +11,41 @@ repositories {
     maven { url "https://m2.dv8tion.net/releases" }
     maven { url "https://jitpack.io" }
     maven { url "https://repo.opencollab.dev/maven-snapshots" }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
     mavenCentral()
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${project.minecraft_version}")
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-    implementation("net.fabricmc:fabric-loader:${project.loader_version}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}")
-    implementation("org.geysermc.floodgate:api:2.2.5-SNAPSHOT")
-    implementation("org.geysermc.cumulus:cumulus:2.0.0-SNAPSHOT")
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation "org.geysermc.floodgate:api:2.2.5-SNAPSHOT"
+    implementation "org.geysermc.cumulus:cumulus:2.0.0-SNAPSHOT"
 
-    include implementation("net.dv8tion:JDA:6.4.2")
-    include("com.neovisionaries:nv-websocket-client:2.14")
-    include("org.jetbrains:annotations:26.0.2")
+    implementation "maven.modrinth:yn9u3ypm:BZfhXd0q" // looks like spyware
+    implementation "eu.pb4:sgui:2.1.0+26.2"
+    implementation "eu.pb4:polymer-virtual-entity:0.17.3+26.2"
+    implementation "eu.pb4:polymer-core:0.17.3+26.2"
 
-    include("com.fasterxml.jackson.core:jackson-databind:2.18.3")
-    include("net.sf.trove4j:core:3.1.0")
-    include("org.apache.commons:commons-collections4:4.4")
-    include("com.squareup.okhttp3:okhttp:4.10.0")
-    include("com.fasterxml.jackson.core:jackson-annotations:2.18.3")
-    include("com.fasterxml.jackson.core:jackson-core:2.18.3")
-    include('com.squareup.okio:okio:3.10.2')
-    include("org.jetbrains.kotlin:kotlin-stdlib:2.1.0")
+    include implementation ("net.dv8tion:JDA:6.4.2")
+    include "com.neovisionaries:nv-websocket-client:2.14"
+    include "org.jetbrains:annotations:26.0.2"
+
+    include "com.fasterxml.jackson.core:jackson-databind:2.18.3"
+    include "net.sf.trove4j:core:3.1.0"
+    include "org.apache.commons:commons-collections4:4.4"
+    include "com.squareup.okhttp3:okhttp:4.10.0"
+    include "com.fasterxml.jackson.core:jackson-annotations:2.18.3"
+    include "com.fasterxml.jackson.core:jackson-core:2.18.3"
+    include "com.squareup.okio:okio:3.10.2"
+    include "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
 }
 
 processResources {

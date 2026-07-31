@@ -1,141 +1,181 @@
 package fun.spmc.smpmod.minecraft.economy.shop;
 
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.jspecify.annotations.NonNull;
+import org.geysermc.cumulus.form.CustomForm;
+import org.geysermc.cumulus.form.SimpleForm;
+import org.geysermc.floodgate.api.FloodgateApi;
 
-public class ShopOwnerMenu extends ChestMenu {
-    private final ShopData shopData;
-    private final ServerLevel level;
-    private final SimpleContainer container;
+import java.util.List;
 
-    public ShopOwnerMenu(int containerId, Inventory playerInventory, ShopData shopData, ServerLevel level) {
-        this(containerId, playerInventory, new SimpleContainer(27), shopData, level);
+public class ShopOwnerMenu {
+
+    public static void open(ServerPlayer player, ShopData shopData) {
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockForm(player, shopData);
+        else openJavaGui(player, shopData);
     }
 
-    private ShopOwnerMenu(int containerId, Inventory playerInventory, SimpleContainer container, ShopData shopData, ServerLevel level) {
-        super(MenuType.GENERIC_9x3, containerId, playerInventory, container, 3);
-        this.shopData = shopData;
-        this.level = level;
-        this.container = container;
-
-        refreshGui();
+    private static void openJavaGui(ServerPlayer player, ShopData shopData) {
+        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, player, false) {
+            @Override
+            public void onOpen() {
+                refreshGui(this, player, shopData);
+            }
+        };
+        gui.setTitle(Component.literal("Shop Settings"));
+        refreshGui(gui, player, shopData);
+        gui.open();
     }
 
-    public void refreshGui() {
-        ItemStack filler = new ItemStack(Items.STAINED_GLASS_PANE.gray());
-        filler.set(DataComponents.CUSTOM_NAME, Component.literal(" "));
-        for (int i = 0; i < 27; i++) {
-            container.setItem(i, filler.copy());
-        }
-
-        ItemStack minusPrice = new ItemStack(Items.STAINED_GLASS_PANE.red());
-        minusPrice.set(DataComponents.CUSTOM_NAME, Component.literal("- $1.00").withStyle(ChatFormatting.RED)
-                .append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)));
-        container.setItem(10, minusPrice);
-
-        ItemStack priceDisplay = new ItemStack(Items.GOLD_INGOT);
-        priceDisplay.set(DataComponents.CUSTOM_NAME, Component.literal(String.format("Current Price: $%.2f", shopData.getPrice())).withStyle(ChatFormatting.GOLD));
-        container.setItem(11, priceDisplay);
-
-        ItemStack plusPrice = new ItemStack(Items.STAINED_GLASS_PANE.lime());
-        plusPrice.set(DataComponents.CUSTOM_NAME, Component.literal("+ $1.00").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)));
-        container.setItem(12, plusPrice);
+    private static void refreshGui(SimpleGui gui, ServerPlayer player, ShopData shopData) {
+        GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
+        for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
+        gui.setSlot(10, new GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
+                .setName(Component.literal("- $1.00").withStyle(ChatFormatting.RED)
+                        .append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
+                .setCallback((type) -> {
+                    double step = type.isRight ? 0.1 : 1.0;
+                    shopData.setPrice(Math.max(0, shopData.getPrice() - step), player.level());
+                    refreshGui(gui, player, shopData);
+                }));
+        gui.setSlot(11, new GuiElementBuilder(Items.GOLD_INGOT)
+                .setName(Component.literal(String.format("Current Price: $%.2f", shopData.getPrice())).withStyle(ChatFormatting.GOLD)));
+        gui.setSlot(12, new GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
+                .setName(Component.literal("+ $1.00").withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)))
+                .setCallback((type) -> {
+                    double step = type.isRight ? 0.1 : 1.0;
+                    shopData.setPrice(shopData.getPrice() + step, player.level());
+                    refreshGui(gui, player, shopData);
+                }));
 
         ItemStack soldDisplay = shopData.getItemSold().copyWithCount(Math.min(shopData.getStack(), 64));
         soldDisplay.set(DataComponents.CUSTOM_NAME, Component.literal("Selling: ").withStyle(ChatFormatting.YELLOW)
                 .append(shopData.getItemSold().getHoverName())
                 .append(Component.literal("\n\nClick with an item on your cursor to swap!").withStyle(ChatFormatting.DARK_GRAY)));
-        container.setItem(13, soldDisplay);
-
-        ItemStack minusStack = new ItemStack(Items.STAINED_GLASS_PANE.red());
-        minusStack.set(DataComponents.CUSTOM_NAME, Component.literal("- 1 Batch Size").withStyle(ChatFormatting.RED)
-                .append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)));
-        container.setItem(14, minusStack);
-
-        ItemStack stackDisplay = new ItemStack(Items.BARREL);
-        stackDisplay.set(DataComponents.CUSTOM_NAME, Component.literal("Batch Size: " + shopData.getStack()).withStyle(ChatFormatting.AQUA));
-        container.setItem(15, stackDisplay);
-
-        ItemStack plusStack = new ItemStack(Items.STAINED_GLASS_PANE.lime());
-        plusStack.set(DataComponents.CUSTOM_NAME, Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)));
-        container.setItem(16, plusStack);
-
-        ItemStack receiptsButton = new ItemStack(Items.PAPER);
-        receiptsButton.set(DataComponents.CUSTOM_NAME, Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)));
-        container.setItem(22, receiptsButton);
+        gui.setSlot(13, GuiElementBuilder.from(soldDisplay)
+                .setCallback((_) -> {
+                    ItemStack carried = gui.getPlayer().containerMenu.getCarried();
+                    if (!carried.isEmpty()) {
+                        shopData.setItemSold(carried.copy(), player.level());
+                        refreshGui(gui, player, shopData);
+                    }
+                }));
+        gui.setSlot(14, new GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
+                .setName(Component.literal("- 1 Batch Size").withStyle(ChatFormatting.RED)
+                        .append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)))
+                .setCallback((type) -> {
+                    int step = type.isRight ? 5 : 1;
+                    shopData.setStack(Math.max(1, shopData.getStack() - step), player.level());
+                    refreshGui(gui, player, shopData);
+                }));
+        gui.setSlot(15, new GuiElementBuilder(Items.BARREL)
+                .setName(Component.literal("Batch Size: " + shopData.getStack()).withStyle(ChatFormatting.AQUA)));
+        gui.setSlot(16, new GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
+                .setName(Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)))
+                .setCallback((type) -> {
+                    int step = type.isRight ? 5 : 1;
+                    shopData.setStack(shopData.getStack() + step, player.level());
+                    refreshGui(gui, player, shopData);
+                }));
+        gui.setSlot(22, new GuiElementBuilder(Items.PAPER)
+                .setName(Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD)
+                        .append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)))
+                .setCallback((_) -> openReceiptsGui(player, shopData)));
     }
 
-    @Override
-    public void clicked(int slotId, int button, @NonNull ContainerInput input, @NonNull Player player) {
-        if (slotId >= 0 && slotId < 27 && player instanceof ServerPlayer) {
-            handleButtonClick(slotId, button, (ServerPlayer) player);
-            return;
+    private static void openBedrockForm(ServerPlayer player, ShopData shopData) {
+        CustomForm form = CustomForm.builder()
+                .title("Shop Settings")
+                .input("Price ($)", "Enter new price", String.format("%.2f", shopData.getPrice()))
+                .input("Batch Size", "Enter batch size", String.valueOf(shopData.getStack()))
+                .label("💡 To swap the item sold, hold the new item in your main hand before submitting!")
+                .validResultHandler(response -> {
+                    String priceStr = response.next();
+                    String stackStr = response.next();
+                    try {
+                        assert priceStr != null;
+                        double price = Math.max(0, Double.parseDouble(priceStr));
+                        assert stackStr != null;
+                        int stack = Math.max(1, Integer.parseInt(stackStr));
+
+                        shopData.setPrice(price, player.level());
+                        shopData.setStack(stack, player.level());
+
+                        ItemStack heldItem = player.getMainHandItem();
+                        if (!heldItem.isEmpty()) shopData.setItemSold(heldItem.copy(), player.level());
+                    } catch (NumberFormatException ignored) {}
+                })
+                .build();
+
+        FloodgateApi.getInstance().sendForm(player.getUUID(), form);
+    }
+
+    public static void openReceiptsGui(ServerPlayer player, ShopData shopData) {
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockReceiptsForm(player, shopData);
+        else openJavaReceiptsGui(player, shopData);
+    }
+
+    private static void openJavaReceiptsGui(ServerPlayer player, ShopData shopData) {
+        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, player, false);
+        gui.setTitle(Component.literal("Sales History"));
+
+        GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
+        for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
+
+        List<ShopReceipt> receipts = shopData.getReceipts();
+        for (int i = 0; i < Math.min(receipts.size(), 22); i++) {
+            ShopReceipt receipt = receipts.get(i);
+            long diffMs = Math.max(0, System.currentTimeMillis() - receipt.timestamp());
+            long mins = diffMs / 60000;
+            String timeAgo = mins < 1 ? "Just now" : mins < 60 ? mins + "m ago" : (mins / 60) + "h ago";
+
+            Component name = Component.literal("🧾 Sale to ").withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal(receipt.buyerName()).withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal("\n• Bought: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(receipt.stack() + "x ").withStyle(ChatFormatting.AQUA))
+                    .append(shopData.getItemSold().getHoverName().copy().withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal("\n• Earned: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(String.format("$%.2f", receipt.price())).withStyle(ChatFormatting.GREEN))
+                    .append(Component.literal("\n• Time: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(timeAgo).withStyle(ChatFormatting.DARK_GRAY));
+
+            gui.setSlot(i, new GuiElementBuilder(Items.PAPER).setName(name));
         }
-        super.clicked(slotId, button, input, player);
+
+        gui.setSlot(22, new GuiElementBuilder(Items.BARRIER)
+                .setName(Component.literal("⬅ Back to Settings").withStyle(ChatFormatting.RED))
+                .setCallback((_) -> open(player, shopData)));
+
+        gui.open();
     }
 
-    private void handleButtonClick(int slotId, int button, ServerPlayer player) {
-        boolean isRightClick = (button == 1);
+    private static void openBedrockReceiptsForm(ServerPlayer player, ShopData shopData) {
+        SimpleForm.Builder form = SimpleForm.builder().title("Sales History");
+        List<ShopReceipt> receipts = shopData.getReceipts();
 
-        switch (slotId) {
-            case 10 -> {
-                double step = isRightClick ? .1 : 1;
-                double newPrice = Math.max(0, shopData.getPrice() - step);
-                shopData.setPrice(newPrice, level);
+        if (receipts.isEmpty()) form.content("No sales recorded yet.");
+        else {
+            StringBuilder content = new StringBuilder();
+            for (ShopReceipt receipt : receipts) {
+                long mins = Math.max(0, System.currentTimeMillis() - receipt.timestamp()) / 60000;
+                String timeAgo = mins < 1 ? "Just now" : mins < 60 ? mins + "m ago" : (mins / 60) + "h ago";
+                content.append(String.format("• %s bought %dx for $%.2f (%s)\n", receipt.buyerName(), receipt.stack(), receipt.price(), timeAgo));
             }
-            case 12 -> {
-                double step = isRightClick ? .1 : 1;
-                shopData.setPrice(shopData.getPrice() + step, level);
-            }
-            case 13 -> {
-                ItemStack carried = getCarried();
-                if (!carried.isEmpty()) shopData.setItemSold(carried, level);
-            }
-            case 14 -> {
-                int step = isRightClick ? 5 : 1;
-                int newStack = Math.max(1, shopData.getStack() - step);
-                shopData.setStack(newStack, level);
-            }
-            case 16 -> {
-                int step = isRightClick ? 5 : 1;
-                shopData.setStack(shopData.getStack() + step, level);
-            }
-            case 22 -> {
-                player.openMenu(new SimpleMenuProvider(
-                        (containerId, playerInventory, _) -> new ShopReceiptsMenu(containerId, playerInventory, shopData),
-                        Component.literal("Sales History")
-                ));
-                return;
-            }
+            form.content(content.toString());
         }
 
-        refreshGui();
-        broadcastChanges();
-    }
+        form.button("Back to Settings")
+                .validResultHandler(_ -> open(player, shopData));
 
-    @Override
-    public boolean stillValid(@NonNull Player player) {
-        return true;
-    }
-
-    @Override
-    public @NonNull ItemStack quickMoveStack(@NonNull Player player, int index) {
-        return ItemStack.EMPTY;
+        FloodgateApi.getInstance().sendForm(player.getUUID(), form.build());
     }
 }

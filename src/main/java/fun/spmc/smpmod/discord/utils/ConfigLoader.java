@@ -14,7 +14,6 @@ public class ConfigLoader {
     public static String WEBHOOK_URL;
     public static String BOT_TOKEN;
     public static String MESSAGE_CHANNEL_ID;
-    public static String GUILD_ID;
 
     public static void checkConfigs() {
         try {
@@ -42,7 +41,6 @@ public class ConfigLoader {
             WEBHOOK_URL = prop.getProperty("webhook_url");
             BOT_TOKEN = prop.getProperty("bot_token");
             MESSAGE_CHANNEL_ID = prop.getProperty("message_channel_id");
-            GUILD_ID = prop.getProperty("guild_id");
         } catch (IOException e) {
             modLogger.error("PLEASE PUT INFORMATION INTO CONFIG");
         }

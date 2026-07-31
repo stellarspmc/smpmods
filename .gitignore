@@ -118,5 +118,4 @@ run/
 !gradle-wrapper.jar
 
 remappedSrc/
-build/
 target/
