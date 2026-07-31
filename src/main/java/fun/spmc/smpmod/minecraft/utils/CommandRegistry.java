@@ -1,7 +1,6 @@
 package fun.spmc.smpmod.minecraft.utils;
 
 import fun.spmc.smpmod.minecraft.command.*;
-import fun.spmc.smpmod.minecraft.command.EconomyCommands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandBuildContext;

@@ -19,17 +19,11 @@ import org.geysermc.floodgate.api.player.FloodgatePlayer;
 
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Field;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static fun.spmc.smpmod.SMPMod.modLogger;
 
@@ -69,7 +63,7 @@ public class GeyserMCFix {
 
         scheduler.schedule(() -> server.execute(() -> {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player != null && player.connection != null && player.connection.isAcceptingMessages()) {
+            if (player != null && player.connection.isAcceptingMessages()) {
                 fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
             }
         }), RETRY_DELAY_MS, TimeUnit.MILLISECONDS);
