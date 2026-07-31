@@ -92,7 +92,7 @@ public class MapArtCommand {
                         String internalCmd = String.format("image2map create %s %s", dither.toLowerCase(), url);
 
                         minecraftServer.getCommands().performPrefixedCommand(elevatedSource, internalCmd);
-                        player.sendSystemMessage(Component.literal(String.format("🎨 Created a %dx%d map art (original aspect ratio) for $%.2f!", finalWidth, finalHeight, cost)).withStyle(ChatFormatting.GREEN));
+                        player.sendSystemMessage(Component.literal(String.format("🎨 Created a %dx%d map art for $%.2f!", finalWidth, finalHeight, cost)).withStyle(ChatFormatting.GREEN));
                     }
                 });
 
