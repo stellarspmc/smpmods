@@ -2,6 +2,7 @@ package fun.spmc.smpmod.minecraft.chunk;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -43,6 +44,18 @@ public class ChunkLoaderHandler {
                 }
             }
             return true;
+        });
+
+        ServerPlayConnectionEvents.JOIN.register((_, _, server) -> {
+            if (server.getPlayerList().getPlayerCount() == 1) {
+                for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).restoreAll(level);
+            }
+        });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((_, server) -> {
+            if (server.getPlayerList().getPlayerCount() <= 1) {
+                for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).suspendAll(level);
+            }
         });
     }
 }

@@ -26,7 +26,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import static fun.spmc.smpmod.SMPMod.messageChannel;
 
 public class TreasureSpawner {
-    public static void spawnTreasureContainer(ServerLevel world, BlockPos pos, String rarity, ResourceKey<LootTable> lootTable) {
+    public static void spawnTreasureContainer(ServerLevel world, BlockPos pos, String rarity, ResourceKey<LootTable> lootTable, ServerPlayer player) {
         world.destroyBlock(pos, true);
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3);
 
@@ -46,10 +46,10 @@ public class TreasureSpawner {
             barrel.setChanged();
         }
 
-        spawnLootEffects(world, pos, rarity);
+        spawnLootEffects(world, pos, rarity, player);
     }
 
-    public static void spawnLootEffects(ServerLevel world, BlockPos pos, String rarity) {
+    public static void spawnLootEffects(ServerLevel world, BlockPos pos, String rarity, ServerPlayer player) {
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 0.5;
         double z = pos.getZ() + 0.5;
@@ -82,7 +82,7 @@ public class TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0f, 1.0f);
 
-                announceLoot(world, pos, "Legendary", ChatFormatting.GOLD);
+                announceLoot(world, pos, "Legendary", ChatFormatting.GOLD, player);
                 break;
 
             case "mythical":
@@ -95,31 +95,29 @@ public class TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1.0f, 0.8f);
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0f, 0.9f);
 
-                announceLoot(world, pos, "Mythical", ChatFormatting.LIGHT_PURPLE);
+                announceLoot(world, pos, "Mythical", ChatFormatting.LIGHT_PURPLE, player);
                 break;
         }
     }
 
-    private static void announceLoot(ServerLevel world, BlockPos pos, String rarityName, ChatFormatting color) {
+    private static void announceLoot(ServerLevel world, BlockPos pos, String rarityName, ChatFormatting color, ServerPlayer player) {
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 0.5;
         double z = pos.getZ() + 0.5;
 
-        ServerPlayer player = (ServerPlayer) world.getNearestPlayer(x, y, z, 5.0, false);
-        String playerName = (player != null) ? player.getScoreboardName() : "Someone";
-
         EconomySavedData eco = EconomySavedData.get(world);
-        if (player != null) eco.changeBalance(player.getUUID(), 15f * Math.min(1, 1000/eco.getBalance(player.getUUID())));
+        if (player != null) eco.changeBalance(player.getUUID(), 3f * Math.clamp(1000 / eco.getBalance(player.getUUID()), 0, 1));
 
+        assert player != null;
         Component chatAnnouncement = Component.literal("★ ")
                 .withStyle(color, ChatFormatting.BOLD)
-                .append(Component.literal(playerName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
+                .append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
                 .append(Component.literal(" found a ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(rarityName + " Drop").withStyle(color, ChatFormatting.BOLD))
                 .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD));
 
         world.getServer().getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
 
-        messageChannel.sendMessage("**" + MarkdownParser.escapeMarkdown(playerName) + "** just got a **" + rarityName + "** loot drop!").queue();
+        messageChannel.sendMessage("**" + MarkdownParser.escapeMarkdown(player.getScoreboardName()) + "** just got a **" + rarityName + "** loot drop!").queue();
     }
 }

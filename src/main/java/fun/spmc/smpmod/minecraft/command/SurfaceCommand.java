@@ -25,7 +25,7 @@ public class SurfaceCommand {
         int y = world.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
 
         player.teleportTo(x, y, z);
-        player.playSound(SoundEvents.WITHER_SHOOT, 10, 1);
+        player.playSound(SoundEvents.WITHER_SHOOT, 1, 1);
 
         return Command.SINGLE_SUCCESS;
     }

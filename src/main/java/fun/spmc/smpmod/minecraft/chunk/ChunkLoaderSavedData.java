@@ -31,6 +31,7 @@ public class ChunkLoaderSavedData extends SavedData {
     );
 
     private final Set<BlockPos> activeLoaders;
+    private boolean suspended = false;
 
     public ChunkLoaderSavedData(Set<BlockPos> activeLoaders) {
         this.activeLoaders = new HashSet<>(activeLoaders);
@@ -47,9 +48,10 @@ public class ChunkLoaderSavedData extends SavedData {
     public boolean addLoader(ServerLevel level, BlockPos pos) {
         if (activeLoaders.add(pos)) {
             this.setDirty();
-            // Uses ChunkPos.containing() to turn BlockPos -> ChunkPos
-            ChunkPos chunkPos = ChunkPos.containing(pos);
-            level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
+            if (!suspended) {
+                ChunkPos chunkPos = ChunkPos.containing(pos);
+                level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
+            }
             return true;
         }
         return false;
@@ -59,10 +61,7 @@ public class ChunkLoaderSavedData extends SavedData {
         if (activeLoaders.remove(pos)) {
             this.setDirty();
             ChunkPos chunkPos = ChunkPos.containing(pos);
-
-            // Checks if any remaining loader block is in the same chunk
-            boolean hasOtherLoadersInChunk = activeLoaders.stream()
-                    .anyMatch(p -> ChunkPos.containing(p).equals(chunkPos));
+            boolean hasOtherLoadersInChunk = activeLoaders.stream().anyMatch(p -> ChunkPos.containing(p).equals(chunkPos));
 
             if (!hasOtherLoadersInChunk) {
                 level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
@@ -74,5 +73,23 @@ public class ChunkLoaderSavedData extends SavedData {
 
     public boolean isLoader(BlockPos pos) {
         return activeLoaders.contains(pos);
+    }
+
+    public void suspendAll(ServerLevel level) {
+        if (suspended) return;
+        this.suspended = true;
+        for (BlockPos pos : activeLoaders) {
+            ChunkPos chunkPos = ChunkPos.containing(pos);
+            level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
+        }
+    }
+
+    public void restoreAll(ServerLevel level) {
+        if (!suspended) return;
+        this.suspended = false;
+        for (BlockPos pos : activeLoaders) {
+            ChunkPos chunkPos = ChunkPos.containing(pos);
+            level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
+        }
     }
 }

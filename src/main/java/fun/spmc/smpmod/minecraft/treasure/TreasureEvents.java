@@ -1,14 +1,17 @@
 package fun.spmc.smpmod.minecraft.treasure;
 
-import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -19,6 +22,15 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 public class TreasureEvents {
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity ignoredBlockEntity) {
+        if (world.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) return;
+
+        ItemStack mainHand = player.getMainHandItem();
+        var enchantmentRegistry = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        var silkTouchHolder = enchantmentRegistry.get(Enchantments.SILK_TOUCH);
+        if (silkTouchHolder.isPresent() && EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder.get(), mainHand) > 0) {
+            return;
+        }
+
         ResourceKey<Biome> biomeKey = world.registryAccess()
                 .lookupOrThrow(Registries.BIOME)
                 .getResourceKey(world.getBiome(pos).value())
@@ -26,19 +38,24 @@ public class TreasureEvents {
 
         String folderName = getFolderFromBiome(biomeKey);
 
-        EconomySavedData eco = EconomySavedData.get((ServerLevel) world);
-        String rarity = rollTreasureRarity(state, eco.getBalance(player.getUUID()), player.getRandom(), world.dimension());
+        double fatigueMultiplier = TreasureFatigue.getMultiplier(player.getUUID());
+        String rarity = rollTreasureRarity(state, fatigueMultiplier, player.getRandom(), world.dimension());
+
         if (rarity == null) return;
 
-        Identifier tableLocation = rarity.equals("mythical") ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical") : Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarity);
+        TreasureFatigue.recordTreasure(player.getUUID());
+
+        Identifier tableLocation = rarity.equals("mythical")
+                ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical")
+                : Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarity);
+
         ResourceKey<LootTable> lootTableUri = ResourceKey.create(Registries.LOOT_TABLE, tableLocation);
 
-        TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarity, lootTableUri);
+        TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarity, lootTableUri, serverPlayer);
     }
 
-    private static String rollTreasureRarity(BlockState state, double cash, RandomSource random, ResourceKey<Level> dimension) {
-
-        float commonChance = (float) (getBaseCommonChance(state, dimension) * Math.min(1, 1000/cash));
+    private static String rollTreasureRarity(BlockState state, double fatigueMultiplier, RandomSource random, ResourceKey<Level> dimension) {
+        float commonChance = (float) (getBaseCommonChance(state, dimension) * fatigueMultiplier);
         if (commonChance <= 0.0f) return null;
 
         float roll = random.nextFloat() * 100f;

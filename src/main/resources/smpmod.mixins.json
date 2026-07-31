@@ -7,7 +7,7 @@
     "ChunkMapInvoker",
     "GameProfileAccessor",
     "MixinEnchantment",
-    "MixinMob",
+    "MixinServerLevel",
     "player.MixinPlayerAdvancementTracker",
     "shop.MixinHopperBlockEntity",
     "shop.MixinServerGamePacketListenerImpl"
