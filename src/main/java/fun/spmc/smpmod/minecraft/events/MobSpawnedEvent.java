@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.minecraft;
+package fun.spmc.smpmod.minecraft.events;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

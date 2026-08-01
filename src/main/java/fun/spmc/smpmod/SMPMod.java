@@ -9,7 +9,7 @@ import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import fun.spmc.smpmod.minecraft.economy.shop.ShopInteractionHandler;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
-import fun.spmc.smpmod.minecraft.MobSpawnedEvent;
+import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
 
 import fun.spmc.smpmod.discord.utils.ConfigLoader;
 
