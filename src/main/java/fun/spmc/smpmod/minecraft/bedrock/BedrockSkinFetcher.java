@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.minecraft.utils;
+package fun.spmc.smpmod.minecraft.bedrock;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 
 import static fun.spmc.smpmod.SMPMod.modLogger;
 
-public class GeyserMCFix {
+public class BedrockSkinFetcher {
     private static final Duration SKIN_REQUEST_TIMEOUT = Duration.ofSeconds(8L);
     private static final int MAX_FETCH_RETRIES = 5;
     private static final long RETRY_DELAY_MS = 850L;

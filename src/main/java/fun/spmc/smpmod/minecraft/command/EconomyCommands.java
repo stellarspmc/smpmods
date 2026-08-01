@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fun.spmc.smpmod.minecraft.economy.EconomyConfig;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import fun.spmc.smpmod.minecraft.economy.atm.ATMMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -307,5 +308,13 @@ public class EconomyCommands {
                                         return -1;
                                     }
                                 })));
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> buildATM() {
+        return Commands.literal("atm")
+                .executes(ctx -> {
+                    ATMMenu.open(ctx.getSource().getPlayerOrException());
+                    return 1;
+                });
     }
 }

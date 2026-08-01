@@ -5,13 +5,11 @@ import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import eu.pb4.sgui.api.gui.BaseSlotGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import fun.spmc.smpmod.minecraft.grave.BedrockGraveUI;
+import fun.spmc.smpmod.minecraft.bedrock.BedrockGraveUI;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.geysermc.floodgate.api.FloodgateApi;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 

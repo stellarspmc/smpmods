@@ -13,7 +13,7 @@ import fun.spmc.smpmod.minecraft.MobSpawnedEvent;
 
 import fun.spmc.smpmod.discord.utils.ConfigLoader;
 
-import fun.spmc.smpmod.minecraft.utils.GeyserMCFix;
+import fun.spmc.smpmod.minecraft.bedrock.BedrockSkinFetcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -105,7 +105,7 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
-            GeyserMCFix.restoreSkin(server, player);
+            BedrockSkinFetcher.restoreSkin(server, player);
             EconomySavedData eco = EconomySavedData.get(player.level());
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
 

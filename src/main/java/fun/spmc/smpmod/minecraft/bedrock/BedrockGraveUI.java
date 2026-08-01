@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.minecraft.grave;
+package fun.spmc.smpmod.minecraft.bedrock;
 
 import eu.pb4.graves.registry.GravesRegistry;
 import eu.pb4.graves.registry.IconItem;

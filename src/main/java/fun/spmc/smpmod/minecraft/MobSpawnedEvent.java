@@ -67,7 +67,6 @@ public class MobSpawnedEvent {
 
         GameProfile gameProfile = new GameProfile(headUuid, "eyelol", properties);
 
-// 3. Create the ItemStack and apply the profile component
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
         playerHead.set(DataComponents.PROFILE, ResolvableProfile.createResolved(gameProfile));
         boss.setItemSlot(EquipmentSlot.HEAD, playerHead);
