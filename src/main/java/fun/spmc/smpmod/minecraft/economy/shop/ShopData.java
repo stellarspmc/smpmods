@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -194,8 +193,7 @@ public class ShopData {
         Entity entity = level.getEntity(textDisplayUuid);
         if (entity instanceof Display.TextDisplay textDisplay) {
             int stockBatches = getAvailableStock(level);
-            String label = String.format("%dx %s — $%.2f\nStock: %d",
-                    stack, itemSold.getHoverName().getString(), price, stockBatches);
+            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %d", stack, itemSold.getHoverName().getString(), price, stockBatches);
             textDisplay.setText(Component.literal(label));
         }
     }

@@ -73,7 +73,7 @@ public class ShopManager extends SavedData {
         Display.TextDisplay textDisplay = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED);
         if (textDisplay != null) {
             textDisplay.setPos(x, y + 0.85, z);
-            String label = String.format("%dx %s — $%.2f", sellItem.getCount(), sellItem.getHoverName().getString(), price);
+            String label = String.format("§f%dx §e%s\n§a$%.2f", sellItem.getCount(), sellItem.getHoverName().getString(), price);
             textDisplay.setText(Component.literal(label));
             textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
             level.addFreshEntity(textDisplay);

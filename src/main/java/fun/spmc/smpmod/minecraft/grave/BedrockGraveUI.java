@@ -37,14 +37,12 @@ public class BedrockGraveUI {
             return translated;
         }
 
-        // If we couldn't identify the button, replace with a generic item
-        // to avoid Steve head confusion - preserve original name and lore
+        // Default fallback for unidentified heads (preserves custom name & lore)
         return createItem(Items.PAPER.getDefaultInstance(), customName, loreLines);
     }
 
     /**
      * Translates Universal Graves IconItem based on its TEXTURE component.
-     * This directly reads the texture type to determine what button it represents.
      */
     private static ItemStack translateIconItem(ItemStack stack) {
         IconItem.Texture texture = stack.get(IconItem.TEXTURE);
@@ -55,13 +53,13 @@ public class BedrockGraveUI {
         List<Component> loreLines = lore != null ? lore.lines() : List.of();
 
         return switch (texture) {
-            case NEXT_PAGE -> createItem(Items.STAINED_GLASS_PANE.green().getDefaultInstance(), 
+            case NEXT_PAGE -> createItem(Items.STAINED_GLASS_PANE.green().getDefaultInstance(),
                     customName != null ? customName : Component.literal("Next Page →").withStyle(ChatFormatting.GREEN),
                     loreLines);
             case NEXT_PAGE_BLOCKED -> createItem(Items.STAINED_GLASS_PANE.gray().getDefaultInstance(),
                     customName != null ? customName : Component.literal("Next Page →").withStyle(ChatFormatting.DARK_GRAY),
                     loreLines);
-            case PREVIOUS_PAGE -> createItem(Items.STAINED_GLASS_PANE.red().getDefaultInstance(), 
+            case PREVIOUS_PAGE -> createItem(Items.STAINED_GLASS_PANE.red().getDefaultInstance(),
                     customName != null ? customName : Component.literal("← Previous Page").withStyle(ChatFormatting.RED),
                     loreLines);
             case PREVIOUS_PAGE_BLOCKED -> createItem(Items.STAINED_GLASS_PANE.gray().getDefaultInstance(),
@@ -87,14 +85,12 @@ public class BedrockGraveUI {
 
     /**
      * Translates Universal Graves specific buttons.
-     * These are the exact button names from Universal Graves source code.
      */
     private static ItemStack translateUniversalGravesButton(String nameLower, Component originalName, List<Component> lore) {
         // === NAVIGATION BUTTONS ===
-        // "Next Page" - IconItem.Texture.NEXT_PAGE / NEXT_PAGE_BLOCKED
         if (nameLower.contains("next page")) {
-            boolean disabled = nameLower.startsWith("§8") || originalName.getStyle().getColor() != null
-                    && originalName.getStyle().getColor().toString().equals("dark_gray");
+            boolean disabled = nameLower.startsWith("§8") || (originalName.getStyle().getColor() != null
+                    && originalName.getStyle().getColor().toString().equals("dark_gray"));
             if (disabled) {
                 return createItem(Items.STAINED_GLASS_PANE.gray().getDefaultInstance(),
                         Component.literal("Next Page →").withStyle(ChatFormatting.DARK_GRAY), lore);
@@ -103,10 +99,9 @@ public class BedrockGraveUI {
                     Component.literal("Next Page →").withStyle(ChatFormatting.GREEN), lore);
         }
 
-        // "Previous Page" - IconItem.Texture.PREVIOUS_PAGE / PREVIOUS_PAGE_BLOCKED
         if (nameLower.contains("previous page")) {
-            boolean disabled = nameLower.startsWith("§8") || originalName.getStyle().getColor() != null
-                    && originalName.getStyle().getColor().toString().equals("dark_gray");
+            boolean disabled = nameLower.startsWith("§8") || (originalName.getStyle().getColor() != null
+                    && originalName.getStyle().getColor().toString().equals("dark_gray"));
             if (disabled) {
                 return createItem(Items.STAINED_GLASS_PANE.gray().getDefaultInstance(),
                         Component.literal("← Previous Page").withStyle(ChatFormatting.DARK_GRAY), lore);
@@ -116,22 +111,52 @@ public class BedrockGraveUI {
         }
 
         // === ACTION BUTTONS ===
-        // "Take All Items" - IconItem.Texture.QUICK_PICKUP
-        if (nameLower.contains("take all") || nameLower.contains("quick pickup")) {
+        // "Take All Items" / Quick Pickup
+        if (nameLower.contains("take all") || nameLower.contains("quick pickup") || nameLower.contains("equip")) {
             return createItem(Items.CHEST.getDefaultInstance(),
                     Component.literal("Take All Items").withStyle(ChatFormatting.GOLD), lore);
         }
 
-        // "Break Grave" - IconItem.Texture.BREAK_GRAVE
-        if (nameLower.contains("break grave")) {
-            return createItem(Items.TNT.getDefaultInstance(),
-                    Component.literal("Break Grave").withStyle(ChatFormatting.RED), lore);
+        // "Teleport to Grave"
+        if (nameLower.contains("teleport") || nameLower.contains("tp")) {
+            return createItem(Items.ENDER_PEARL.getDefaultInstance(),
+                    Component.literal("Teleport to Grave").withStyle(ChatFormatting.LIGHT_PURPLE), lore);
         }
 
-        // "Remove Protection" - IconItem.Texture.REMOVE_PROTECTION
-        if (nameLower.contains("remove protection")) {
-            return createItem(Items.SHIELD.getDefaultInstance(),
-                    Component.literal("Remove Protection").withStyle(ChatFormatting.RED), lore);
+        // "Fetch Grave" (Summon grave to player)
+        if (nameLower.contains("fetch") || nameLower.contains("summon")) {
+            boolean isConfirm = nameLower.contains("confirm") || nameLower.contains("sure");
+            return createItem(isConfirm ? Items.RECOVERY_COMPASS.getDefaultInstance() : Items.COMPASS.getDefaultInstance(),
+                    isConfirm ? Component.literal("Confirm Fetch Grave").withStyle(ChatFormatting.GREEN)
+                            : Component.literal("Fetch Grave").withStyle(ChatFormatting.AQUA), lore);
+        }
+
+        // "Unlock Grave"
+        if (nameLower.contains("unlock")) {
+            return createItem(Items.TRIPWIRE_HOOK.getDefaultInstance(),
+                    Component.literal("Unlock Grave").withStyle(ChatFormatting.YELLOW), lore);
+        }
+
+        // "Break Grave" / Destroy
+        if (nameLower.contains("break") || nameLower.contains("destroy")) {
+            boolean isConfirm = nameLower.contains("confirm") || nameLower.contains("sure");
+            return createItem(isConfirm ? Items.REDSTONE_BLOCK.getDefaultInstance() : Items.TNT.getDefaultInstance(),
+                    isConfirm ? Component.literal("Confirm Break Grave").withStyle(ChatFormatting.DARK_RED)
+                            : Component.literal("Break Grave").withStyle(ChatFormatting.RED), lore);
+        }
+
+        // "Remove Protection"
+        if (nameLower.contains("remove protection") || nameLower.contains("unprotect")) {
+            boolean isConfirm = nameLower.contains("confirm") || nameLower.contains("sure");
+            return createItem(isConfirm ? Items.SHIELD.getDefaultInstance() : Items.IRON_BARS.getDefaultInstance(),
+                    isConfirm ? Component.literal("Confirm Remove Protection").withStyle(ChatFormatting.RED)
+                            : Component.literal("Remove Protection").withStyle(ChatFormatting.GOLD), lore);
+        }
+
+        // "Grave Info" / Compass Creation Icon
+        if (nameLower.contains("info") || nameLower.contains("location") || nameLower.contains("coordinates")) {
+            return createItem(Items.BOOK.getDefaultInstance(),
+                    Component.literal("Grave Info").withStyle(ChatFormatting.AQUA), lore);
         }
 
         return null;
@@ -195,9 +220,6 @@ public class BedrockGraveUI {
         return null;
     }
 
-    /**
-     * Creates an ItemStack with the given name and lore.
-     */
     private static ItemStack createItem(ItemStack base, Component name, List<Component> lore) {
         ItemStack stack = base.copy();
         stack.set(DataComponents.CUSTOM_NAME, name);
@@ -207,9 +229,6 @@ public class BedrockGraveUI {
         return stack;
     }
 
-    /**
-     * Creates an ItemStack with the given name (no lore).
-     */
     private static ItemStack createItem(ItemStack base, Component name) {
         return createItem(base, name, List.of());
     }

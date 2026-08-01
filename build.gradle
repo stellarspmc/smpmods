@@ -11,6 +11,7 @@ repositories {
     maven { url "https://m2.dv8tion.net/releases" }
     maven { url "https://jitpack.io" }
     maven { url "https://repo.opencollab.dev/maven-snapshots" }
+    maven { url "https://repo.opencollab.dev/maven-releases" }
     maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
@@ -27,14 +28,13 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     implementation "org.geysermc.floodgate:api:2.2.5-SNAPSHOT"
-    implementation "org.geysermc.cumulus:cumulus:2.0.0-SNAPSHOT"
 
     implementation "maven.modrinth:yn9u3ypm:BZfhXd0q" // looks like spyware
     implementation "eu.pb4:sgui:2.1.0+26.2"
     implementation "eu.pb4:polymer-virtual-entity:0.17.3+26.2"
     implementation "eu.pb4:polymer-core:0.17.3+26.2"
 
-    include implementation ("net.dv8tion:JDA:6.4.2")
+    include implementation("net.dv8tion:JDA:6.4.2")
     include "com.neovisionaries:nv-websocket-client:2.14"
     include "org.jetbrains:annotations:26.0.2"
 
