@@ -4,25 +4,33 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TreasureFatigue {
-    private static final Map<UUID, List<Long>> HISTORY = new ConcurrentHashMap<>();
+    private static final Map<UUID, Deque<Long>> HISTORY = new ConcurrentHashMap<>();
     private static final long WINDOW_MS = 600 * 1000;
 
     public static double getMultiplier(UUID playerUUID) {
-        long now = System.currentTimeMillis();
-        List<Long> timestamps = HISTORY.computeIfAbsent(playerUUID, _ -> new ArrayList<>());
-
+        Deque<Long> timestamps = HISTORY.get(playerUUID);
+        if (timestamps == null) return 1.0;
+        long cutoff = System.currentTimeMillis() - WINDOW_MS;
         synchronized (timestamps) {
-            timestamps.removeIf(time -> (now - time) > WINDOW_MS);
+            while (!timestamps.isEmpty() && timestamps.peekFirst() < cutoff) timestamps.pollFirst();
 
-            int recentCount = timestamps.size();
-            return Math.pow(0.85, recentCount);
+            int count = timestamps.size();
+            if (count == 0) {
+                HISTORY.remove(playerUUID, timestamps);
+                return 1;
+            }
+
+            return Math.pow(0.85, count);
         }
     }
 
     public static void recordTreasure(UUID playerUUID) {
-        List<Long> timestamps = HISTORY.computeIfAbsent(playerUUID, _ -> new ArrayList<>());
+        long now = System.currentTimeMillis();
+        long cutoff = now - WINDOW_MS;
+        Deque<Long> timestamps = HISTORY.computeIfAbsent(playerUUID, _ -> new ArrayDeque<>());
         synchronized (timestamps) {
-            timestamps.add(System.currentTimeMillis());
+            while (!timestamps.isEmpty() && timestamps.peekFirst() < cutoff) timestamps.pollFirst();
+            timestamps.addLast(now);
         }
     }
 }

@@ -1,6 +1,5 @@
 package fun.spmc.smpmod.discord;
 
-import fun.spmc.smpmod.discord.utils.MarkdownParser;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -48,12 +47,10 @@ public class EventHandler extends ListenerAdapter {
                     .map(player -> MarkdownParser.escapeMarkdown(player.getGameProfile().name()))
                     .collect(Collectors.joining(", "));
 
-            if (playerList.isEmpty()) {
-                playerList = "*No players online right now.*";
-            }
+            if (playerList.isEmpty()) playerList = "*No players online right now.*";
 
             MessageEmbed embed = new EmbedBuilder()
-                    .setTitle("🟢 Server Status")
+                    .setTitle("Server Status")
                     .setColor(0x2F3136)
                     .setDescription(String.format("**%d** players currently exploring.", onlineCount))
                     .addField("Online List", playerList, false)
@@ -70,7 +67,7 @@ public class EventHandler extends ListenerAdapter {
             String leaderboardData = eco.top(page);
 
             MessageEmbed embed = new EmbedBuilder()
-                    .setTitle("🏆 Wealth Leaderboard")
+                    .setTitle("Wealth Leaderboard")
                     .setColor(0xDFC66F)
                     .setDescription(leaderboardData)
                     .setFooter(String.format("Page %d", page), null)

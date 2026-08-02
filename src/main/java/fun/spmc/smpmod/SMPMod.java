@@ -3,6 +3,7 @@ package fun.spmc.smpmod;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
 import fun.spmc.smpmod.minecraft.chunk.ChunkLoaderHandler;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
@@ -10,10 +11,9 @@ import fun.spmc.smpmod.minecraft.economy.shop.ShopInteractionHandler;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
-
-import fun.spmc.smpmod.discord.utils.ConfigLoader;
-
+import fun.spmc.smpmod.discord.config.ConfigLoader;
 import fun.spmc.smpmod.minecraft.bedrock.BedrockSkinFetcher;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -28,12 +28,10 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
@@ -41,7 +39,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.scores.DisplaySlot;
@@ -58,7 +55,6 @@ import org.slf4j.LoggerFactory;
 
 @Environment(EnvType.SERVER)
 public class SMPMod implements DedicatedServerModInitializer {
-
     public static final Logger modLogger = LoggerFactory.getLogger("SMPMod");
     public static JDA bot;
     public static TextChannel messageChannel;
@@ -78,13 +74,13 @@ public class SMPMod implements DedicatedServerModInitializer {
                 ConfigLoader.checkConfigs();
 
                 minecraftServer = server;
-                bot = JDABuilder.createDefault(ConfigLoader.BOT_TOKEN)
+                bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token())
                         .setMemberCachePolicy(MemberCachePolicy.ALL)
                         .enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES)
                         .addEventListeners(new EventHandler())
                         .build();
                 bot.awaitReady();
-                messageChannel = bot.getTextChannelById(ConfigLoader.MESSAGE_CHANNEL_ID);
+                messageChannel = bot.getTextChannelById(ConfigLoader.CONFIG.messageChannelId());
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
 
@@ -95,7 +91,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 ).queue();
 
             } catch (Exception e) {
-                modLogger.error("Put Information into the Config");
+                modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);
             }
         });
@@ -117,12 +113,12 @@ public class SMPMod implements DedicatedServerModInitializer {
             if (messageChannel != null) messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });
 
-        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> sendWebhookMessage(message.signedContent(), sender.getName().getString(), sender.getStringUUID()));
+        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> DiscordWebhook.sendChatMessage(message.signedContent(), sender.getName().getString(), sender.getStringUUID()));
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity instanceof ServerPlayer player && messageChannel != null) {
                 String deathMessage = damageSource.getLocalizedDeathMessage(player).getString();
-                String fullMessage = "☠ " + deathMessage + " (at " + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
+                String fullMessage = "☠ " + deathMessage + " at (" + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
                 messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
             }
         });
@@ -159,27 +155,11 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> bot.shutdownNow());
+        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> {
+            messageChannel.sendMessage("Server shutting down...").queue();
+            bot.shutdown();
+        });
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
         ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
-    }
-
-    public static void sendWebhookMessage(String message, String playerName, String playerUUID) {
-        JsonObject body = new JsonObject();
-        body.addProperty("content", message);
-        body.addProperty("username", playerName);
-        body.addProperty("avatar_url", "https://mc-heads.net/head/%player%/512.png".replace("%player%", playerUUID));
-        body.add("allowed_mentions", new Gson().fromJson("{\"parse\":[]}", JsonObject.class));
-        Request request = new Request.Builder()
-                .url(ConfigLoader.WEBHOOK_URL)
-                .post(RequestBody.create(body.toString(), MediaType.get("application/json")))
-                .build();
-
-        try {
-            Response response = new OkHttpClient().newCall(request).execute();
-            response.close();
-        } catch (Exception e) {
-            modLogger.error(ExceptionUtils.getStackTrace(e));
-        }
     }
 }

@@ -1,13 +1,10 @@
 package fun.spmc.smpmod.minecraft.treasure;
 
-import fun.spmc.smpmod.discord.utils.MarkdownParser;
+import fun.spmc.smpmod.discord.MarkdownParser;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.PowerParticleOption;
@@ -31,17 +28,6 @@ public class TreasureSpawner {
 
         if (world.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
             barrel.setLootTable(lootTable, world.getRandom().nextLong());
-
-            String cleanName = rarity.substring(0, 1).toUpperCase() + rarity.substring(1) + " Treasure";
-            Component customNameComponent = Component.literal(cleanName)
-                    .withStyle(style -> style.withColor(0xFFFFFF).withBold(false).withItalic(false));
-
-            barrel.applyComponents(DataComponentMap.builder()
-                    .set(DataComponents.CUSTOM_NAME, customNameComponent)
-                    .build(), DataComponentPatch.builder()
-                    .set(DataComponents.CUSTOM_NAME, customNameComponent)
-                    .build());
-
             barrel.setChanged();
         }
 
@@ -49,61 +35,53 @@ public class TreasureSpawner {
     }
 
     public static void spawnLootEffects(ServerLevel world, BlockPos pos, String rarity, ServerPlayer player) {
-        double x = pos.getX() + 0.5;
-        double y = pos.getY() + 0.5;
-        double z = pos.getZ() + 0.5;
+        double x = pos.getX() + .5;
+        double y = pos.getY() + .5;
+        double z = pos.getZ() + .5;
 
         switch (rarity) {
+            case "common" -> {
+                world.sendParticles(ParticleTypes.CRIT, x, y, z, 20, .3, .3, .3, .1);
+                world.sendParticles(ParticleTypes.SMOKE, x, y, z, 10, .2, .2, .2, .02);
+                world.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, .8f, 1.2f);
+            } case "rare" -> {
+                world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 35, .4, .4, .4, .05);
+                world.sendParticles(ParticleTypes.GLOW, x, y, z, 20, .3, .3, .3, .02);
+                world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1, 1);
+                world.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, .5f, 1.5f);
+            } case "epic" -> {
+                world.sendParticles(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1), x, y, z, 60, .5, .5, .5, .03);
+                world.sendParticles(ParticleTypes.END_ROD, x, y, z, 25, .4, .4, .4, .08);
+                world.playSound(null, pos, SoundEvents.EVOKER_CAST_SPELL, SoundSource.BLOCKS, 1, 1);
+                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, .7f, 1.3f);
+            } case "legendary" -> {
+                world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 120, .6, .6, .6, .3);
+                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 40, .4, .4, .4, .15);
+                world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1, 1);
+                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1, 1);
 
-            case "common":
-                world.sendParticles(ParticleTypes.CRIT, x, y, z, 20, 0.3, 0.3, 0.3, 0.1);
-                world.sendParticles(ParticleTypes.SMOKE, x, y, z, 10, 0.2, 0.2, 0.2, 0.02);
-                world.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.8f, 1.2f);
-                break;
-
-            case "rare":
-                world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 35, 0.4, 0.4, 0.4, 0.05);
-                world.sendParticles(ParticleTypes.GLOW, x, y, z, 20, 0.3, 0.3, 0.3, 0.02);
-                world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0f, 1.0f);
-                world.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.5f, 1.5f);
-                break;
-
-            case "epic":
-                world.sendParticles(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1), x, y, z, 60, 0.5, 0.5, 0.5, 0.03);
-                world.sendParticles(ParticleTypes.END_ROD, x, y, z, 25, 0.4, 0.4, 0.4, 0.08);
-                world.playSound(null, pos, SoundEvents.EVOKER_CAST_SPELL, SoundSource.BLOCKS, 1.0f, 1.0f);
-                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 0.7f, 1.3f);
-                break;
-
-            case "legendary":
-                world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 120, 0.6, 0.6, 0.6, 0.3);
-                world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 40, 0.4, 0.4, 0.4, 0.15);
-                world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0f, 1.0f);
-
-                announceLoot(world, pos, "Legendary", ChatFormatting.GOLD, player);
-                break;
-
-            case "mythical":
+                announceLoot(world, "Legendary", ChatFormatting.GOLD, player);
+            } case "mythical" -> {
                 world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFF55FF), x, y, z, 2, 0, 0, 0, 0);
-                world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 200, 0.8, 0.8, 0.8, 0.5);
-                world.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 80, 0.5, 0.5, 0.5, 0.2);
-                world.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, 0.5, 0.5, 0.5, 0.1);
+                world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 200, .8, .8, .8, .5);
+                world.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 80, .5, .5, .5, .2);
+                world.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, .5, .5, .5, .1);
 
-                world.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 0.7f, 1.5f);
-                world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1.0f, 0.8f);
-                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0f, 0.9f);
+                world.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, .7f, 1.5f);
+                world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1, .8f);
+                world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1, .9f);
 
-                announceLoot(world, pos, "Mythical", ChatFormatting.LIGHT_PURPLE, player);
-                break;
+                announceLoot(world, "Mythical", ChatFormatting.LIGHT_PURPLE, player);
+            }
         }
     }
 
-    private static void announceLoot(ServerLevel world, BlockPos pos, String rarityName, ChatFormatting color, ServerPlayer player) {
+    private static void announceLoot(ServerLevel world, String rarityName, ChatFormatting color, ServerPlayer player) {
         EconomySavedData eco = EconomySavedData.get(world);
-        if (player != null) eco.changeBalance(player.getUUID(), 3f * Math.clamp(1000 / eco.getBalance(player.getUUID()), 0, 1));
+        double balance = eco.getBalance(player.getUUID());
+        double balanceScale = (balance <= 0) ? 1 : Math.clamp(1000 / balance, 0, 1);
+        eco.changeBalance(player.getUUID(), 3 * balanceScale);
 
-        assert player != null;
         Component chatAnnouncement = Component.literal("★ ")
                 .withStyle(color, ChatFormatting.BOLD)
                 .append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
@@ -112,7 +90,6 @@ public class TreasureSpawner {
                 .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD));
 
         world.getServer().getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
-
         messageChannel.sendMessage("**" + MarkdownParser.escapeMarkdown(player.getScoreboardName()) + "** just got a **" + rarityName + "** loot drop!").queue();
     }
 }

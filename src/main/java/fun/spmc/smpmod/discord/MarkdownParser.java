@@ -18,7 +18,7 @@ Link to the "Don't Be a Jerk" license:
 https://github.com/BRForgers/DisFabric-and-DisForge/blob/d1468a6c9b50ba24a250ec370cf645d58dccdfd1/LICENSE.md
  */
 
-package fun.spmc.smpmod.discord.utils;
+package fun.spmc.smpmod.discord;
 
 import net.minecraft.ChatFormatting;
 
@@ -37,18 +37,14 @@ public class MarkdownParser {
 		message = replaceWith(message, "(?<!\\\\)~~", ChatFormatting.STRIKETHROUGH.toString(), ChatFormatting.RESET.toString());
 
 		message = message.replaceAll("\\\\\\*", "*").replaceAll("\\\\_", "_").replaceAll("\\\\~", "~");
-
 		message = message.replaceAll("\"", "\\\\\"");
-
 		return message;
 	}
 
 	private static String replaceWith(String message, String quot, String pre, String suf) {
 		String part = message;
-
-		for (String str : getMatches(message, quot + "(.+?)" + quot)) {
+		for (String str : getMatches(message, quot + "(.+?)" + quot))
 			part = part.replaceFirst(quot + Pattern.quote(str) + quot, pre + str + suf);
-		}
 
 		return part;
 	}
@@ -58,10 +54,7 @@ public class MarkdownParser {
 		Matcher matcher = pattern.matcher(string);
 		List<String> matches = new ArrayList<>();
 
-		while (matcher.find()) {
-			matches.add(matcher.group(1));
-		}
-
+		while (matcher.find()) matches.add(matcher.group(1));
 		return matches;
 	}
 

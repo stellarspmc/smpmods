@@ -2,7 +2,7 @@ package fun.spmc.smpmod.minecraft.economy;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.discord.utils.MarkdownParser;
+import fun.spmc.smpmod.discord.MarkdownParser;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
