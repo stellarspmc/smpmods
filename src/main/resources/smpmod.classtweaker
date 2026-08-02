@@ -1,0 +1,4 @@
+classTweaker v1 official
+
+accessible method net/minecraft/server/level/ChunkMap removeEntity (Lnet/minecraft/world/entity/Entity;)V
+accessible method net/minecraft/server/level/ChunkMap addEntity (Lnet/minecraft/world/entity/Entity;)V

@@ -1,11 +1,11 @@
 package fun.spmc.smpmod.minecraft.chunk;
 
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Blocks;
 
@@ -23,9 +23,7 @@ public class ChunkLoaderHandler {
 
                 if (!data.isLoader(pos)) {
                     data.addLoader(serverLevel, pos);
-                    player.sendSystemMessage(Component.literal("⚓: ")
-                            .withStyle(ChatFormatting.GOLD)
-                            .append(Component.literal("Chunk loader activated.").withStyle(ChatFormatting.GRAY)));
+                    MessageUtils.sendSuccessMessage((ServerPlayer) player, "Chunk loader activated.");
                 }
             }
             return InteractionResult.PASS;
@@ -38,24 +36,20 @@ public class ChunkLoaderHandler {
 
                 if (data.isLoader(pos)) {
                     data.removeLoader(serverLevel, pos);
-                    player.sendSystemMessage(Component.literal("⚓: ")
-                            .withStyle(ChatFormatting.RED)
-                            .append(Component.literal("Chunk loader deactivated.").withStyle(ChatFormatting.GRAY)));
+                    MessageUtils.sendErrorMessage((ServerPlayer) player, "Chunk loader deactivated.");
                 }
             }
             return true;
         });
 
         ServerPlayConnectionEvents.JOIN.register((_, _, server) -> {
-            if (server.getPlayerList().getPlayerCount() == 1) {
+            if (server.getPlayerList().getPlayerCount() == 1)
                 for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).restoreAll(level);
-            }
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((_, server) -> {
-            if (server.getPlayerList().getPlayerCount() <= 1) {
+            if (server.getPlayerList().getPlayerCount() <= 1)
                 for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).suspendAll(level);
-            }
         });
     }
 }

@@ -3,10 +3,9 @@ package fun.spmc.smpmod.minecraft.command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
-import net.minecraft.ChatFormatting;
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionSet;
@@ -21,8 +20,6 @@ import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class MapArtCommand {
 
-    private static final int MAX_MAP_SIZE = 5;
-
     public static LiteralArgumentBuilder<CommandSourceStack> buildCommand() {
         return Commands.literal("mapart")
                 .then(Commands.argument("dither", StringArgumentType.word())
@@ -31,75 +28,48 @@ public class MapArtCommand {
     }
 
     private static int processMapArt(CommandSourceStack source, String dither, String url) {
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("Only players can execute this command."));
-            return 0;
-        }
-
+        if (!(source.getEntity() instanceof ServerPlayer player)) return 0;
         if (!dither.equalsIgnoreCase("dither") && !dither.equalsIgnoreCase("none")) {
-            player.sendSystemMessage(Component.literal("✖ Invalid dither option! Use 'dither' or 'none'.").withStyle(ChatFormatting.RED));
+            MessageUtils.sendErrorMessage(player, "Invalid dither option! Use 'dither' or 'none'.");
             return 0;
         }
 
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            player.sendSystemMessage(Component.literal("✖ Invalid URL! Must start with http:// or https://").withStyle(ChatFormatting.RED));
+            MessageUtils.sendErrorMessage(player, "Invalid URL! Must start with http:// or https://");
             return 0;
         }
 
-        player.sendSystemMessage(Component.literal("🎨 Inspecting image dimensions...").withStyle(ChatFormatting.GRAY));
-
         CompletableFuture.runAsync(() -> {
             try {
-                int finalWidth;
-                int finalHeight;
-
                 URL imageUrl = new URI(url).toURL();
                 BufferedImage img = ImageIO.read(imageUrl);
 
                 if (img == null) {
-                    player.sendSystemMessage(Component.literal("✖ Could not load image from the provided URL.").withStyle(ChatFormatting.RED));
+                    MessageUtils.sendErrorMessage(player, "Could not load image from the provided URL.");
                     return;
                 }
 
-                int imgW = img.getWidth();
-                int imgH = img.getHeight();
-
-                int mapW = Math.max(1, (int) Math.ceil(imgW / 128.0));
-                int mapH = Math.max(1, (int) Math.ceil(imgH / 128.0));
-
-                if (mapW > MAX_MAP_SIZE || mapH > MAX_MAP_SIZE) {
-                    double scale = Math.min((double) MAX_MAP_SIZE / mapW, (double) MAX_MAP_SIZE / mapH);
-                    mapW = Math.max(1, (int) Math.round(mapW * scale));
-                    mapH = Math.max(1, (int) Math.round(mapH * scale));
-                }
-
-                finalWidth = mapW;
-                finalHeight = mapH;
-
-                double cost = 300.0 * finalWidth * finalHeight;
+                int mapW = Math.max(1, img.getWidth() / 128);
+                int mapH = Math.max(1, img.getHeight() / 128);
+                double cost = 300 * mapW * mapH;
 
                 minecraftServer.execute(() -> {
                     ServerLevel level = player.level();
                     EconomySavedData eco = EconomySavedData.get(level);
 
                     if (eco.getBalance(player.getUUID()) < cost) {
-                        player.sendSystemMessage(Component.literal(String.format("✖ Insufficient funds! You need $%.2f for a %dx%d map.", cost, finalWidth, finalHeight)).withStyle(ChatFormatting.RED));
+                        MessageUtils.sendErrorMessage(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH));
                         return;
                     }
 
                     if (eco.changeBalance(player.getUUID(), -cost)) {
-                        CommandSourceStack elevatedSource = player.createCommandSourceStack().withPermission(PermissionSet.ALL_PERMISSIONS);
-                        String internalCmd = String.format("image2map create %s %s", dither.toLowerCase(), url);
-
-                        minecraftServer.getCommands().performPrefixedCommand(elevatedSource, internalCmd);
-                        player.sendSystemMessage(Component.literal(String.format("🎨 Created a %dx%d map art for $%.2f!", finalWidth, finalHeight, cost)).withStyle(ChatFormatting.GREEN));
+                        minecraftServer.getCommands().performPrefixedCommand(player.createCommandSourceStack().withPermission(PermissionSet.ALL_PERMISSIONS), String.format("image2map create %s %s", dither.toLowerCase(), url));
+                        MessageUtils.sendSuccessMessage(player, String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost));
                     }
                 });
 
             } catch (Exception e) {
-                minecraftServer.execute(() ->
-                        player.sendSystemMessage(Component.literal("✖ Failed to process image URL: " + e.getMessage()).withStyle(ChatFormatting.RED))
-                );
+                minecraftServer.execute(() -> MessageUtils.sendErrorMessage(player, "Failed to process image URL: " + e.getMessage()));
             }
         });
 

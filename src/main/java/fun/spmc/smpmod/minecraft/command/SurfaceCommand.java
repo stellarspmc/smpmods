@@ -1,6 +1,5 @@
 package fun.spmc.smpmod.minecraft.command;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -19,14 +18,10 @@ public class SurfaceCommand {
     public static int surface(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Player player = context.getSource().getPlayerOrException();
         ServerLevel world = context.getSource().getLevel();
+        int y = world.getHeight(Heightmap.Types.WORLD_SURFACE, (int) Math.floor(player.getX()), (int) Math.floor(player.getZ()));
 
-        int x = (int) Math.floor(player.getX());
-        int z = (int) Math.floor(player.getZ());
-        int y = world.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-
-        player.teleportTo(x, y, z);
+        player.teleportTo(player.getX(), y, player.getZ());
         player.playSound(SoundEvents.WITHER_SHOOT, 1, 1);
-
-        return Command.SINGLE_SUCCESS;
+        return 1;
     }
 }

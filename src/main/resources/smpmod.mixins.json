@@ -4,8 +4,6 @@
   "package": "fun.spmc.smpmod.minecraft.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "ChunkMapInvoker",
-    "GameProfileAccessor",
     "MixinEnchantment",
     "bedrock.MixinSimpleGui",
     "chunk.MixinServerLevel",

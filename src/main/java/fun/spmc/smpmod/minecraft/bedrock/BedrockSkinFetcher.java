@@ -7,13 +7,15 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-import fun.spmc.smpmod.minecraft.mixin.ChunkMapInvoker;
-import fun.spmc.smpmod.minecraft.mixin.GameProfileAccessor;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.PositionMoveRotation;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
 
@@ -74,22 +76,8 @@ public class BedrockSkinFetcher {
         if (player == null) return;
 
         GameProfile profile = player.getGameProfile();
-        PropertyMap currentProperties = profile.properties();
-
-        Multimap<String, Property> map = LinkedHashMultimap.create();
-
-        for (Map.Entry<String, Property> entry : currentProperties.entries()) {
-            if (!entry.getKey().equals("textures")) {
-                map.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        map.put("textures", new Property("textures", skin.value(), skin.signature()));
-
-        PropertyMap newProperties = new PropertyMap(map);
-
-        ((GameProfileAccessor) (Object) profile).setProperties(newProperties);
-
+        profile.properties().removeAll("textures");
+        profile.properties().put("textures", new Property("textures", skin.value(), skin.signature()));
         resyncPlayerSkinToClients(server, player);
         modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
     }
@@ -107,9 +95,19 @@ public class BedrockSkinFetcher {
         }
 
         if (player.level() instanceof ServerLevel serverLevel) {
-            ChunkMapInvoker chunkMap = (ChunkMapInvoker) serverLevel.getChunkSource().chunkMap;
-            chunkMap.invokeRemoveEntity(player);
-            chunkMap.invokeAddEntity(player);
+            ChunkMap chunkMap = serverLevel.getChunkSource().chunkMap;
+            chunkMap.removeEntity(player);
+            chunkMap.addEntity(player);
+
+            player.connection.send(new ClientboundRespawnPacket(
+                    player.createCommonSpawnInfo(serverLevel),
+                    ClientboundRespawnPacket.KEEP_ALL_DATA
+            ));
+
+            player.connection.send(new ClientboundPlayerPositionPacket(0, PositionMoveRotation.of(player), Set.of()));
+            server.getPlayerList().sendAllPlayerInfo(player);
+            player.onUpdateAbilities();
+            player.inventoryMenu.sendAllDataToRemote();
         }
     }
 
@@ -144,9 +142,7 @@ public class BedrockSkinFetcher {
                     if (!json.has("value") || json.get("value").isJsonNull()) return Optional.empty();
 
                     String value = json.get("value").getAsString();
-                    String signature = (json.has("signature") && !json.get("signature").isJsonNull())
-                            ? json.get("signature").getAsString()
-                            : null;
+                    String signature = (json.has("signature") && !json.get("signature").isJsonNull()) ? json.get("signature").getAsString() : null;
 
                     if (value.isBlank()) return Optional.empty();
                     return Optional.of(new SkinProperty(value, signature));

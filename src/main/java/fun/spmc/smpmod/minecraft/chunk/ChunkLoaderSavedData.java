@@ -45,30 +45,24 @@ public class ChunkLoaderSavedData extends SavedData {
         return level.getDataStorage().computeIfAbsent(TYPE);
     }
 
-    public boolean addLoader(ServerLevel level, BlockPos pos) {
+    public void addLoader(ServerLevel level, BlockPos pos) {
         if (activeLoaders.add(pos)) {
             this.setDirty();
             if (!suspended) {
                 ChunkPos chunkPos = ChunkPos.containing(pos);
                 level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
             }
-            return true;
         }
-        return false;
     }
 
-    public boolean removeLoader(ServerLevel level, BlockPos pos) {
+    public void removeLoader(ServerLevel level, BlockPos pos) {
         if (activeLoaders.remove(pos)) {
             this.setDirty();
             ChunkPos chunkPos = ChunkPos.containing(pos);
             boolean hasOtherLoadersInChunk = activeLoaders.stream().anyMatch(p -> ChunkPos.containing(p).equals(chunkPos));
 
-            if (!hasOtherLoadersInChunk) {
-                level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
-            }
-            return true;
+            if (!hasOtherLoadersInChunk) level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
         }
-        return false;
     }
 
     public boolean isLoader(BlockPos pos) {

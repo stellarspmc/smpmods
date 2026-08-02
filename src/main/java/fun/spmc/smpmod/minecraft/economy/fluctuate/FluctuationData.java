@@ -21,6 +21,10 @@ public class FluctuationData {
     private long amountDeposited;
     private long amountWithdrawn;
 
+    private static final double SATURATION_VOLUME = 1000;
+    private static final double BUY_MARGIN = 1.15;
+    private static final double SELL_MARGIN = .85;
+
     public FluctuationData(Item mineral, double defaultPrice, double fluctuation, long amountDeposited, long amountWithdrawn) {
         this.mineral = mineral;
         this.defaultPrice = defaultPrice;
@@ -39,20 +43,37 @@ public class FluctuationData {
     public long getAmountDeposited() { return amountDeposited; }
     public long getAmountWithdrawn() { return amountWithdrawn; }
 
-    private static final double SATURATION_VOLUME = 1000.0;
-
-    public double getCurrentPrice() {
-        long netDemand = amountWithdrawn - amountDeposited;
-
+    public double getBasePriceAt(long netDemand) {
         double priceShift = (netDemand / SATURATION_VOLUME) * fluctuation;
         double calculatedPrice = defaultPrice * (1.0 + priceShift);
 
-        double minPrice = defaultPrice * .2;
-        double maxPrice = defaultPrice * 3;
+        double minPrice = defaultPrice * .15;
+        double maxPrice = defaultPrice * 4.5;
 
         double finalPrice = Math.clamp(calculatedPrice, minPrice, maxPrice);
-
         return Math.round(finalPrice * 100.0) / 100.0;
+    }
+
+    public double getCurrentPrice() {
+        return getBasePriceAt(amountWithdrawn - amountDeposited);
+    }
+
+    public double getBulkBuyCost(int amount) {
+        long currentNet = amountWithdrawn - amountDeposited;
+        double startPrice = getBasePriceAt(currentNet) * BUY_MARGIN;
+        double endPrice = getBasePriceAt(currentNet + amount) * BUY_MARGIN;
+
+        double avgPrice = (startPrice + endPrice) / 2;
+        return Math.round(avgPrice * amount * 100.0) / 100.0;
+    }
+
+    public double getBulkSellPayout(int amount) {
+        long currentNet = amountWithdrawn - amountDeposited;
+        double startPrice = getBasePriceAt(currentNet) * SELL_MARGIN;
+        double endPrice = getBasePriceAt(currentNet - amount) * SELL_MARGIN;
+
+        double avgPrice = (startPrice + endPrice) / 2.0;
+        return Math.round(avgPrice * amount * 100.0) / 100.0;
     }
 
     public boolean deposit(long amount) {
@@ -68,7 +89,7 @@ public class FluctuationData {
     }
 
     public void applyMarketDecay() {
-        this.amountDeposited = (int) (this.amountDeposited * .9);
-        this.amountWithdrawn = (int) (this.amountWithdrawn * .9);
+        this.amountDeposited = (long) (this.amountDeposited * 0.9);
+        this.amountWithdrawn = (long) (this.amountWithdrawn * 0.9);
     }
 }
