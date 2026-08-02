@@ -3,6 +3,7 @@ package fun.spmc.smpmod.minecraft.economy.shop;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -101,7 +102,7 @@ public class ShopData {
         int available = getAvailableStock(level);
 
         return Component.literal("\uD83D\uDED2 ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("shop details\n").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal("Shop details\n").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal("• selling ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(stack + "x ").withStyle(ChatFormatting.AQUA))
                 .append(itemSold.getHoverName().copy().withStyle(ChatFormatting.AQUA))
@@ -113,24 +114,21 @@ public class ShopData {
 
     public void processPurchase(ServerPlayer buyer) {
         ServerLevel level = buyer.level();
-
         int availableBatches = getAvailableStock(level);
         if (availableBatches < 1) {
-            buyer.sendSystemMessage(Component.literal("✖: This shop is out of stock!").withStyle(ChatFormatting.RED));
+            MessageUtils.sendErrorMessage(buyer, "This shop is out of stock!");
             return;
         }
 
         EconomySavedData eco = EconomySavedData.get(level);
-
         if (eco.getBalance(buyer.getUUID()) < price) {
-            buyer.sendSystemMessage(Component.literal(String.format("✖: Insufficient funds! You need $%.2f.", price)).withStyle(ChatFormatting.RED));
+            MessageUtils.sendErrorMessage(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price));
             return;
         }
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
             eco.changeBalance(ownerUuid, price);
             removeStockFromBarrel(level, stack);
-
             recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()), level);
 
             ItemStack itemsToGive = itemSold.copyWithCount(stack);

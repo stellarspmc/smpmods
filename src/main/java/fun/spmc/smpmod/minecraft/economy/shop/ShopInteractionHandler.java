@@ -1,12 +1,11 @@
 package fun.spmc.smpmod.minecraft.economy.shop;
 
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +39,6 @@ public class ShopInteractionHandler {
                 if (shop != null && player instanceof ServerPlayer serverPlayer) {
                     if (serverPlayer.isShiftKeyDown() && shop.isOwner(serverPlayer)) ShopManager.removeShop(shop, (ServerLevel) world);
                     else serverPlayer.sendSystemMessage(shop.getFormattedInfoComponent((ServerLevel) world));
-
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -54,10 +52,7 @@ public class ShopInteractionHandler {
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
                 if (!shop.isOwner(serverPlayer)) {
-                    serverPlayer.sendSystemMessage(
-                            Component.literal("✖: You cannot open someone else's shop barrel!")
-                                    .withStyle(ChatFormatting.RED)
-                    );
+                    MessageUtils.sendErrorMessage(serverPlayer, "You cannot open someone else's shop barrel!");
                     return InteractionResult.FAIL;
                 }
             }
@@ -69,10 +64,7 @@ public class ShopInteractionHandler {
 
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.sendSystemMessage(
-                        Component.literal("✖: You cannot break a shop!")
-                                .withStyle(ChatFormatting.RED)
-                );
+                MessageUtils.sendErrorMessage(serverPlayer, "You cannot break a shop!");
                 return false;
             }
             return true;
