@@ -52,7 +52,7 @@ public class EventHandler extends ListenerAdapter {
             MessageEmbed embed = new EmbedBuilder()
                     .setTitle("Server Status")
                     .setColor(0x2F3136)
-                    .setDescription(String.format("**%d** players currently exploring.", onlineCount))
+                    .setDescription(String.format("**%d** players currently in the SMP.", onlineCount))
                     .addField("Online List", playerList, false)
                     .build();
 
