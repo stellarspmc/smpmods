@@ -15,9 +15,7 @@ public class EnderChestCommand {
         return Commands.literal("enderchest")
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayerOrException();
-                    player.openMenu(new SimpleMenuProvider((syncId, inventory, p) ->
-                            ChestMenu.threeRows(syncId, inventory, p.getEnderChestInventory()), Component.translatable("block.minecraft.ender_chest")
-                    ));
+                    player.openMenu(new SimpleMenuProvider((syncId, inventory, p) -> ChestMenu.threeRows(syncId, inventory, p.getEnderChestInventory()), Component.translatable("block.minecraft.ender_chest")));
                     player.awardStat(Stats.OPEN_ENDERCHEST, 1);
                     return 1;
                 });

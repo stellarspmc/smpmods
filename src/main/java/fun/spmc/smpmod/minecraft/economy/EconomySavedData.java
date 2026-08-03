@@ -2,7 +2,7 @@ package fun.spmc.smpmod.minecraft.economy;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.discord.MarkdownParser;
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -94,7 +94,7 @@ public class EconomySavedData extends SavedData {
         if (startIndex >= filtered.size() || startIndex < 0) return "*No data available for this page.*";
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<UUID, Double> entry = filtered.get(i);
-            String name = MarkdownParser.escapeMarkdown(resolveName(entry.getKey()));
+            String name = MessageUtils.escapeMarkdown(resolveName(entry.getKey()));
 
             rankings.append(String.format("`#%02d` **%s** • $%,.2f\n", i + 1, name, entry.getValue()));
         }

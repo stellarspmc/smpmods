@@ -20,6 +20,7 @@ public class FluctuationData {
     private final double fluctuation;
     private long amountDeposited;
     private long amountWithdrawn;
+    private long lastTransactionTime = System.currentTimeMillis();
 
     private static final double SATURATION_VOLUME = 1000;
     private static final double BUY_MARGIN = 1.15;
@@ -45,10 +46,10 @@ public class FluctuationData {
 
     public double getBasePriceAt(long netDemand) {
         double priceShift = (netDemand / SATURATION_VOLUME) * fluctuation;
-        double calculatedPrice = defaultPrice * (1.0 + priceShift);
+        double calculatedPrice = defaultPrice * (1 + priceShift);
 
         double minPrice = defaultPrice * .15;
-        double maxPrice = defaultPrice * 4.5;
+        double maxPrice = defaultPrice * 9.5;
 
         double finalPrice = Math.clamp(calculatedPrice, minPrice, maxPrice);
         return Math.round(finalPrice * 100.0) / 100.0;
@@ -72,24 +73,28 @@ public class FluctuationData {
         double startPrice = getBasePriceAt(currentNet) * SELL_MARGIN;
         double endPrice = getBasePriceAt(currentNet - amount) * SELL_MARGIN;
 
-        double avgPrice = (startPrice + endPrice) / 2.0;
+        double avgPrice = (startPrice + endPrice) / 2;
         return Math.round(avgPrice * amount * 100.0) / 100.0;
     }
 
-    public boolean deposit(long amount) {
-        if (amount <= 0) return false;
+    public void deposit(long amount) {
+        if (amount <= 0) return;
         this.amountDeposited = Math.addExact(this.amountDeposited, amount);
-        return true;
+        this.lastTransactionTime = System.currentTimeMillis();
     }
 
-    public boolean withdraw(long amount) {
-        if (amount <= 0) return false;
+    public void withdraw(long amount) {
+        if (amount <= 0) return;
         this.amountWithdrawn = Math.addExact(this.amountWithdrawn, amount);
-        return true;
+        this.lastTransactionTime = System.currentTimeMillis();
     }
 
-    public void applyMarketDecay() {
-        this.amountDeposited = (long) (this.amountDeposited * 0.9);
-        this.amountWithdrawn = (long) (this.amountWithdrawn * 0.9);
+    public boolean applyMarketDecay() {
+        if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited > 0 || amountWithdrawn > 0)) {
+            this.amountDeposited = (long) (this.amountDeposited * .99);
+            this.amountWithdrawn = (long) (this.amountWithdrawn * .99);
+            return true;
+        }
+        return false;
     }
 }

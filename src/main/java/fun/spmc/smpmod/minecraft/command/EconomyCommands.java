@@ -5,9 +5,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.spmc.smpmod.minecraft.economy.EconomyConfig;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
 import fun.spmc.smpmod.minecraft.economy.atm.ATMMenu;
+import fun.spmc.smpmod.minecraft.economy.fluctuate.FluctuationData;
+import fun.spmc.smpmod.minecraft.economy.fluctuate.MarketState;
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -22,9 +24,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.Map;
-import java.util.Set;
 
 public class EconomyCommands {
 
@@ -53,8 +52,160 @@ public class EconomyCommands {
                 .then(Commands.literal("all").executes(EconomyCommands::depositAll));
     }
 
-    private static double getDepositValue(Item item) {
-        Item baseItem = switch (item.getDescriptionId()) {
+    private static int depositHand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        ItemStack hand = player.getInventory().getSelectedItem();
+
+        if (hand.isEmpty()) {
+            MessageUtils.sendErrorMessage(player, "Hold a valid market item or use /deposit all.");
+            return -1;
+        }
+
+        double payout = processItemDeposit(player, hand);
+        if (payout <= 0) {
+            MessageUtils.sendErrorMessage(player, "This item cannot be deposited into the market.");
+            return -1;
+        }
+
+        hand.setCount(0);
+        MessageUtils.sendSuccessMessage(player, String.format("Deposited items for $%.2f to your account.", payout));
+        return 1;
+    }
+
+    private static int depositAll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        double totalPayout = 0;
+
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.isEmpty()) continue;
+
+            double payout = processItemDeposit(player, stack);
+            if (payout > 0) {
+                totalPayout += payout;
+                player.getInventory().removeItem(i, stack.getCount());
+            }
+        }
+
+        if (totalPayout > 0) {
+            MessageUtils.sendSuccessMessage(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout));
+            return 1;
+        }
+
+        MessageUtils.sendErrorMessage(player, "No valid market currency items found in inventory.");
+        return -1;
+    }
+
+    private static double processItemDeposit(ServerPlayer player, ItemStack stack) {
+        Item baseItem = unwrapBlockToItem(stack.getItem());
+        int multiplier = (baseItem != stack.getItem()) ? 9 : 1;
+        int totalUnits = stack.getCount() * multiplier;
+        double blockTax = (multiplier == 9) ? 0.93 : 1.0;
+        return MarketState.sellMineral(player, baseItem, totalUnits, blockTax);
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {
+        return Commands.literal("withdraw")
+                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(100))
+                        .executes(ctx -> withdrawCashAmount(ctx, DoubleArgumentType.getDouble(ctx, "amount"))))
+                .then(Commands.argument("item", ItemArgument.item(buildContext))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
+                                MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey),
+                                builder
+                        ))
+                        .executes(ctx -> handleWithdrawItem(ctx, 1))
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
+                                .executes(ctx -> handleWithdrawItem(ctx, IntegerArgumentType.getInteger(ctx, "count")))));
+    }
+
+    private static int withdrawCashAmount(CommandContext<CommandSourceStack> ctx, double rawAmount) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+
+        int diamondCount = (int) (rawAmount / 100.0);
+        if (diamondCount <= 0) {
+            MessageUtils.sendErrorMessage(player, "Minimum cash withdrawal is $100.00 (1x Diamond).");
+            return -1;
+        }
+
+        double totalCost = MarketState.buyMineral(player, Items.DIAMOND, diamondCount);
+        if (totalCost == -1) {
+            MessageUtils.sendErrorMessage(player, String.format("Insufficient balance for %dx Diamonds.", diamondCount));
+            return -1;
+        }
+
+        giveExactItems(player, Items.DIAMOND, diamondCount);
+        MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%.2f.", diamondCount, totalCost));
+        return 1;
+    }
+
+    private static int handleWithdrawItem(CommandContext<CommandSourceStack> ctx, int count) throws CommandSyntaxException {
+        Item item = ItemArgument.getItem(ctx, "item").item().value();
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+
+        double totalCost = MarketState.buyMineral(player, item, count);
+
+        if (totalCost == -2) {
+            MessageUtils.sendErrorMessage(player, Component.translatable(item.getDescriptionId()) + " is not a tradeable market item.");
+            return -1;
+        }
+        if (totalCost == -1) {
+            MarketState market = MarketState.getState();
+            FluctuationData data = market.get(item);
+            double estimatedCost = data != null ? data.getBulkBuyCost(count) : 0;
+            MessageUtils.sendErrorMessage(player, String.format("Insufficient balance. You need $%.2f to withdraw %dx %s.",
+                    estimatedCost, count, Component.translatable(item.getDescriptionId())));
+            return -1;
+        }
+
+        giveExactItems(player, item, count);
+        MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx %s for $%.2f.", count, Component.translatable(item.getDescriptionId()), totalCost));
+        return 1;
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
+        return Commands.literal("send")
+                .then(Commands.argument("player", EntityArgument.player())
+                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
+                .executes((ctx -> {
+                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                    ServerPlayer sender = ctx.getSource().getPlayerOrException();
+                    double amount = Math.round(DoubleArgumentType.getDouble(ctx, "amount") * 100.0) / 100.0;
+
+                    if (sender.getUUID().equals(target.getUUID())) {
+                        MessageUtils.sendErrorMessage(sender, "You cannot send money to yourself.");
+                        return -1;
+                    }
+
+                    EconomySavedData eco = EconomySavedData.get(sender.level());
+                    if (eco.changeBalance(sender.getUUID(), -amount)) {
+                        eco.changeBalance(target.getUUID(), amount);
+
+                        target.sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
+                                .append(Component.literal("You received ").withStyle(ChatFormatting.GOLD))
+                                .append(Component.literal(String.format("$%.2f", amount)).withStyle(ChatFormatting.RED))
+                                .append(Component.literal(" from ").withStyle(ChatFormatting.GOLD))
+                                .append(Component.literal(sender.getName().getString()).withStyle(ChatFormatting.RED)));
+
+                        MessageUtils.sendSuccessMessage(sender, String.format("Sent $%.2f to %s.", amount, target.getName().getString()));
+                        return 1;
+                    }
+
+                    MessageUtils.sendErrorMessage(sender, "Insufficient funds.");
+                    return -1;
+        }))));
+    }
+
+
+    public static LiteralArgumentBuilder<CommandSourceStack> buildATM() {
+        return Commands.literal("atm")
+                .executes(ctx -> {
+                    ATMMenu.open(ctx.getSource().getPlayerOrException());
+                    return 1;
+                });
+    }
+
+    private static Item unwrapBlockToItem(Item item) {
+        return switch (item.getDescriptionId()) {
             case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
             case "block.minecraft.diamond_block" -> Items.DIAMOND;
             case "block.minecraft.gold_block" -> Items.GOLD_INGOT;
@@ -63,152 +214,8 @@ public class EconomyCommands {
             case "block.minecraft.iron_block" -> Items.IRON_INGOT;
             case "block.minecraft.copper_block" -> Items.COPPER_INGOT;
             case "block.minecraft.redstone_block" -> Items.REDSTONE;
-            default -> null;
+            default -> item;
         };
-
-        if (baseItem != null) return (EconomyConfig.getItemValue(baseItem) * 9) * 0.93;
-        return EconomyConfig.getItemValue(item);
-    }
-
-    private static int depositHand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        ItemStack hand = player.getInventory().getSelectedItem();
-        double itemValue = getDepositValue(hand.getItem());
-
-        if (hand.isEmpty() || itemValue <= 0) {
-            ctx.getSource().sendFailure(Component.literal("✖: Hold a valid currency item or use /deposit all.")
-                    .withStyle(ChatFormatting.RED));
-            return -1;
-        }
-
-        double totalValue = hand.getCount() * itemValue;
-        EconomySavedData eco = EconomySavedData.get(player.level());
-
-        if (eco.changeBalance(player.getUUID(), totalValue)) {
-            player.getInventory().removeFromSelected(true);
-
-            ctx.getSource().sendSuccess(() -> Component.literal("\uD83D\uDCB0: ")
-                    .withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal("Deposited ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(String.format("$%.2f", totalValue)).withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GRAY)), false);
-            return 1;
-        }
-
-        ctx.getSource().sendFailure(Component.literal("✖: Max balance reached.")
-                .withStyle(ChatFormatting.RED));
-        return -1;
-    }
-
-    private static int depositAll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        EconomySavedData eco = EconomySavedData.get(player.level());
-        double totalDeposited = 0;
-
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            double itemValue = getDepositValue(stack.getItem());
-
-            if (itemValue > 0 && !stack.isEmpty()) {
-                double stackValue = stack.getCount() * itemValue;
-                totalDeposited += stackValue;
-                player.getInventory().removeItem(i, stack.getCount());
-            }
-        }
-
-        if (totalDeposited > 0) {
-            eco.changeBalance(player.getUUID(), totalDeposited);
-            double finalTotal = totalDeposited;
-
-            ctx.getSource().sendSuccess(() -> Component.literal("\uD83D\uDCB0: ")
-                    .withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal("Deposited ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(String.format("$%.2f", finalTotal)).withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(" to your account.").withStyle(ChatFormatting.GRAY)), false);
-            return 1;
-        }
-
-        ctx.getSource().sendFailure(Component.literal("✖: No valid currency items found in inventory.")
-                .withStyle(ChatFormatting.RED));
-        return -1;
-    }
-
-    private static final Set<Item> WITHDRAWABLE_CURRENCIES = Set.of(
-            Items.NETHER_STAR,
-            Items.NETHERITE_INGOT,
-            Items.DIAMOND,
-            Items.GOLD_INGOT,
-            Items.EMERALD,
-            Items.LAPIS_LAZULI,
-            Items.IRON_INGOT,
-            Items.COPPER_INGOT
-    );
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {
-        return Commands.literal("withdraw")
-                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
-                        .executes(ctx -> {
-                            double amount = DoubleArgumentType.getDouble(ctx, "amount");
-                            return withdrawCommand(ctx, amount);
-                        }))
-                .then(Commands.argument("item", ItemArgument.item(buildContext))
-                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
-                                WITHDRAWABLE_CURRENCIES.stream().map(BuiltInRegistries.ITEM::getKey),
-                                builder
-                        ))
-                        .executes(ctx -> {
-                            Item item = ItemArgument.getItem(ctx, "item").item().value();
-
-                            if (!WITHDRAWABLE_CURRENCIES.contains(item)) {
-                                ctx.getSource().sendFailure(Component.literal("✖: You can only withdraw the designated items.").withStyle(ChatFormatting.RED));
-                                return 0;
-                            }
-                            return withdrawItemCommand(ctx, item, 1);
-                        })
-                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
-                                .executes(ctx -> {
-                                    Item item = ItemArgument.getItem(ctx, "item").item().value();
-                                    int count = IntegerArgumentType.getInteger(ctx, "count");
-
-                                    if (!WITHDRAWABLE_CURRENCIES.contains(item)) {
-                                        ctx.getSource().sendFailure(Component.literal("✖: You can only withdraw the designated items.").withStyle(ChatFormatting.RED));
-                                        return 0;
-                                    }
-                                    return withdrawItemCommand(ctx, item, count);
-                                })));
-    }
-
-    private static int withdrawItemCommand(CommandContext<CommandSourceStack> ctx, Item item, int count) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        EconomySavedData eco = EconomySavedData.get(player.level());
-        Double val = EconomyConfig.getSortedCurrencyValues().get(item);
-
-        if (val == null || val <= 0) {
-            ctx.getSource().sendFailure(Component.literal("✖: ")
-                    .withStyle(ChatFormatting.DARK_RED)
-                    .append(Component.literal(item.getDescriptionId() + " is not a valid currency item.")
-                            .withStyle(ChatFormatting.RED)));
-            return -1;
-        }
-
-        double totalCost = Math.round((val * count) * 100.0) / 100.0;
-
-        if (eco.changeBalance(player.getUUID(), -totalCost)) {
-            giveExactItems(player, item, count);
-
-            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("You withdrew ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(count + "x " + item.getDescriptionId()).withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(" for ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(String.format("$%.2f", totalCost)).withStyle(ChatFormatting.RED))
-                    .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
-            return 1;
-        } else {
-            ctx.getSource().sendFailure(Component.literal("✖: Insufficient balance. You need ").withStyle(ChatFormatting.DARK_RED)
-                    .append(Component.literal(String.format("$%.2f", totalCost)).withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(" to withdraw " + count + "x " + item.getDescriptionId() + ".").withStyle(ChatFormatting.DARK_RED)));
-            return -1;
-        }
     }
 
     private static void giveExactItems(ServerPlayer player, Item item, int totalCount) {
@@ -224,97 +231,47 @@ public class EconomyCommands {
         }
     }
 
-    private static int withdrawCommand(CommandContext<CommandSourceStack> ctx, double amount) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        EconomySavedData eco = EconomySavedData.get(player.level());
+    public static LiteralArgumentBuilder<CommandSourceStack> buildMarket(CommandBuildContext buildContext) {
+        return Commands.literal("market")
+                .executes(EconomyCommands::listMarketPrices)
+                .then(Commands.argument("item", ItemArgument.item(buildContext))
+                        .executes(ctx -> showItemPrice(ctx, ItemArgument.getItem(ctx, "item").item().value())));
+    }
 
-        amount = Math.round(amount * 100.0) / 100.0;
+    private static int listMarketPrices(CommandContext<CommandSourceStack> ctx) {
+        MarketState market = MarketState.getState();
+        market.getAll().forEach((item, data) -> {
+            double buyUnit = data.getBulkBuyCost(1);
+            double sellUnit = data.getBulkSellPayout(1);
+            double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
 
-        if (eco.changeBalance(player.getUUID(), -amount)) {
-            double remainingUnconverted = dropItem(amount, player);
+            String trend = ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
+            ChatFormatting trendColor = ratio >= 0 ? ChatFormatting.RED : ChatFormatting.GREEN; // High price = red buy, discount = green
 
-            if (remainingUnconverted > 0) eco.changeBalance(player.getUUID(), remainingUnconverted);
+            Component entry = Component.literal("• ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(trend).withStyle(trendColor));
 
-            double withdrawnAmount = amount - remainingUnconverted;
-            ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("You withdrew ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(String.format("$%.2f", withdrawnAmount)).withStyle(ChatFormatting.RED))
-                    .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
-            return 1;
-        } else {
-            ctx.getSource().sendFailure(Component.literal("✖: Insufficient balance to withdraw ").withStyle(ChatFormatting.DARK_RED)
-                    .append(Component.literal(String.format("$%.2f", amount)).withStyle(ChatFormatting.GOLD)));
+            ctx.getSource().sendSuccess(() -> entry, false);
+        });
+
+        return 1;
+    }
+
+    private static int showItemPrice(CommandContext<CommandSourceStack> ctx, Item item) {
+        MarketState market = MarketState.getState();
+        FluctuationData data = market.get(item);
+
+        if (data == null) {
+            ctx.getSource().sendFailure(Component.literal("This item is not tracked by the market."));
             return -1;
         }
-    }
 
-    public static double dropItem(double amount, ServerPlayer player) {
-        amount = Math.round(amount * 100.0) / 100.0;
+        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" Base Price: $%.2f", data.getDefaultPrice())).withStyle(ChatFormatting.GRAY), false);
+        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE), false);
+        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE), false);
 
-        for (Map.Entry<Item, Double> entry : EconomyConfig.getSortedCurrencyValues().entrySet()) {
-            Item item = entry.getKey();
-            double val = entry.getValue();
-
-            if (val <= 0) continue;
-
-            int countToGive = (int) (amount / val);
-            if (countToGive > 0) {
-                amount -= countToGive * val;
-                amount = Math.round(amount * 100.0) / 100.0;
-                int maxStack = item.getDefaultMaxStackSize();
-                while (countToGive > 0) {
-                    int stackSize = Math.min(countToGive, maxStack);
-                    ItemStack stack = new ItemStack(item, stackSize);
-                    if (!player.getInventory().add(stack)) {
-                        ItemEntity itemEntity = player.drop(stack, false);
-                        if (itemEntity != null) itemEntity.setNoPickUpDelay();
-                    }
-                    countToGive -= stackSize;
-                }
-            }
-        }
-        return amount;
-    }
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
-        return Commands.literal("send")
-                .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
-                                .executes(ctx -> {
-                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-                                    ServerPlayer sender = ctx.getSource().getPlayerOrException();
-                                    double amount = DoubleArgumentType.getDouble(ctx, "amount");
-                                    amount = Math.round(amount * 100.0) / 100.0;
-
-                                    EconomySavedData eco = EconomySavedData.get(sender.level());
-                                    if (eco.changeBalance(sender.getUUID(), -amount)) {
-                                        eco.changeBalance(target.getUUID(), amount);
-
-                                        double finalAmount = amount;
-                                        target.sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                                                .append(Component.literal("You received ").withStyle(ChatFormatting.GOLD))
-                                                .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.RED))
-                                                .append(Component.literal(" from ").withStyle(ChatFormatting.GOLD))
-                                                .append(Component.literal(sender.getName().getString()).withStyle(ChatFormatting.RED)));
-
-                                        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                                                .append(Component.literal("You sent ").withStyle(ChatFormatting.GOLD))
-                                                .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.RED))
-                                                .append(Component.literal(" to ").withStyle(ChatFormatting.GOLD))
-                                                .append(Component.literal(target.getName().getString()).withStyle(ChatFormatting.RED)), false);
-                                        return 1;
-                                    } else {
-                                        ctx.getSource().sendFailure(Component.literal("✖: Insufficient funds.").withStyle(ChatFormatting.DARK_RED));
-                                        return -1;
-                                    }
-                                })));
-    }
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildATM() {
-        return Commands.literal("atm")
-                .executes(ctx -> {
-                    ATMMenu.open(ctx.getSource().getPlayerOrException());
-                    return 1;
-                });
+        return 1;
     }
 }

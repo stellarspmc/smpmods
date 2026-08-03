@@ -1,18 +1,42 @@
 package fun.spmc.smpmod.minecraft.economy.fluctuate;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.serialization.Codec;
+import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MarketState extends SavedData {
+import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
+public class MarketState extends SavedData {
     private final Map<Item, FluctuationData> marketMap = new HashMap<>();
+
+    public static final Codec<MarketState> CODEC = FluctuationData.CODEC.listOf().xmap(
+            datum -> {
+                MarketState market = new MarketState();
+                for (FluctuationData data : datum) market.registerMineral(data.getMineral(), data.getDefaultPrice(), data.getFluctuation());
+                return market;
+            },
+            market -> List.copyOf(market.marketMap.values())
+    );
+
+    public static final SavedDataType<MarketState> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("smpmods", "market"),
+            MarketState::new,
+            CODEC,
+            DataFixTypes.SAVED_DATA_COMMAND_STORAGE
+    );
+
+    public MarketState() {}
 
     public FluctuationData get(Item item) {
         return marketMap.get(item);
@@ -25,5 +49,59 @@ public class MarketState extends SavedData {
     public void registerMineral(Item item, double defaultPrice, double fluctuation) {
         marketMap.putIfAbsent(item, new FluctuationData(item, defaultPrice, fluctuation));
         setDirty();
+    }
+
+    public static MarketState getState() {
+        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
+    }
+
+    public static double buyMineral(ServerPlayer player, Item item, int amount) {
+        MarketState market = MarketState.getState();
+        FluctuationData data = market.get(item);
+        if (data == null || amount <= 0) return -2;
+
+        double totalCost = Math.round(data.getBulkBuyCost(amount) * 100.0) / 100.0;
+        EconomySavedData eco = EconomySavedData.get(player.level());
+
+        if (!eco.changeBalance(player.getUUID(), -totalCost)) return -1;
+        data.withdraw(amount);
+        market.setDirty();
+        return totalCost;
+    }
+
+    public static double sellMineral(ServerPlayer player, Item item, int amount, double multiplier) {
+        MarketState market = MarketState.getState();
+        FluctuationData data = market.get(item);
+        if (data == null || amount <= 0) return 0;
+
+        double totalPayout = Math.round(data.getBulkSellPayout(amount) * multiplier * 100.0) / 100.0;
+        if (totalPayout <= 0) return 0;
+
+        EconomySavedData eco = EconomySavedData.get(player.level());
+
+        if (eco.changeBalance(player.getUUID(), totalPayout)) {
+            data.deposit(amount);
+            market.setDirty();
+            return totalPayout;
+        }
+
+        return 0;
+    }
+
+    private static int tickCounter = 0;
+
+    public static void register() {
+        MarketState market = MarketState.getState();
+        ServerTickEvents.END_SERVER_TICK.register((_) -> {
+            tickCounter++;
+            if (tickCounter >= 200) {
+                tickCounter = 0;
+                boolean updated = false;
+                for (FluctuationData data : market.marketMap.values()) if (data.applyMarketDecay()) updated = true;
+                if (updated) market.setDirty();
+            }
+        });
+        market.registerMineral(Items.GOLD_INGOT, 15.0, 1.45);
+        market.registerMineral(Items.IRON_INGOT, 1, 1.10);
     }
 }

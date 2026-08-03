@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.discord;
 
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
+import fun.spmc.smpmod.minecraft.utils.MessageUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -27,8 +28,9 @@ public class EventHandler extends ListenerAdapter {
                 .append(Component.literal("] "))
                 .append(Component.literal(discordTags).setStyle(finalStyle))
                 .append(Component.literal(": "))
-                .append(Component.literal(MarkdownParser.parseMarkdown(message)))));
+                .append(Component.literal(MessageUtils.parseMarkdown(message)))));
     }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         if (e.getChannel() != messageChannel || e.getAuthor().isBot() || minecraftServer == null) return;
@@ -44,7 +46,7 @@ public class EventHandler extends ListenerAdapter {
         if (event.getName().equals("players")) {
             int onlineCount = minecraftServer.getPlayerCount();
             String playerList = minecraftServer.getPlayerList().getPlayers().stream()
-                    .map(player -> MarkdownParser.escapeMarkdown(player.getGameProfile().name()))
+                    .map(player -> MessageUtils.escapeMarkdown(player.getGameProfile().name()))
                     .collect(Collectors.joining(", "));
 
             if (playerList.isEmpty()) playerList = "*No players online right now.*";

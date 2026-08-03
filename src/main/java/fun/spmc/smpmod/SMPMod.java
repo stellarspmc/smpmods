@@ -1,13 +1,11 @@
 package fun.spmc.smpmod;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.minecraft.chunk.ChunkLoaderHandler;
+import fun.spmc.smpmod.minecraft.chunk.ChunkLoaderSavedData;
 import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
-import fun.spmc.smpmod.minecraft.economy.shop.ShopInteractionHandler;
+import fun.spmc.smpmod.minecraft.economy.fluctuate.MarketState;
+import fun.spmc.smpmod.minecraft.economy.shop.ShopManager;
 import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
 import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
 import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
@@ -46,7 +44,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
-import okhttp3.*;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -69,35 +66,29 @@ public class SMPMod implements DedicatedServerModInitializer {
             modLogger.error(ExceptionUtils.getStackTrace(e));
             System.exit(1);
         }
+
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             try {
                 ConfigLoader.checkConfigs();
-
                 minecraftServer = server;
-                bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token())
-                        .setMemberCachePolicy(MemberCachePolicy.ALL)
-                        .enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES)
-                        .addEventListeners(new EventHandler())
-                        .build();
+                bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token()).setMemberCachePolicy(MemberCachePolicy.ALL).addEventListeners(new EventHandler()).enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES).build();
                 bot.awaitReady();
                 messageChannel = bot.getTextChannelById(ConfigLoader.CONFIG.messageChannelId());
                 bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
                 messageChannel.sendMessage("Server has opened!").queue();
-
                 bot.updateCommands().addCommands(
                         Commands.slash("players", "Get the number of players."),
-                        Commands.slash("top", "Get the economy leaderboard.")
-                                .addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
+                        Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
                 ).queue();
-
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);
             }
         });
 
-        ShopInteractionHandler.register();
-        ChunkLoaderHandler.register();
+        ShopManager.register();
+        ChunkLoaderSavedData.register();
+        MarketState.register();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
@@ -113,8 +104,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             if (messageChannel != null) messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });
 
-        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> DiscordWebhook.sendChatMessage(message.signedContent(), sender.getName().getString(), sender.getStringUUID()));
-
+        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> DiscordWebhook.sendChatMessage(message.signedContent().replaceAll("<[^>]*>", ""), sender.getName().getString(), sender.getStringUUID()));
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity instanceof ServerPlayer player && messageChannel != null) {
                 String deathMessage = damageSource.getLocalizedDeathMessage(player).getString();
