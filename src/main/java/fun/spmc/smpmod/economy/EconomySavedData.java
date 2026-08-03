@@ -13,6 +13,8 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fun.spmc.smpmod.SMPMod.minecraftServer;
+
 public class EconomySavedData extends SavedData {
 
     private static final Codec<Map<UUID, Double>> BALANCES_CODEC =
@@ -45,9 +47,8 @@ public class EconomySavedData extends SavedData {
         this(new HashMap<>(), new HashMap<>());
     }
 
-    public static EconomySavedData get(ServerLevel level) {
-        ServerLevel overworld = level.getServer().overworld();
-        return overworld.getDataStorage().computeIfAbsent(TYPE);
+    public static EconomySavedData get() {
+        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 
     public void registerPlayer(UUID uuid, String name) {

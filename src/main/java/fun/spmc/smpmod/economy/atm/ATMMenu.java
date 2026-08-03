@@ -29,7 +29,7 @@ public class ATMMenu {
     }
 
     private static void refreshGui(SimpleGui gui, ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get(player.level());
+        EconomySavedData eco = EconomySavedData.get();
 
         GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
         for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
@@ -75,7 +75,7 @@ public class ATMMenu {
     }
 
     private static void openBedrockForm(ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get(player.level());
+        EconomySavedData eco = EconomySavedData.get();
         double balance = eco.getBalance(player.getUUID());
 
         SimpleForm form = SimpleForm.builder()

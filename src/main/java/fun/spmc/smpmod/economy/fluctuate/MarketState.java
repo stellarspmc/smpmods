@@ -61,7 +61,7 @@ public class MarketState extends SavedData {
         if (data == null || amount <= 0) return -2;
 
         double totalCost = Math.round(data.getBulkBuyCost(amount) * 100.0) / 100.0;
-        EconomySavedData eco = EconomySavedData.get(player.level());
+        EconomySavedData eco = EconomySavedData.get();
 
         if (!eco.changeBalance(player.getUUID(), -totalCost)) return -1;
         data.withdraw(amount);
@@ -77,7 +77,7 @@ public class MarketState extends SavedData {
         double totalPayout = Math.round(data.getBulkSellPayout(amount) * multiplier * 100.0) / 100.0;
         if (totalPayout <= 0) return 0;
 
-        EconomySavedData eco = EconomySavedData.get(player.level());
+        EconomySavedData eco = EconomySavedData.get();
 
         if (eco.changeBalance(player.getUUID(), totalPayout)) {
             data.deposit(amount);

@@ -65,7 +65,7 @@ public class EventHandler extends ListenerAdapter {
             int page = pageOption != null ? pageOption.getAsInt() : 1;
 
             ServerLevel overworld = minecraftServer.overworld();
-            EconomySavedData eco = EconomySavedData.get(overworld);
+            EconomySavedData eco = EconomySavedData.get();
             String leaderboardData = eco.top(page);
 
             MessageEmbed embed = new EmbedBuilder()

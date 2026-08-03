@@ -21,8 +21,5 @@ public enum QuestType implements StringRepresentable {
         this.name = name;
     }
 
-    @Override
-    public @NonNull String getSerializedName() {
-        return this.name;
-    }
+    @Override public @NonNull String getSerializedName() { return this.name; }
 }

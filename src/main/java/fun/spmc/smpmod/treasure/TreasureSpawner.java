@@ -77,7 +77,7 @@ public class TreasureSpawner {
     }
 
     private static void announceLoot(ServerLevel world, String rarityName, ChatFormatting color, ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get(world);
+        EconomySavedData eco = EconomySavedData.get();
         double balance = eco.getBalance(player.getUUID());
         double balanceScale = (balance <= 0) ? 1 : Math.clamp(1000 / balance, 0, 1);
         eco.changeBalance(player.getUUID(), 3 * balanceScale);

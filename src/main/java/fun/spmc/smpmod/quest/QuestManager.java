@@ -23,7 +23,7 @@ public class QuestManager extends SavedData {
     }
 
     public void addQuestToPlayer(ServerPlayer player, Quest quest) {
-        List<ActiveQuest> quests = playerQuests.computeIfAbsent(player.getUUID(), k -> new ArrayList<>());
+        List<ActiveQuest> quests = playerQuests.computeIfAbsent(player.getUUID(), _ -> new ArrayList<>());
         quests.add(new ActiveQuest(quest, 0, false));
         setDirty();
     }

@@ -115,8 +115,7 @@ public class ShopManager extends SavedData {
     }
 
     public static ShopManager get(ServerLevel level) {
-        ServerLevel overworld = level.getServer().overworld();
-        return overworld.getDataStorage().computeIfAbsent(TYPE);
+        return level.getDataStorage().computeIfAbsent(TYPE);
     }
 
     public static void register() {

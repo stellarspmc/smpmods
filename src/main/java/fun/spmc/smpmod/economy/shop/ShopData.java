@@ -128,7 +128,7 @@ public class ShopData { // no records
             return;
         }
 
-        EconomySavedData eco = EconomySavedData.get(level);
+        EconomySavedData eco = EconomySavedData.get();
         if (eco.getBalance(buyer.getUUID()) < price) {
             MessageUtils.sendErrorMessage(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price));
             return;

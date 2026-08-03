@@ -55,7 +55,7 @@ public class MapArtCommand {
 
                 minecraftServer.execute(() -> {
                     ServerLevel level = player.level();
-                    EconomySavedData eco = EconomySavedData.get(level);
+                    EconomySavedData eco = EconomySavedData.get();
 
                     if (eco.getBalance(player.getUUID()) < cost) {
                         MessageUtils.sendErrorMessage(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH));

@@ -95,7 +95,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
             BedrockSkinFetcher.restoreSkin(server, player);
-            EconomySavedData eco = EconomySavedData.get(player.level());
+            EconomySavedData eco = EconomySavedData.get();
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
 
             if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
@@ -113,7 +113,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 String fullMessage = "☠ " + deathMessage + " at (" + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
                 messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
 
-                EconomySavedData eco = EconomySavedData.get(player.level());
+                EconomySavedData eco = EconomySavedData.get();
                 double victimBalance = eco.getBalance(player.getUUID());
 
                 if (victimBalance > 0) {
@@ -157,7 +157,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
                 if (playTime > 0) {
-                    EconomySavedData eco = EconomySavedData.get(player.level());
+                    EconomySavedData eco = EconomySavedData.get();
                     eco.changeBalance(player.getUUID(), 1.2);
                 }
 

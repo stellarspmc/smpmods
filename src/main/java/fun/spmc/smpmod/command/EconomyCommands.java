@@ -35,7 +35,7 @@ public class EconomyCommands {
     }
 
     private static int balanceCommand(CommandContext<CommandSourceStack> ctx, ServerPlayer target) {
-        EconomySavedData eco = EconomySavedData.get(ctx.getSource().getLevel());
+        EconomySavedData eco = EconomySavedData.get();
         double bal = eco.getBalance(target.getUUID());
         boolean isSelf = ctx.getSource().getEntity() == target;
 
@@ -176,7 +176,7 @@ public class EconomyCommands {
                         return -1;
                     }
 
-                    EconomySavedData eco = EconomySavedData.get(sender.level());
+                    EconomySavedData eco = EconomySavedData.get();
                     if (eco.changeBalance(sender.getUUID(), -amount)) {
                         eco.changeBalance(target.getUUID(), amount);
 
