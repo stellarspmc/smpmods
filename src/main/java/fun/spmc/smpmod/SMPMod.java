@@ -2,15 +2,15 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.minecraft.chunk.ChunkLoaderSavedData;
-import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
-import fun.spmc.smpmod.minecraft.economy.fluctuate.MarketState;
-import fun.spmc.smpmod.minecraft.economy.shop.ShopManager;
-import fun.spmc.smpmod.minecraft.treasure.TreasureEvents;
-import fun.spmc.smpmod.minecraft.utils.CommandRegistry;
-import fun.spmc.smpmod.minecraft.events.MobSpawnedEvent;
+import fun.spmc.smpmod.chunk.ChunkLoaderSavedData;
+import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.fluctuate.MarketState;
+import fun.spmc.smpmod.economy.shop.ShopManager;
+import fun.spmc.smpmod.treasure.TreasureEvents;
+import fun.spmc.smpmod.utils.CommandRegistry;
+import fun.spmc.smpmod.events.MobSpawnedEvent;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
-import fun.spmc.smpmod.minecraft.bedrock.BedrockSkinFetcher;
+import fun.spmc.smpmod.bedrock.BedrockSkinFetcher;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -149,6 +149,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             messageChannel.sendMessage("Server shutting down...").queue();
             bot.shutdown();
         });
+
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
         ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
     }

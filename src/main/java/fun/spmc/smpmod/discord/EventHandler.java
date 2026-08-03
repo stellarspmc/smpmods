@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.discord;
 
-import fun.spmc.smpmod.minecraft.economy.EconomySavedData;
-import fun.spmc.smpmod.minecraft.utils.MessageUtils;
+import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.utils.MessageUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
