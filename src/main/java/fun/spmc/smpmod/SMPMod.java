@@ -12,6 +12,7 @@ import fun.spmc.smpmod.utils.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
 import fun.spmc.smpmod.bedrock.BedrockSkinFetcher;
 
+import fun.spmc.smpmod.utils.MessageUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -111,6 +112,26 @@ public class SMPMod implements DedicatedServerModInitializer {
                 String deathMessage = damageSource.getLocalizedDeathMessage(player).getString();
                 String fullMessage = "☠ " + deathMessage + " at (" + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
                 messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
+
+                EconomySavedData eco = EconomySavedData.get(player.level());
+                double victimBalance = eco.getBalance(player.getUUID());
+
+                if (victimBalance > 0) {
+                    double lossPercent = 0.05 + (player.getRandom().nextDouble() * 0.15);
+                    double totalLost = Math.round((victimBalance * lossPercent) * 100.0) / 100.0;
+
+                    if (totalLost > 0) {
+                        eco.changeBalance(player.getUUID(), -totalLost);
+                        MessageUtils.sendErrorMessage(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100));
+
+                        if (damageSource.getEntity() instanceof ServerPlayer killer && !killer.getUUID().equals(player.getUUID())) {
+                            double bountyReward = Math.round((totalLost * .7) * 100.0) / 100.0;
+
+                            eco.changeBalance(killer.getUUID(), bountyReward);
+                            MessageUtils.sendSuccessMessage(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.getScoreboardName(), bountyReward));
+                        }
+                    }
+                }
             }
         });
 
