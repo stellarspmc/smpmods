@@ -1,25 +1,29 @@
 # SMPMods
-This suite of mods (combined and modified with many other) is for my minecraft server (mc.spmc.tk). It is built around the discord and minecraft server.
+This suite of mods (combined and modified with many other) is for my minecraft server (mc.spmc.fun). It is built around the discord and minecraft server.
 
 ### Features
-- Some commands (/surface, /myip...)
-- Discord Notifications
-- More incoming!
+- Some commands (/surface, /enderchest...)
+- Discord notifications
+- Chunk loaders
+- Economy system
+- Shop system
+- Bedrock support
+- Weird bosses (inside joke of server)
+
+### Roadmap
+- Server Vault
+- Plant System
+- Fishing System
+- Questing
+- Machines
+- Cosmetics
+- Dimensions to explore
+- More...
 
 # Config
-It is stored at root/config/smpmods.properties
+It is stored at `root/config/smpmod_discord.json`
 
-Below is an example.
-```text
-// URLs
-webhook_url=https://discord.com/api/webhooks/insert_webhook
-avatar_url=https://minepic.org/head/%player%/1024
-// Discord Stuff
-bot_token=[token]
-message_channel_id=Text Channel ID
-guild_id=Discord Server ID
-appeal_channel_id=Text Channel ID
-```
+Please edit it yourself to make everything work for you.
 
 # Changelog
 
