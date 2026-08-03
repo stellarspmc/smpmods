@@ -81,6 +81,9 @@ public class SMPMod implements DedicatedServerModInitializer {
                         Commands.slash("players", "Get the number of players."),
                         Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
                 ).queue();
+
+
+                MarketState.register();
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);
@@ -89,7 +92,6 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         ShopManager.register();
         ChunkLoaderSavedData.register();
-        MarketState.register();
         ServerMobSpawner.registerMobs();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
