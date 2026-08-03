@@ -6,9 +6,9 @@ import fun.spmc.smpmod.chunk.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomySavedData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
+import fun.spmc.smpmod.events.ServerMobSpawner;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.utils.CommandRegistry;
-import fun.spmc.smpmod.events.MobSpawnedEvent;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
 import fun.spmc.smpmod.bedrock.BedrockSkinFetcher;
 
@@ -89,6 +89,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ShopManager.register();
         ChunkLoaderSavedData.register();
         MarketState.register();
+        ServerMobSpawner.registerMobs();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
@@ -151,6 +152,6 @@ public class SMPMod implements DedicatedServerModInitializer {
         });
 
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
-        ServerEntityEvents.ENTITY_LOAD.register(MobSpawnedEvent::onEntityJoin);
+        ServerEntityEvents.ENTITY_LOAD.register(ServerMobSpawner::onEntityJoin);
     }
 }

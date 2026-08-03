@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ShopData {
+public class ShopData { // no records
     public static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
 
     public static final Codec<ShopData> CODEC = RecordCodecBuilder.create(instance -> instance.group(

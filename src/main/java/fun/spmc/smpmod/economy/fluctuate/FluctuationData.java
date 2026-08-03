@@ -6,7 +6,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
 public class FluctuationData {
-
     public static final Codec<FluctuationData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("mineral").forGetter(FluctuationData::getMineral),
             Codec.DOUBLE.fieldOf("default_price").forGetter(FluctuationData::getDefaultPrice),

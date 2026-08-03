@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -22,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +44,10 @@ public class TreasureEvents {
         String folderName = getFolderFromBiome(biomeKey);
 
         double fatigueMultiplier = TreasureFatigue.getMultiplier(player.getUUID());
+
+        if (EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) > 5) fatigueMultiplier *= Math.pow(0.65, EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) - 5);
+        if (player.getEffect(MobEffects.HASTE) != null && Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() > 1) fatigueMultiplier *= Math.pow(0.55, Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() - 1);
+
         Rarity rarity = rollTreasureRarity(state, fatigueMultiplier, player.getRandom(), world.dimension());
         if (rarity == null) return;
 
