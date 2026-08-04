@@ -118,8 +118,8 @@ public class SMPMod implements DedicatedServerModInitializer {
                 EconomySavedData eco = EconomySavedData.get();
                 double victimBalance = eco.getBalance(player.getUUID());
 
-                if (victimBalance > 0) {
-                    double lossPercent = 0.05 + (player.getRandom().nextDouble() * 0.15);
+                if (victimBalance >= 1000) {
+                    double lossPercent = .05 + (player.getRandom().nextDouble() * .05);
                     double totalLost = Math.round((victimBalance * lossPercent) * 100.0) / 100.0;
 
                     if (totalLost > 0) {
