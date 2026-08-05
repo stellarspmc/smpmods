@@ -6,7 +6,6 @@ import fun.spmc.smpmod.economy.EconomySavedData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionSet;
 
@@ -54,7 +53,6 @@ public class MapArtCommand {
                 double cost = 300 * mapW * mapH;
 
                 minecraftServer.execute(() -> {
-                    ServerLevel level = player.level();
                     EconomySavedData eco = EconomySavedData.get();
 
                     if (eco.getBalance(player.getUUID()) < cost) {

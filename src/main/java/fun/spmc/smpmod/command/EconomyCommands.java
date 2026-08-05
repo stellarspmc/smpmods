@@ -15,32 +15,38 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class EconomyCommands {
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildBalance() {
         return Commands.literal("bal")
-                .then(Commands.argument("player", EntityArgument.player())
-                        .executes(ctx -> balanceCommand(ctx, EntityArgument.getPlayer(ctx, "player"))))
-                .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException()));
+                .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                        .executes(ctx -> balanceCommand(ctx, null, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next())))
+                .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException(), null));
     }
 
-    private static int balanceCommand(CommandContext<CommandSourceStack> ctx, ServerPlayer target) {
+    private static int balanceCommand(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target, @Nullable NameAndId id) {
         EconomySavedData eco = EconomySavedData.get();
-        double bal = eco.getBalance(target.getUUID());
-        boolean isSelf = ctx.getSource().getEntity() == target;
-
+        String name = (target != null) ? "You" : Objects.requireNonNull(id).name();
+        double bal = (target != null) ? eco.getBalance(target.getUUID()) : eco.getBalance(Objects.requireNonNull(id).id());
         ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal((isSelf ? "You" : target.getName().getString()) + " have ").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal(name + " have ").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(String.format("$%.2f", bal)).withStyle(ChatFormatting.RED))
                 .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
         return 1;
@@ -98,19 +104,16 @@ public class EconomyCommands {
 
     private static double processItemDeposit(ServerPlayer player, ItemStack stack) {
         Item baseItem = unwrapBlockToItem(stack.getItem());
-        int multiplier = (baseItem != stack.getItem()) ? 9 : 1;
-        int totalUnits = stack.getCount() * multiplier;
-        double blockTax = (multiplier == 9) ? 0.93 : 1.0;
+        int totalUnits = stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1);
+        double blockTax = (baseItem != stack.getItem()) ? .93 : 1;
         return MarketState.sellMineral(player, baseItem, totalUnits, blockTax);
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {
         return Commands.literal("withdraw")
-                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(100))
-                        .executes(ctx -> withdrawCashAmount(ctx, DoubleArgumentType.getDouble(ctx, "amount"))))
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
                         .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
-                                MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey),
+                                Stream.concat(MarketState.getState().getAll().keySet().stream(), Stream.of(Items.DIAMOND)).distinct().map(BuiltInRegistries.ITEM::getKey),
                                 builder
                         ))
                         .executes(ctx -> handleWithdrawItem(ctx, 1))
@@ -118,75 +121,61 @@ public class EconomyCommands {
                                 .executes(ctx -> handleWithdrawItem(ctx, IntegerArgumentType.getInteger(ctx, "count")))));
     }
 
-    private static int withdrawCashAmount(CommandContext<CommandSourceStack> ctx, double rawAmount) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-
-        int diamondCount = (int) (rawAmount / 100.0);
-        if (diamondCount <= 0) {
-            MessageUtils.sendErrorMessage(player, "Minimum cash withdrawal is $100.00 (1x Diamond).");
-            return -1;
-        }
-
-        double totalCost = MarketState.buyMineral(player, Items.DIAMOND, diamondCount);
-        if (totalCost == -1) {
-            MessageUtils.sendErrorMessage(player, String.format("Insufficient balance for %dx Diamonds.", diamondCount));
-            return -1;
-        }
-
-        giveExactItems(player, Items.DIAMOND, diamondCount);
-        MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%.2f.", diamondCount, totalCost));
-        return 1;
-    }
-
     private static int handleWithdrawItem(CommandContext<CommandSourceStack> ctx, int count) throws CommandSyntaxException {
         Item item = ItemArgument.getItem(ctx, "item").item().value();
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
+        if (item == Items.DIAMOND) {
+            EconomySavedData.get().changeBalance(player.getUUID(), -count * 100);
+            giveExactItems(player, Items.DIAMOND, count);
+            MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", count, count * 100));
+        }
+
         double totalCost = MarketState.buyMineral(player, item, count);
 
         if (totalCost == -2) {
-            MessageUtils.sendErrorMessage(player, Component.translatable(item.getDescriptionId()) + " is not a tradeable market item.");
+            player.sendSystemMessage(Component.literal("✖: ").append(Component.translatable(item.getDescriptionId())).append(" is not a tradeable market item.").withStyle(ChatFormatting.RED));
             return -1;
         }
         if (totalCost == -1) {
             MarketState market = MarketState.getState();
             FluctuationData data = market.get(item);
             double estimatedCost = data != null ? data.getBulkBuyCost(count) : 0;
-            MessageUtils.sendErrorMessage(player, String.format("Insufficient balance. You need $%.2f to withdraw %dx %s.",
-                    estimatedCost, count, Component.translatable(item.getDescriptionId())));
+            player.sendSystemMessage(Component.literal(String.format("✖: Insufficient balance. You need $%.2f to withdraw %dx ", estimatedCost, count)).append(Component.translatable(item.getDescriptionId())).append(".").withStyle(ChatFormatting.RED));
             return -1;
         }
 
         giveExactItems(player, item, count);
-        MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx %s for $%.2f.", count, Component.translatable(item.getDescriptionId()), totalCost));
+        player.sendSystemMessage(Component.literal(String.format("🏢: Withdrew %dx ", count)).append(Component.translatable(item.getDescriptionId())).append(String.format(" for $%.2f.", totalCost)).withStyle(ChatFormatting.GREEN));
         return 1;
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
         return Commands.literal("send")
-                .then(Commands.argument("player", EntityArgument.player())
+                .then(Commands.argument("player", GameProfileArgument.gameProfile())
                 .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
                 .executes((ctx -> {
-                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                    NameAndId target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next();
                     ServerPlayer sender = ctx.getSource().getPlayerOrException();
                     double amount = Math.round(DoubleArgumentType.getDouble(ctx, "amount") * 100.0) / 100.0;
 
-                    if (sender.getUUID().equals(target.getUUID())) {
+                    if (sender.getUUID().equals(target.id())) {
                         MessageUtils.sendErrorMessage(sender, "You cannot send money to yourself.");
                         return -1;
                     }
 
                     EconomySavedData eco = EconomySavedData.get();
                     if (eco.changeBalance(sender.getUUID(), -amount)) {
-                        eco.changeBalance(target.getUUID(), amount);
+                        eco.changeBalance(target.id(), amount);
 
-                        target.sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
+                        if (minecraftServer.getPlayerList().getPlayer(target.id()) != null)
+                            Objects.requireNonNull(minecraftServer.getPlayerList().getPlayer(target.id())).sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                                 .append(Component.literal("You received ").withStyle(ChatFormatting.GOLD))
                                 .append(Component.literal(String.format("$%.2f", amount)).withStyle(ChatFormatting.RED))
                                 .append(Component.literal(" from ").withStyle(ChatFormatting.GOLD))
                                 .append(Component.literal(sender.getName().getString()).withStyle(ChatFormatting.RED)));
 
-                        MessageUtils.sendSuccessMessage(sender, String.format("Sent $%.2f to %s.", amount, target.getName().getString()));
+                        MessageUtils.sendSuccessMessage(sender, String.format("Sent $%.2f to %s.", amount, target.name()));
                         return 1;
                     }
 
@@ -235,25 +224,34 @@ public class EconomyCommands {
         return Commands.literal("market")
                 .executes(EconomyCommands::listMarketPrices)
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
+                                MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey),
+                                builder
+                        ))
                         .executes(ctx -> showItemPrice(ctx, ItemArgument.getItem(ctx, "item").item().value())));
     }
 
     private static int listMarketPrices(CommandContext<CommandSourceStack> ctx) {
         MarketState market = MarketState.getState();
-        market.getAll().forEach((item, data) -> {
-            double buyUnit = data.getBulkBuyCost(1);
-            double sellUnit = data.getBulkSellPayout(1);
-            double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
+        market.getAll().entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue().getDefaultPrice(), e1.getValue().getDefaultPrice()))
+                .forEach((entry) -> {
+                    Item item = entry.getKey();
+                    FluctuationData data = entry.getValue();
 
-            String trend = ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
-            ChatFormatting trendColor = ratio >= 0 ? ChatFormatting.RED : ChatFormatting.GREEN; // High price = red buy, discount = green
+                    double buyUnit = data.getBulkBuyCost(1);
+                    double sellUnit = data.getBulkSellPayout(1);
+                    double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
 
-            Component entry = Component.literal("• ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
-                    .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
-                    .append(Component.literal(trend).withStyle(trendColor));
+                    String trend = ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
+                    ChatFormatting trendColor = ratio >= 0 ? ChatFormatting.RED : ChatFormatting.GREEN;
 
-            ctx.getSource().sendSuccess(() -> entry, false);
+                    Component message = Component.literal("• ").withStyle(ChatFormatting.GRAY)
+                            .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                            .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
+                            .append(Component.literal(trend).withStyle(trendColor));
+
+                    ctx.getSource().sendSuccess(() -> message, false);
         });
 
         return 1;
@@ -272,6 +270,21 @@ public class EconomyCommands {
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE), false);
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE), false);
 
+        return 1;
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
+        return Commands.literal("top")
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                        .executes(ctx -> topCommand(ctx, IntegerArgumentType.getInteger(ctx, "page"))))
+                .executes(ctx -> topCommand(ctx, 1));
+    }
+
+    private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
+        EconomySavedData eco = EconomySavedData.get();
+        String output = eco.top(page);
+        ctx.getSource().sendSuccess(() -> Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD)
+                .append("\n" + output), false);
         return 1;
     }
 }

@@ -3,6 +3,7 @@ package fun.spmc.smpmod.economy.fluctuate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 
 public class FluctuationData {
@@ -47,10 +48,7 @@ public class FluctuationData {
         double priceShift = (netDemand / SATURATION_VOLUME) * fluctuation;
         double calculatedPrice = defaultPrice * (1 + priceShift);
 
-        double minPrice = defaultPrice * .15;
-        double maxPrice = defaultPrice * 9.5;
-
-        double finalPrice = Math.clamp(calculatedPrice, minPrice, maxPrice);
+        double finalPrice = Math.max(calculatedPrice, 0);
         return Math.round(finalPrice * 100.0) / 100.0;
     }
 
@@ -88,12 +86,28 @@ public class FluctuationData {
         this.lastTransactionTime = System.currentTimeMillis();
     }
 
-    public boolean applyMarketDecay() {
+    public boolean applyMarketDecay(RandomSource source) {
         if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited > 0 || amountWithdrawn > 0)) {
-            this.amountDeposited = (long) (this.amountDeposited * .99);
-            this.amountWithdrawn = (long) (this.amountWithdrawn * .99);
+            amountDeposited = processFluctuation(amountDeposited, source.nextFloat() < 0.60f);
+            amountWithdrawn = processFluctuation(amountWithdrawn, source.nextFloat() < 0.60f);
             return true;
         }
         return false;
+    }
+
+    private long processFluctuation(long currentAmount, boolean moveTowardsBase) {
+        if (currentAmount < 0) return 0;
+        long newAmount;
+        if (moveTowardsBase) {
+            if (currentAmount <= 30) return currentAmount + 1;
+            newAmount = (long) (currentAmount * 0.99);
+            if (newAmount == currentAmount) newAmount--;
+        } else {
+            newAmount = (long) (currentAmount * 1.01);
+            if (newAmount == currentAmount) newAmount++;
+            newAmount = Math.min(100000L, newAmount);
+        }
+
+        return Math.max(0, newAmount);
     }
 }

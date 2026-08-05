@@ -138,6 +138,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (server.getPlayerList().getPlayers().isEmpty()) return;
             tickCounter++;
 
             if (tickCounter % 1200 != 0) return;

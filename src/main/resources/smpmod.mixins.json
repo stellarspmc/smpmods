@@ -5,7 +5,6 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "MixinEnchantment",
-    "bedrock.MixinSimpleGui",
     "chunk.MixinServerLevel",
     "player.MixinPlayerAdvancementTracker",
     "shop.MixinHopperBlockEntity",

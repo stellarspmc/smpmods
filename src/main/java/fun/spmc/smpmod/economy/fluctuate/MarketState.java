@@ -72,12 +72,13 @@ public class MarketState extends SavedData {
     public static double sellMineral(ServerPlayer player, Item item, int amount, double multiplier) {
         MarketState market = MarketState.getState();
         FluctuationData data = market.get(item);
+        EconomySavedData eco = EconomySavedData.get();
+
+        if (item == Items.DIAMOND) return eco.changeBalance(player.getUUID(), 100 * amount * multiplier) ? 100 * amount * multiplier : 0;
         if (data == null || amount <= 0) return 0;
 
         double totalPayout = Math.round(data.getBulkSellPayout(amount) * multiplier * 100.0) / 100.0;
         if (totalPayout <= 0) return 0;
-
-        EconomySavedData eco = EconomySavedData.get();
 
         if (eco.changeBalance(player.getUUID(), totalPayout)) {
             data.deposit(amount);
@@ -93,6 +94,7 @@ public class MarketState extends SavedData {
     public static void register() {
         MarketState market = MarketState.getState();
 
+        market.registerMineral(Items.HEART_OF_THE_SEA, 2000, 6);
         market.registerMineral(Items.NETHER_STAR, 1250, 3);
         market.registerMineral(Items.NETHERITE_INGOT, 750, 2.15);
         market.registerMineral(Items.GOLD_INGOT, 5, 1.75);
@@ -100,14 +102,23 @@ public class MarketState extends SavedData {
         market.registerMineral(Items.IRON_INGOT, 1, 1.25);
         market.registerMineral(Items.LAPIS_LAZULI, .5, 1.15);
         market.registerMineral(Items.REDSTONE, .2, 1.15);
-        market.registerMineral(Items.COPPER_INGOT, .1, .65);
+        market.registerMineral(Items.COPPER_INGOT, .1, 2);
+        market.registerMineral(Items.COAL, .01, 25);
 
-        ServerTickEvents.END_SERVER_TICK.register((_) -> {
+        ServerTickEvents.END_SERVER_TICK.register((server) -> {
+            int playerCount = server.getPlayerList().getPlayerCount();
+            if (playerCount == 0) return;
+            int targetInterval = 5500 + (playerCount - 1) * 500;
             tickCounter++;
-            if (tickCounter >= 200) {
+
+            if (tickCounter >= targetInterval) {
                 tickCounter = 0;
+
                 boolean updated = false;
-                for (FluctuationData data : market.marketMap.values()) if (data.applyMarketDecay()) updated = true;
+                for (FluctuationData data : market.marketMap.values()) {
+                    if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
+                }
+
                 if (updated) market.setDirty();
             }
         });
