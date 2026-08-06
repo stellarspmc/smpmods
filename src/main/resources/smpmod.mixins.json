@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "MixinEnchantment",
+    "MixinPlayerData",
     "chunk.MixinServerLevel",
     "player.MixinPlayerAdvancementTracker",
     "shop.MixinHopperBlockEntity",
