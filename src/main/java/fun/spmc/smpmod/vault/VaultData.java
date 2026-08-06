@@ -4,8 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import fun.spmc.smpmod.vault.entries.*;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -72,36 +74,74 @@ public class VaultData extends SavedData {
 
     public void addMoney(double amount) {
         this.currentMoney += amount;
-        if (this.currentMoney >= this.currentTier.getCostGoal() && this.currentTier != VaultTier.GAMMA) advance();
 
+        //while (canAdvance()) advance();
         setDirty();
+    }
+
+    private boolean canAdvance() {
+        if (this.currentTier == VaultTier.GAMMA && getAvailableEvents().isEmpty() && getAvailablePerks().isEmpty()) return false;
+
+        int totalTierItems = currentTier.getPerks().size() + currentTier.getEventPool().size();
+        double stepCost = currentTier.getCostGoal() / totalTierItems;
+
+        int expectedUnlocks = (int) Math.floor(this.currentMoney / stepCost);
+        //int currentUnlocks = getActiveEventsForTier(currentTier) + getActivePerksForTier(currentTier);
+
+        //return expectedUnlocks > currentUnlocks;
+        return false;
     }
 
     private void advance() {
         ServerLevel level = minecraftServer.overworld();
         RandomSource random = level.getRandom();
-        List<ConfiguredEvent> availableEvents = getCurrentTier().getEventPool().stream().filter(event -> !getActiveEvents().contains(event)).toList();
-        List<ActivePerk> availablePerks = getCurrentTier().getPerks().stream().filter(perk -> !getActivePerks().contains(perk)).toList();
 
+        List<ConfiguredEvent> availableEvents = getAvailableEvents();
+        List<ActivePerk> availablePerks = getAvailablePerks();
+
+        // If the current tier is completely exhausted, move to the next tier
         if (availableEvents.isEmpty() && availablePerks.isEmpty()) {
-            advanceToNextTier();
+            if (this.currentTier != VaultTier.GAMMA) {
+                this.currentTier = this.currentTier.getNextTier();
+                // Immediately check if we can unlock something in the new tier
+                if (canAdvance()) advance();
+            }
             return;
         }
 
+        // Weighted random selection based on what's left
         boolean pickEvent = random.nextBoolean();
         if (pickEvent && availableEvents.isEmpty()) pickEvent = false;
         if (!pickEvent && availablePerks.isEmpty()) pickEvent = true;
 
-        VaultEntry entry = pickEvent
-                ? availableEvents.get(random.nextInt(availableEvents.size()))
-                : availablePerks.get(random.nextInt(availablePerks.size()));
+        if (pickEvent) {
+            ConfiguredEvent event = availableEvents.get(random.nextInt(availableEvents.size()));
+            this.activeEvents.add(event);
+            event.apply(level);
+        } else {
+            ActivePerk newPerk = availablePerks.get(random.nextInt(availablePerks.size()));
 
-        entry.apply(level);
-        setDirty();
+            // CLEANUP: Remove lower tier versions of this exact perk before adding the new one
+            this.activePerks.removeIf(p -> p.type() == newPerk.type());
+            this.activePerks.add(newPerk);
+
+            newPerk.apply(level);
+        }
+
+        // Optional: Broadcast a message to the server that a Vault unlock happened!
     }
 
-    private void advanceToNextTier() {
-        this.currentTier = this.currentTier.getNextTier();
+    // Helper methods for the logic above
+    private List<ConfiguredEvent> getAvailableEvents() {
+        return currentTier.getEventPool().stream().filter(e -> !this.activeEvents.contains(e)).toList();
+    }
+
+    private List<ActivePerk> getAvailablePerks() {
+        // Only return perks we don't have, OR perks where our current level is lower
+        return currentTier.getPerks().stream().filter(tierPerk -> {
+            return this.activePerks.stream().noneMatch(activePerk ->
+                    activePerk.type() == tierPerk.type() && activePerk.level() >= tierPerk.level());
+        }).toList();
     }
 
     public double getCurrentMoney() { return currentMoney; }
@@ -181,6 +221,21 @@ public class VaultData extends SavedData {
                 }
             }
             return InteractionResult.PASS;
+        });
+
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            VaultData data = VaultData.get();
+            for (ActivePerk perk : data.getActivePerks()) {
+               //perk.type().trigger(perk.level(), handler.getPlayer());
+            }
+        });
+
+        // Re-apply perks when a player dies and respawns
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            VaultData data = VaultData.get();
+            for (ActivePerk perk : data.getActivePerks()) {
+                //perk.type().trigger(perk.level(), newPlayer);
+            }
         });
     }
 

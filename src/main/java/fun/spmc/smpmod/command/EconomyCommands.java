@@ -241,6 +241,7 @@ public class EconomyCommands {
 
     private static int listMarketPrices(CommandContext<CommandSourceStack> ctx) {
         MarketState market = MarketState.getState();
+        ctx.getSource().sendSuccess(() -> Component.literal("Market Prices").withStyle(ChatFormatting.GOLD), false);
         market.getAll().entrySet().stream()
                 .sorted((e1, e2) -> Double.compare(e2.getValue().getDefaultPrice(), e1.getValue().getDefaultPrice()))
                 .forEach((entry) -> {
@@ -259,7 +260,7 @@ public class EconomyCommands {
                             .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(trend).withStyle(trendColor));
 
-                    ctx.getSource().sendSuccess(() -> Component.literal("Market Prices").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD).append(message), false);
+                    ctx.getSource().sendSuccess(() -> message, false);
         });
 
         return 1;
@@ -290,9 +291,8 @@ public class EconomyCommands {
 
     private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
         EconomySavedData eco = EconomySavedData.get();
-        String output = eco.top(page);
         ctx.getSource().sendSuccess(() -> Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD)
-                .append("\n" + output), false);
+                .append("\n" + eco.getMinecraftTop(page)), false);
         return 1;
     }
 }

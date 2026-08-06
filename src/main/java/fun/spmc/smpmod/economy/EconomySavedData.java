@@ -3,7 +3,10 @@ package fun.spmc.smpmod.economy;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.utils.MessageUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -101,6 +104,43 @@ public class EconomySavedData extends SavedData {
         }
 
         return rankings.toString();
+    }
+
+    public Component getMinecraftTop(int page) {
+        List<Map.Entry<UUID, Double>> sorted = getSortedBalances();
+        List<Map.Entry<UUID, Double>> filtered = sorted.stream()
+                .filter(entry -> !Objects.equals(resolveName(entry.getKey()), "spmc"))
+                .toList();
+
+        int pageSize = 10;
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, filtered.size());
+
+        if (startIndex >= filtered.size() || startIndex < 0) {
+            return Component.literal("No data available for this page.")
+                    .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
+        }
+
+        MutableComponent rankings = Component.empty();
+
+        for (int i = startIndex; i < endIndex; i++) {
+            Map.Entry<UUID, Double> entry = filtered.get(i);
+
+            // Do NOT use MessageUtils.escapeMarkdown() here for Minecraft
+            String name = resolveName(entry.getKey());
+
+            // Format: #01 name • $500.00
+            MutableComponent line = Component.literal(String.format("#%02d ", i + 1)).withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
+                    .append(Component.literal(" • ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.literal(String.format("$%,.2f", entry.getValue())).withStyle(ChatFormatting.GREEN));
+
+            rankings.append(line);
+
+            if (i < endIndex - 1) rankings.append("\n");
+        }
+
+        return rankings;
     }
 
     private List<Map.Entry<UUID, Double>> getSortedBalances() {
