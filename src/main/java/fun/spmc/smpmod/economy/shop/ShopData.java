@@ -8,6 +8,7 @@ import fun.spmc.smpmod.economy.EconomySavedData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -27,15 +28,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class ShopData { // no records
-    public static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
-
     public static final Codec<ShopData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            UUID_CODEC.fieldOf("shop_id").forGetter(ShopData::getShopId),
-            UUID_CODEC.fieldOf("owner_id").forGetter(ShopData::getOwnerUuid),
+            UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::getShopId),
+            UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::getOwnerUuid),
             BlockPos.CODEC.fieldOf("barrel_pos").forGetter(ShopData::getBarrelPos),
-            UUID_CODEC.fieldOf("interaction_id").forGetter(ShopData::getInteractionEntityUuid),
-            UUID_CODEC.fieldOf("item_display_id").forGetter(ShopData::getItemDisplayUuid),
-            UUID_CODEC.fieldOf("text_display_id").forGetter(ShopData::getTextDisplayUuid),
+            UUIDUtil.CODEC.fieldOf("interaction_id").forGetter(ShopData::getInteractionEntityUuid),
+            UUIDUtil.CODEC.fieldOf("item_display_id").forGetter(ShopData::getItemDisplayUuid),
+            UUIDUtil.CODEC.fieldOf("text_display_id").forGetter(ShopData::getTextDisplayUuid),
             ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold),
             Codec.INT.fieldOf("stack").forGetter(ShopData::getStack),
             Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice),

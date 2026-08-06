@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.vault;
+package fun.spmc.smpmod.vault.entries;
 
 import net.minecraft.server.level.ServerLevel;
 

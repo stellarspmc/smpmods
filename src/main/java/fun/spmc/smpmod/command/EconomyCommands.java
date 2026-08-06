@@ -41,6 +41,13 @@ public class EconomyCommands {
                 .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException(), null));
     }
 
+    public static LiteralArgumentBuilder<CommandSourceStack> buildBalanceAlias() {
+        return Commands.literal("balance")
+                .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                        .executes(ctx -> balanceCommand(ctx, null, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next())))
+                .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException(), null));
+    }
+
     private static int balanceCommand(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target, @Nullable NameAndId id) {
         EconomySavedData eco = EconomySavedData.get();
         String name = (target != null) ? "You" : Objects.requireNonNull(id).name();
@@ -102,7 +109,7 @@ public class EconomyCommands {
         return -1;
     }
 
-    private static double processItemDeposit(ServerPlayer player, ItemStack stack) {
+    public static double processItemDeposit(ServerPlayer player, ItemStack stack) {
         Item baseItem = unwrapBlockToItem(stack.getItem());
         int totalUnits = stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1);
         double blockTax = (baseItem != stack.getItem()) ? .93 : 1;
@@ -129,6 +136,7 @@ public class EconomyCommands {
             EconomySavedData.get().changeBalance(player.getUUID(), -count * 100);
             giveExactItems(player, Items.DIAMOND, count);
             MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", count, count * 100));
+            return 1;
         }
 
         double totalCost = MarketState.buyMineral(player, item, count);
@@ -153,11 +161,11 @@ public class EconomyCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
         return Commands.literal("send")
                 .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.10))
+                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(.1))
                 .executes((ctx -> {
                     NameAndId target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next();
                     ServerPlayer sender = ctx.getSource().getPlayerOrException();
-                    double amount = Math.round(DoubleArgumentType.getDouble(ctx, "amount") * 100.0) / 100.0;
+                    double amount = Math.round(DoubleArgumentType.getDouble(ctx, "amount") * 100f) / 100f;
 
                     if (sender.getUUID().equals(target.id())) {
                         MessageUtils.sendErrorMessage(sender, "You cannot send money to yourself.");
@@ -243,15 +251,15 @@ public class EconomyCommands {
                     double sellUnit = data.getBulkSellPayout(1);
                     double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
 
-                    String trend = ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
-                    ChatFormatting trendColor = ratio >= 0 ? ChatFormatting.RED : ChatFormatting.GREEN;
+                    String trend = ratio > 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
+                    ChatFormatting trendColor = ratio >= 0 ? ((ratio == 0) ? ChatFormatting.GRAY : ChatFormatting.RED) : ChatFormatting.GREEN;
 
                     Component message = Component.literal("• ").withStyle(ChatFormatting.GRAY)
                             .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
                             .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(trend).withStyle(trendColor));
 
-                    ctx.getSource().sendSuccess(() -> message, false);
+                    ctx.getSource().sendSuccess(() -> Component.literal("Market Prices").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD).append(message), false);
         });
 
         return 1;
@@ -274,7 +282,7 @@ public class EconomyCommands {
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {
-        return Commands.literal("top")
+        return Commands.literal("baltop")
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> topCommand(ctx, IntegerArgumentType.getInteger(ctx, "page"))))
                 .executes(ctx -> topCommand(ctx, 1));

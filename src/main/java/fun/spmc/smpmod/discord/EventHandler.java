@@ -1,6 +1,8 @@
 package fun.spmc.smpmod.discord;
 
 import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
+import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -11,7 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Collectors;
@@ -64,7 +66,6 @@ public class EventHandler extends ListenerAdapter {
             OptionMapping pageOption = event.getOption("page");
             int page = pageOption != null ? pageOption.getAsInt() : 1;
 
-            ServerLevel overworld = minecraftServer.overworld();
             EconomySavedData eco = EconomySavedData.get();
             String leaderboardData = eco.top(page);
 
@@ -73,6 +74,31 @@ public class EventHandler extends ListenerAdapter {
                     .setColor(0xDFC66F)
                     .setDescription(leaderboardData)
                     .setFooter(String.format("Page %d", page), null)
+                    .build();
+
+            event.replyEmbeds(embed).queue();
+        } else if (event.getName().equals("market")) {
+            MarketState market = MarketState.getState();
+            StringBuilder description = new StringBuilder();
+            market.getAll().entrySet().stream()
+                    .sorted((e1, e2) -> Double.compare(e2.getValue().getDefaultPrice(), e1.getValue().getDefaultPrice()))
+                    .forEach(entry -> {
+                        Item item = entry.getKey();
+                        FluctuationData data = entry.getValue();
+
+                        double buyUnit = data.getBulkBuyCost(1);
+                        double sellUnit = data.getBulkSellPayout(1);
+                        double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
+
+                        description.append(String.format("• **%s** | Buy: **$%.2f** | Sell: **$%.2f** `%s`\n",
+                                Component.translatable(item.getDescriptionId()).getString(), buyUnit, sellUnit, ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio)));
+                    });
+            String resultText = !description.isEmpty() ? description.toString() : "*No items listed on the market.*";
+            if (resultText.length() > 4096) resultText = resultText.substring(0, 4090) + "...";
+            MessageEmbed embed = new EmbedBuilder()
+                    .setTitle("Market Prices")
+                    .setColor(0xDFC66F)
+                    .setDescription(resultText)
                     .build();
 
             event.replyEmbeds(embed).queue();

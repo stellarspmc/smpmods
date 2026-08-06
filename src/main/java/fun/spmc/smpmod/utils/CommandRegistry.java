@@ -20,6 +20,7 @@ public class CommandRegistry {
         dispatcher.register(EconomyCommands.buildATM());
         dispatcher.register(EconomyCommands.buildMarket(context));
         dispatcher.register(EconomyCommands.buildTop());
+        dispatcher.register(EconomyCommands.buildBalanceAlias());
 
         dispatcher.register(MapArtCommand.buildCommand());
     }

@@ -13,6 +13,7 @@ import fun.spmc.smpmod.discord.config.ConfigLoader;
 import fun.spmc.smpmod.bedrock.BedrockSkinFetcher;
 
 import fun.spmc.smpmod.utils.MessageUtils;
+import fun.spmc.smpmod.vault.VaultData;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -79,11 +80,13 @@ public class SMPMod implements DedicatedServerModInitializer {
                 messageChannel.sendMessage("Server has opened!").queue();
                 bot.updateCommands().addCommands(
                         Commands.slash("players", "Get the number of players."),
+                        Commands.slash("market", "Get the market inside the server."),
                         Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
                 ).queue();
 
 
                 MarketState.register();
+                VaultData.register();
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);

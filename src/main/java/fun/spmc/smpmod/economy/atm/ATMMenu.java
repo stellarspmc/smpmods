@@ -3,13 +3,18 @@ package fun.spmc.smpmod.economy.atm;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.floodgate.api.FloodgateApi;
+
+import static fun.spmc.smpmod.command.EconomyCommands.processItemDeposit;
 
 public class ATMMenu {
     public static void open(ServerPlayer player) {
@@ -33,43 +38,29 @@ public class ATMMenu {
 
         GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
         for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
-        gui.setSlot(10, new GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
-                .setName(Component.literal("- $10.00").withStyle(ChatFormatting.RED)
-                        .append(Component.literal(" (Right-click: - $50.00)").withStyle(ChatFormatting.GRAY)))
-                .setCallback((type) -> {
-                    double amount = type.isRight ? 50.0 : 10.0;
-                    eco.changeBalance(player.getUUID(), -amount);
-                    refreshGui(gui, player);
-                }));
         gui.setSlot(11, new GuiElementBuilder(Items.REDSTONE_BLOCK)
-                .setName(Component.literal("- $100.00").withStyle(ChatFormatting.DARK_RED)
+                .setName(Component.literal("Withdraw $100.00").withStyle(ChatFormatting.DARK_RED)
                         .append(Component.literal(" (Right-click: Withdraw All)").withStyle(ChatFormatting.GRAY)))
                 .setCallback((type) -> {
                     if (type.isRight) {
-                        double current = eco.getBalance(player.getUUID());
-                        if (current > 0) eco.changeBalance(player.getUUID(), -current);
+                        double current = Math.round(eco.getBalance(player.getUUID()) * 100f) / 100f;
+                        if (current > 0 && current % 100 == 0) {
+                            eco.changeBalance(player.getUUID(), -current);
+                            giveExactItems(player, (int) (current/100));
+                        }
                     } else {
                         eco.changeBalance(player.getUUID(), -100.0);
+                        giveExactItems(player, 1);
                     }
                     refreshGui(gui, player);
                 }));
         double balance = eco.getBalance(player.getUUID());
         gui.setSlot(13, new GuiElementBuilder(Items.GOLD_BLOCK)
                 .setName(Component.literal(String.format("Balance: $%,.2f", balance)).withStyle(ChatFormatting.GOLD)));
-        gui.setSlot(15, new GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
-                .setName(Component.literal("+ $10.00").withStyle(ChatFormatting.GREEN)
-                        .append(Component.literal(" (Right-click: + $50.00)").withStyle(ChatFormatting.GRAY)))
-                .setCallback((type) -> {
-                    double amount = type.isRight ? 50.0 : 10.0;
-                    eco.changeBalance(player.getUUID(), amount);
-                    refreshGui(gui, player);
-                }));
-        gui.setSlot(16, new GuiElementBuilder(Items.EMERALD_BLOCK)
-                .setName(Component.literal("+ $100.00").withStyle(ChatFormatting.DARK_GREEN)
-                        .append(Component.literal(" (Right-click: + $500.00)").withStyle(ChatFormatting.GRAY)))
-                .setCallback((type) -> {
-                    double amount = type.isRight ? 500.0 : 100.0;
-                    eco.changeBalance(player.getUUID(), amount);
+        gui.setSlot(15, new GuiElementBuilder(Items.EMERALD_BLOCK)
+                .setName(Component.literal("Deposit All").withStyle(ChatFormatting.GREEN))
+                .setCallback((_) -> {
+                    eco.changeBalance(player.getUUID(), getDepositItems(player));
                     refreshGui(gui, player);
                 }));
     }
@@ -81,21 +72,55 @@ public class ATMMenu {
         SimpleForm form = SimpleForm.builder()
                 .title("ATM Machine")
                 .content(String.format("Current Balance: $%,.2f", balance))
-                .button("Withdraw $10")
                 .button("Withdraw $100")
-                .button("Deposit $10")
-                .button("Deposit $100")
+                .button("Deposit All")
                 .validResultHandler(response -> {
                     switch (response.clickedButtonId()) {
-                        case 0 -> eco.changeBalance(player.getUUID(), -10.0);
-                        case 1 -> eco.changeBalance(player.getUUID(), -100.0);
-                        case 2 -> eco.changeBalance(player.getUUID(), 10.0);
-                        case 3 -> eco.changeBalance(player.getUUID(), 100.0);
+                        case 0 -> {
+                            eco.changeBalance(player.getUUID(), -100.0);
+                            giveExactItems(player, 1);
+                        }
+                        case 1 -> eco.changeBalance(player.getUUID(), getDepositItems(player));
                     }
                     openBedrockForm(player);
                 })
                 .build();
 
         FloodgateApi.getInstance().sendForm(player.getUUID(), form);
+    }
+
+    private static void giveExactItems(ServerPlayer player, int totalCount) {
+        int maxStack = Items.DIAMOND.getDefaultMaxStackSize();
+        while (totalCount > 0) {
+            int stackSize = Math.min(totalCount, maxStack);
+            ItemStack stack = new ItemStack(Items.DIAMOND, stackSize);
+            if (!player.getInventory().add(stack)) {
+                ItemEntity itemEntity = player.drop(stack, false);
+                if (itemEntity != null) itemEntity.setNoPickUpDelay();
+            }
+            totalCount -= stackSize;
+        }
+
+        MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100));
+    }
+
+    private static double getDepositItems(ServerPlayer player) {
+        double totalPayout = 0;
+
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.isEmpty()) continue;
+
+            double payout = processItemDeposit(player, stack);
+            if (payout > 0) {
+                totalPayout += payout;
+                player.getInventory().removeItem(i, stack.getCount());
+            }
+        }
+
+        if (totalPayout > 0) MessageUtils.sendSuccessMessage(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout));
+        MessageUtils.sendErrorMessage(player, "No valid market currency items found in inventory.");
+
+        return totalPayout;
     }
 }
