@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TreasureEvents {
+    public static double eventPercentage = 1f;
+
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity ignoredBlockEntity) {
         if (world.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) return;
 
@@ -43,7 +45,7 @@ public class TreasureEvents {
 
         String folderName = getFolderFromBiome(biomeKey);
 
-        double fatigueMultiplier = TreasureFatigue.getMultiplier(player.getUUID());
+        double fatigueMultiplier = TreasureFatigue.getMultiplier(player.getUUID()) * eventPercentage;
 
         if (EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) > 5) fatigueMultiplier *= Math.pow(0.65, EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) - 5);
         if (player.getEffect(MobEffects.HASTE) != null && Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() > 1) fatigueMultiplier *= Math.pow(0.55, Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() - 1);
@@ -98,19 +100,29 @@ public class TreasureEvents {
 
     private static final Map<ResourceKey<Biome>, String> BIOME_FOLDER_CACHE = new ConcurrentHashMap<>();
 
+    public static boolean rigTreasures = false;
+
     public static Rarity rollTreasureRarity(BlockState state, double fatigueMultiplier, RandomSource random, ResourceKey<Level> dimension) {
         float commonChance = (float) (getBaseCommonChance(state, dimension) * fatigueMultiplier);
         if (commonChance <= 0) return null;
-        float roll = random.nextFloat() * 100f;
-        float val = roll / commonChance;
-
+        float val = (random.nextFloat() * 100f) / commonChance;
         if (val < THRESHOLD_MYTHICAL) return Rarity.MYTHICAL;
-        if (val < THRESHOLD_LEGENDARY) return Rarity.LEGENDARY;
-        if (val < THRESHOLD_EPIC) return Rarity.EPIC;
-        if (val < THRESHOLD_RARE) return Rarity.RARE;
-        if (val < THRESHOLD_COMMON) return Rarity.COMMON;
-
+        if (val < THRESHOLD_LEGENDARY) return adjustRarity(Rarity.LEGENDARY);
+        if (val < THRESHOLD_EPIC) return adjustRarity(Rarity.EPIC);
+        if (val < THRESHOLD_RARE) return adjustRarity(Rarity.RARE);
+        if (val < THRESHOLD_COMMON) return adjustRarity(Rarity.COMMON);
         return null;
+    }
+
+    private static Rarity adjustRarity(Rarity rarity) {
+        if (!rigTreasures) return rarity;
+        return switch (rarity) {
+            case LEGENDARY -> Rarity.MYTHICAL;
+            case EPIC -> Rarity.LEGENDARY;
+            case RARE -> Rarity.EPIC;
+            case COMMON -> Rarity.RARE;
+            default -> rarity;
+        };
     }
 
     private static float getBaseCommonChance(BlockState state, ResourceKey<Level> dimension) {

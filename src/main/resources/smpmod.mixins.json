@@ -4,10 +4,13 @@
   "package": "fun.spmc.smpmod.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AccessorGameProfile",
+    "MixinECPerms",
     "MixinEnchantment",
-    "MixinPlayerData",
+    "MixinLivingEntity",
     "chunk.MixinServerLevel",
     "player.MixinPlayerAdvancementTracker",
+    "player.MixinPlayerData",
     "shop.MixinHopperBlockEntity",
     "shop.MixinServerGamePacketListenerImpl"
   ],

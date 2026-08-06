@@ -36,7 +36,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
         minecraftServer.getPlayerList().getPlayers().forEach((player -> type.trigger(level, player)));
     }
 
-    protected enum PerkType implements StringRepresentable {
+     public enum PerkType implements StringRepresentable {
         EXTRA_HEARTS("extra_hearts", (tierLevel, player) -> {
             var attr = player.getAttribute(Attributes.MAX_HEALTH);
             if (attr != null) attr.addOrReplacePermanentModifier(new AttributeModifier(

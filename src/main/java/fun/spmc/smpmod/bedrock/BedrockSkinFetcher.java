@@ -1,9 +1,13 @@
 package fun.spmc.smpmod.bedrock;
 
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
+import fun.spmc.smpmod.mixin.AccessorGameProfile;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
@@ -73,8 +77,20 @@ public class BedrockSkinFetcher {
         if (player == null) return;
 
         GameProfile profile = player.getGameProfile();
-        profile.properties().removeAll("textures");
-        profile.properties().put("textures", new Property("textures", skin.value(), skin.signature()));
+        PropertyMap currentProperties = profile.properties();
+
+        Multimap<String, Property> map = LinkedHashMultimap.create();
+
+        for (Map.Entry<String, Property> entry : currentProperties.entries()) {
+            if (!entry.getKey().equals("textures")) map.put(entry.getKey(), entry.getValue());
+        }
+
+        map.put("textures", new Property("textures", skin.value(), skin.signature()));
+
+        PropertyMap newProperties = new PropertyMap(map);
+
+        ((AccessorGameProfile) (Object) profile).setProperties(newProperties);
+
         resyncPlayerSkinToClients(server, player);
         modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
     }

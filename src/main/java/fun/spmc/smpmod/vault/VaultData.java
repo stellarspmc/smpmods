@@ -5,10 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import fun.spmc.smpmod.vault.entries.*;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -23,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.Mannequin;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -75,21 +78,26 @@ public class VaultData extends SavedData {
     public void addMoney(double amount) {
         this.currentMoney += amount;
 
-        //while (canAdvance()) advance();
-        setDirty();
+        boolean unlockedSomething = false;
+        while (canAdvance()) {
+            advance();
+            unlockedSomething = true;
+        }
+
+        if (unlockedSomething || amount > 0) setDirty();
     }
 
     private boolean canAdvance() {
-        if (this.currentTier == VaultTier.GAMMA && getAvailableEvents().isEmpty() && getAvailablePerks().isEmpty()) return false;
+        List<ConfiguredEvent> availableEvents = getAvailableEvents();
+        List<ActivePerk> availablePerks = getAvailablePerks();
 
+        if (availableEvents.isEmpty() && availablePerks.isEmpty()) return this.currentTier != VaultTier.GAMMA;
         int totalTierItems = currentTier.getPerks().size() + currentTier.getEventPool().size();
-        double stepCost = currentTier.getCostGoal() / totalTierItems;
+        double stepCost = currentTier.getCostGoal() / (double) Math.max(1, totalTierItems);
+        int unlockedItems = totalTierItems - (availableEvents.size() + availablePerks.size());
+        double requiredMoneyForNextUnlock = stepCost * (unlockedItems + 1);
 
-        int expectedUnlocks = (int) Math.floor(this.currentMoney / stepCost);
-        //int currentUnlocks = getActiveEventsForTier(currentTier) + getActivePerksForTier(currentTier);
-
-        //return expectedUnlocks > currentUnlocks;
-        return false;
+        return this.currentMoney >= requiredMoneyForNextUnlock;
     }
 
     private void advance() {
@@ -99,49 +107,38 @@ public class VaultData extends SavedData {
         List<ConfiguredEvent> availableEvents = getAvailableEvents();
         List<ActivePerk> availablePerks = getAvailablePerks();
 
-        // If the current tier is completely exhausted, move to the next tier
         if (availableEvents.isEmpty() && availablePerks.isEmpty()) {
             if (this.currentTier != VaultTier.GAMMA) {
                 this.currentTier = this.currentTier.getNextTier();
-                // Immediately check if we can unlock something in the new tier
                 if (canAdvance()) advance();
             }
             return;
         }
 
-        // Weighted random selection based on what's left
         boolean pickEvent = random.nextBoolean();
         if (pickEvent && availableEvents.isEmpty()) pickEvent = false;
         if (!pickEvent && availablePerks.isEmpty()) pickEvent = true;
 
+        VaultEntry entry;
         if (pickEvent) {
-            ConfiguredEvent event = availableEvents.get(random.nextInt(availableEvents.size()));
-            this.activeEvents.add(event);
-            event.apply(level);
+            entry = availableEvents.get(random.nextInt(availableEvents.size()));
+            this.activeEvents.add((ConfiguredEvent) entry);
         } else {
-            ActivePerk newPerk = availablePerks.get(random.nextInt(availablePerks.size()));
+            entry = availablePerks.get(random.nextInt(availablePerks.size()));
 
-            // CLEANUP: Remove lower tier versions of this exact perk before adding the new one
-            this.activePerks.removeIf(p -> p.type() == newPerk.type());
-            this.activePerks.add(newPerk);
-
-            newPerk.apply(level);
+            this.activePerks.removeIf(p -> p.type() == ((ActivePerk) entry).type());
+            this.activePerks.add((ActivePerk) entry);
         }
-
-        // Optional: Broadcast a message to the server that a Vault unlock happened!
+        entry.apply(level);
     }
 
-    // Helper methods for the logic above
     private List<ConfiguredEvent> getAvailableEvents() {
         return currentTier.getEventPool().stream().filter(e -> !this.activeEvents.contains(e)).toList();
     }
 
     private List<ActivePerk> getAvailablePerks() {
-        // Only return perks we don't have, OR perks where our current level is lower
-        return currentTier.getPerks().stream().filter(tierPerk -> {
-            return this.activePerks.stream().noneMatch(activePerk ->
-                    activePerk.type() == tierPerk.type() && activePerk.level() >= tierPerk.level());
-        }).toList();
+        return currentTier.getPerks().stream().filter(tierPerk -> this.activePerks.stream().noneMatch(activePerk ->
+                activePerk.type() == tierPerk.type() && activePerk.level() >= tierPerk.level())).toList();
     }
 
     public double getCurrentMoney() { return currentMoney; }
@@ -162,6 +159,8 @@ public class VaultData extends SavedData {
             mannequin.setPos(pos.x, pos.y, pos.z);
             level.addFreshEntity(mannequin);
             mannequin.setProfile(ResolvableProfile.createUnresolved("spmc"));
+            mannequin.setCustomName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            mannequin.setCustomNameVisible(true);
             this.mannequinUuid = mannequin.getUUID();
             setDirty();
         }
@@ -223,18 +222,38 @@ public class VaultData extends SavedData {
             return InteractionResult.PASS;
         });
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            VaultData data = VaultData.get();
-            for (ActivePerk perk : data.getActivePerks()) {
-               //perk.type().trigger(perk.level(), handler.getPlayer());
+        ServerPlayConnectionEvents.JOIN.register((handler, _, _) -> {
+            for (ActivePerk perk : VaultData.get().getActivePerks()) {
+               perk.type().trigger(perk.level(), handler.getPlayer());
             }
         });
 
-        // Re-apply perks when a player dies and respawns
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            VaultData data = VaultData.get();
-            for (ActivePerk perk : data.getActivePerks()) {
-                //perk.type().trigger(perk.level(), newPlayer);
+        ServerPlayerEvents.AFTER_RESPAWN.register((_, newPlayer, _) -> {
+            for (ActivePerk perk : VaultData.get().getActivePerks()) {
+                perk.type().trigger(perk.level(), newPlayer);
+            }
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            VaultData vault = VaultData.get();
+
+            if (vault.getMannequinUuid() != null) {
+                ServerLevel level = server.overworld();
+                Entity entity = level.getEntity(vault.getMannequinUuid());
+
+                if (entity instanceof Mannequin mannequin && mannequin.isAlive()) {
+                    Player nearestPlayer = level.getNearestPlayer(mannequin, 8.0);
+
+                    if (nearestPlayer != null) {
+                        mannequin.lookAt(EntityAnchorArgument.Anchor.EYES,
+                                nearestPlayer.position().add(0, nearestPlayer.getEyeHeight(), 0));
+                    }
+                }
+            }
+
+            if (!vault.getActiveEvents().isEmpty()) {
+                boolean removedAny = vault.getActiveEvents().removeIf(event -> event.tick(server.overworld()));
+                if (removedAny) vault.setDirty();
             }
         });
     }

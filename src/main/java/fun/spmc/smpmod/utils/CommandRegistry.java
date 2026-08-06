@@ -17,7 +17,7 @@ public class CommandRegistry {
         dispatcher.register(EconomyCommands.buildDeposit());
         dispatcher.register(EconomyCommands.buildWithdraw(context));
         dispatcher.register(EconomyCommands.buildSend());
-        dispatcher.register(EconomyCommands.buildATM());
+        //dispatcher.register(EconomyCommands.buildATM());
         dispatcher.register(EconomyCommands.buildMarket(context));
         dispatcher.register(EconomyCommands.buildTop());
         dispatcher.register(EconomyCommands.buildBalanceAlias());

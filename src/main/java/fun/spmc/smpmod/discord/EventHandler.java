@@ -91,7 +91,7 @@ public class EventHandler extends ListenerAdapter {
                         double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
 
                         description.append(String.format("• **%s** | Buy: **$%.2f** | Sell: **$%.2f** `%s`\n",
-                                Component.translatable(item.getDescriptionId()).getString(), buyUnit, sellUnit, ratio >= 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio)));
+                                Component.translatable(item.getDescriptionId()).getString(), buyUnit, sellUnit, ratio >= 0 ? String.format("(+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio)));
                     });
             String resultText = !description.isEmpty() ? description.toString() : "*No items listed on the market.*";
             if (resultText.length() > 4096) resultText = resultText.substring(0, 4090) + "...";

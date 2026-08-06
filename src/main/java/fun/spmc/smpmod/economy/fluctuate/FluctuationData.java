@@ -23,8 +23,8 @@ public class FluctuationData {
     private long lastTransactionTime = System.currentTimeMillis();
 
     private static final double SATURATION_VOLUME = 1000;
-    private static final double BUY_MARGIN = 1.15;
-    private static final double SELL_MARGIN = .85;
+    private static double BUY_MARGIN = 1.15;
+    private static double SELL_MARGIN = .85;
 
     public FluctuationData(Item mineral, double defaultPrice, double fluctuation, long amountDeposited, long amountWithdrawn) {
         this.mineral = mineral;
@@ -109,5 +109,10 @@ public class FluctuationData {
         }
 
         return Math.max(0, newAmount);
+    }
+
+    public static void changeMargin(double percentage) {
+        BUY_MARGIN = 1.15 * percentage;
+        SELL_MARGIN = .85 / percentage;
     }
 }

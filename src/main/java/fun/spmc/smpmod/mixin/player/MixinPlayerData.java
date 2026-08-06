@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.mixin;
+package fun.spmc.smpmod.mixin.player;
 
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
