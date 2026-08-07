@@ -23,22 +23,18 @@ public class VaultCommand {
         return Commands.literal("vault")
                 .executes(VaultCommand::getVaultStatus)
                 .then(Commands.literal("setup")
-                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.ADMINS))
+                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
                         .executes(VaultCommand::setupVault)
                 ).then(Commands.literal("kill")
-                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.ADMINS))
+                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
                         .executes(VaultCommand::killVault));
     }
 
     private static int killVault(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerLevel level = ctx.getSource().getLevel();
-        Vec3 pos = ctx.getSource().getPosition();
 
         VaultData vault = VaultData.get();
-        if (vault.getMannequinUuid() == null) {
-            MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin isn't alive!");
-            return 0;
-        } else {
+        if (vault.getMannequinUuid() != null) {
             Entity entity = level.getEntity(vault.getMannequinUuid());
             if (entity != null) {
                 entity.discard();
@@ -47,9 +43,9 @@ public class VaultCommand {
                 return 1;
             }
 
-            MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin isn't alive!");
-            return 0;
         }
+        MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin isn't alive!");
+        return 0;
     }
 
     private static int setupVault(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

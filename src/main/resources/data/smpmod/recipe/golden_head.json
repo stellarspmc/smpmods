@@ -1,0 +1,84 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "show_notification": true,
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "GAG",
+    "GGG"
+  ],
+  "key": {
+    "G": [
+      "minecraft:gold_block"
+    ],
+    "A": [
+      "player_head"
+    ]
+  },
+  "result": {
+    "id": "minecraft:player_head",
+    "components": {
+      "minecraft:profile": {
+        "properties": [
+          {
+            "name": "textures",
+            "value": "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjk4Nzg4NTM2NTRjM2JiMjZmZDMzZTgwZjhlZDNjZGYwM2FiMzI0N2Y3MzY3ODQ2NGUwNmRhMTQzZGJkMGMxNyJ9fX0="
+          }
+        ]
+      },
+      "minecraft:food": {
+        "nutrition": 4,
+        "saturation": 1.2,
+        "can_always_eat": true
+      },
+      "minecraft:consumable": {
+        "consume_seconds": 1,
+        "animation": "eat",
+        "has_consume_particles": false,
+        "on_consume_effects": [
+          {
+            "type": "minecraft:apply_effects",
+            "effects": [
+              {
+                "id": "minecraft:regeneration",
+                "amplifier": 2,
+                "duration": 100
+              },
+              {
+                "id": "minecraft:absorption",
+                "amplifier": 1,
+                "duration": 2400
+              }
+            ]
+          }
+        ]
+      },
+      "!minecraft:equippable": {},
+      "minecraft:attribute_modifiers": [
+        {
+          "type": "minecraft:block_interaction_range",
+          "id": "minecraft:",
+          "amount": -99,
+          "operation": "add_value",
+          "display": {
+            "type": "hidden"
+          }
+        }
+      ],
+      "minecraft:use_cooldown": {
+        "seconds": 10
+      },
+      "minecraft:custom_name": {
+        "text": "Golden Head",
+        "type": "text",
+        "color": "#ffd700",
+        "bold": false,
+        "italic": false,
+        "underlined": false,
+        "strikethrough": false,
+        "obfuscated": false
+      }
+    },
+    "count": 1
+  }
+}

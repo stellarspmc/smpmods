@@ -41,7 +41,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
         EXTRA_HEARTS("extra_hearts", (tierLevel, player) -> {
             var attr = player.getAttribute(Attributes.MAX_HEALTH);
             if (attr != null) attr.addOrReplacePermanentModifier(new AttributeModifier(
-                    Identifier.fromNamespaceAndPath("smpmods", "perk_extra_hearts"),
+                    Identifier.fromNamespaceAndPath("smpmod", "perk_extra_hearts"),
                     tierLevel * 2.0,
                     AttributeModifier.Operation.ADD_VALUE
             ));
@@ -50,7 +50,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
             var attr = player.getAttribute(Attributes.ATTACK_DAMAGE);
             if (attr != null) {
                 attr.addOrReplacePermanentModifier(new AttributeModifier(
-                        Identifier.fromNamespaceAndPath("smpmods", "perk_bonus_sharpness"),
+                        Identifier.fromNamespaceAndPath("smpmod", "perk_bonus_sharpness"),
                         tierLevel * 1.25,
                         AttributeModifier.Operation.ADD_VALUE
                 ));
@@ -60,7 +60,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
             var attr = player.getAttribute(Attributes.MINING_EFFICIENCY);
             if (attr != null) {
                 attr.addOrReplacePermanentModifier(new AttributeModifier(
-                        Identifier.fromNamespaceAndPath("smpmods", "perk_bonus_efficiency"),
+                        Identifier.fromNamespaceAndPath("smpmod", "perk_bonus_efficiency"),
                         tierLevel * 2.0,
                         AttributeModifier.Operation.ADD_VALUE
                 ));
@@ -70,7 +70,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
             var attr = player.getAttribute(Attributes.ARMOR);
             if (attr != null) {
                 attr.addOrReplacePermanentModifier(new AttributeModifier(
-                        Identifier.fromNamespaceAndPath("smpmods", "perk_bonus_protection"),
+                        Identifier.fromNamespaceAndPath("smpmod", "perk_bonus_protection"),
                         tierLevel * 2.0,
                         AttributeModifier.Operation.ADD_VALUE
                 ));

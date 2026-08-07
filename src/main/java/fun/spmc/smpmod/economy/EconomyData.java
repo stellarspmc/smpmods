@@ -31,7 +31,7 @@ public class EconomyData extends SavedData {
     ).apply(instance, EconomyData::new));
 
     public static final SavedDataType<EconomyData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmods", "economy"),
+            Identifier.fromNamespaceAndPath("smpmod", "economy"),
             EconomyData::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE

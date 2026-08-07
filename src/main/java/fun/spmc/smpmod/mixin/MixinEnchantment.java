@@ -19,7 +19,7 @@ import static fun.spmc.smpmod.SMPMod.minecraftServer;
 public class MixinEnchantment {
 
     @ModifyReturnValue(method = "canEnchant", at = @At("RETURN"))
-    public boolean smpmods$unbalancedEnchants(boolean original, ItemStack itemStack) {
+    public boolean smpmod$unbalancedEnchants(boolean original, ItemStack itemStack) {
         if (original) return true;
 
         if (minecraftServer == null) return false;
@@ -57,34 +57,34 @@ public class MixinEnchantment {
     }
 
     @ModifyReturnValue(method = "areCompatible", at = @At("RETURN"))
-    private static boolean smpmods$unbalancedCompatibleEnchants(boolean original, Holder<Enchantment> enchantment, Holder<Enchantment> other) {
+    private static boolean smpmod$unbalancedCompatibleEnchants(boolean original, Holder<Enchantment> enchantment, Holder<Enchantment> other) {
         if (original) return true;
-        if (smpmods$isBothInGroup(enchantment, other,
+        if (smpmod$isBothInGroup(enchantment, other,
                 Enchantments.PROTECTION,
                 Enchantments.FIRE_PROTECTION,
                 Enchantments.BLAST_PROTECTION,
                 Enchantments.PROJECTILE_PROTECTION)) return true;
 
-        if (smpmods$isBothInGroup(enchantment, other,
+        if (smpmod$isBothInGroup(enchantment, other,
                 Enchantments.SHARPNESS,
                 Enchantments.SMITE,
                 Enchantments.BANE_OF_ARTHROPODS,
                 Enchantments.DENSITY,
                 Enchantments.BREACH)) return true;
 
-        if (smpmods$compareBothWays(enchantment, other, Enchantments.INFINITY, Enchantments.MENDING)) return true;
+        if (smpmod$compareBothWays(enchantment, other, Enchantments.INFINITY, Enchantments.MENDING)) return true;
 
-        return smpmods$compareBothWays(enchantment, other, Enchantments.PIERCING, Enchantments.MULTISHOT);
+        return smpmod$compareBothWays(enchantment, other, Enchantments.PIERCING, Enchantments.MULTISHOT);
     }
 
     @Unique
-    private static boolean smpmods$compareBothWays(Holder<Enchantment> a, Holder<Enchantment> b, ResourceKey<Enchantment> comparedA, ResourceKey<Enchantment> comparedB) {
+    private static boolean smpmod$compareBothWays(Holder<Enchantment> a, Holder<Enchantment> b, ResourceKey<Enchantment> comparedA, ResourceKey<Enchantment> comparedB) {
         return (a.is(comparedA) && b.is(comparedB)) || (a.is(comparedB) && b.is(comparedA));
     }
 
     @SafeVarargs
     @Unique
-    private static boolean smpmods$isBothInGroup(Holder<Enchantment> a, Holder<Enchantment> b, ResourceKey<Enchantment>... keys) {
+    private static boolean smpmod$isBothInGroup(Holder<Enchantment> a, Holder<Enchantment> b, ResourceKey<Enchantment>... keys) {
         boolean aInGroup = false;
         boolean bInGroup = false;
 

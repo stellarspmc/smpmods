@@ -30,7 +30,7 @@ public class MarketState extends SavedData {
     );
 
     public static final SavedDataType<MarketState> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmods", "market"),
+            Identifier.fromNamespaceAndPath("smpmod", "market"),
             MarketState::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE

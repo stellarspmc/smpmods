@@ -16,22 +16,23 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AbstractCropItem extends SimplePolymerItem {
     private final Item vanillaItem;
-    private final String seedItemName;
+    private final String cropName;
+    private final double basePrice;
 
-    public AbstractCropItem(Properties settings, Item item, String seedName) {
+    public AbstractCropItem(Properties settings, Item item, String seedName, double basePrice) {
         super(settings);
         vanillaItem = item;
-        seedItemName = seedName;
+        cropName = seedName;
+        this.basePrice = basePrice;
     }
 
     @Override public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return vanillaItem; }
-    public String getSeedName() { return seedItemName; }
+    public String getCropName() { return cropName; }
+    public double getBasePrice() { return basePrice; }
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
@@ -39,83 +40,37 @@ public abstract class AbstractCropItem extends SimplePolymerItem {
         CompoundTag rootTag = customData.copyTag();
         Optional<CompoundTag> cropTag = rootTag.getCompound("plant");
         if (cropTag.isPresent()) {
-            out.set(DataComponents.ITEM_NAME, buildDynamicName(cropTag.get()));
-            out.set(DataComponents.LORE, new ItemLore(buildDynamicLore(cropTag.get())));
+            out.set(DataComponents.ITEM_NAME, buildName(cropTag.get()));
+            out.set(DataComponents.LORE, new ItemLore(buildLore(cropTag.get())));
         }
     }
 
-    private Component buildDynamicName(CompoundTag cropTag) {
-        List<PlantModifier> traits = parseTraits(cropTag);
-
-        if (traits.isEmpty()) {
-            return Component.literal(this.seedItemName).withStyle(ChatFormatting.WHITE);
-        }
-
+    private Component buildName(CompoundTag cropTag) {
+        Set<PlantModifier> traits = getModifiers(cropTag).keySet();
+        if (traits.isEmpty()) return Component.literal(this.cropName).withStyle(ChatFormatting.WHITE);
         MutableComponent title = Component.empty();
-        for (PlantModifier trait : traits) {
-            title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
-        }
-
-        title.append(Component.literal(this.seedItemName).withStyle(ChatFormatting.GOLD));
+        for (PlantModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
+        title.append(Component.literal(this.cropName).withStyle(ChatFormatting.GOLD));
         return title;
     }
 
-    /**
-     * Builds multi-line lore detailing quality, active traits, and market value bonuses
-     */
-    private List<Component> buildDynamicLore(CompoundTag cropTag) {
-        List<Component> lore = new ArrayList<>();
-        List<PlantModifier> traits = parseTraits(cropTag);
-        if (cropTag.getInt("quality").isEmpty()) return List.of(Component.literal(""));
-        int quality = cropTag.getInt("quality").get();
-
-        String stars = "★".repeat(Math.clamp(quality, 1, 5));
-        lore.add(Component.literal("Quality: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(stars).withStyle(ChatFormatting.YELLOW)));
-
-        lore.add(Component.literal("")); // Empty spacer
-
-        if (!traits.isEmpty()) {
-            lore.add(Component.literal("Crop Traits:").withStyle(ChatFormatting.GRAY, ChatFormatting.UNDERLINE));
-
-            int totalValueModifier = 0;
-            for (PlantModifier trait : traits) {
-                //totalValueModifier += trait.getValueModifier();
-
-                Component traitLine = Component.literal(" • ")
-                        .withStyle(ChatFormatting.DARK_GRAY)
-                        .append(Component.literal(trait.toString()).withStyle(trait.getColor()));
-                        //.append(Component.literal(" (" + trait.getEffectDescription() + ")").withStyle(ChatFormatting.GRAY));
-
-                lore.add(traitLine);
-            }
-
-            lore.add(Component.literal("")); // Empty spacer
-
-            ChatFormatting valueColor = totalValueModifier >= 0 ? ChatFormatting.GREEN : ChatFormatting.RED;
-            String prefix = totalValueModifier >= 0 ? "+" : "";
-            lore.add(Component.literal("Sell Multiplier: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(prefix + totalValueModifier + "%").withStyle(valueColor)));
-        } else {
-            lore.add(Component.literal("• No special traits attached").withStyle(ChatFormatting.DARK_GRAY));
-        }
-
-        return lore;
+    private List<Component> buildLore(CompoundTag cropTag) {
+        return List.of();
     }
 
-    private List<PlantModifier> parseTraits(CompoundTag cropTag) {
-        List<PlantModifier> traits = new ArrayList<>();
-        if (cropTag.contains("traits")) {
-            //ListTag traitsList = cropTag.getList("traits", 8); // 8 = StringTag
-            //for (int i = 0; i < traitsList.size(); i++) {
-                //PlantModifier trait = PlantModifier.fromString(traitsList.getString(i));
-                //if (trait != null) {
-                    //traits.add(trait);
-                //}
-            //}
+    private HashMap<PlantModifier, Integer> getModifiers(CompoundTag tag) {
+        HashMap<PlantModifier, Integer> hash = new HashMap<>();
+        if (tag.getCompound("modifier").isPresent()) {
+            CompoundTag modTag = tag.getCompound("modifier").get();
+            modTag.forEach((id, level) -> {
+                List<PlantModifier> mods = Arrays.stream(PlantModifier.values()).filter((plant) -> id.equals(plant.name().toLowerCase())).toList();
+                if (mods.size() == 1) if (level.asInt().isPresent()) hash.put(mods.getFirst(), level.asInt().get());
+            });
         }
-        return traits;
+        return hash;
     }
+
+    private int getQuality(CompoundTag tag) { return tag.getIntOr("quality", 0); }
 
     public ItemStack createCropInstance(int quality, List<String> traitIds) {
         ItemStack stack = new ItemStack(this);
@@ -123,7 +78,7 @@ public abstract class AbstractCropItem extends SimplePolymerItem {
         CompoundTag rootTag = new CompoundTag();
         CompoundTag cropData = new CompoundTag();
 
-        cropData.putString("id", seedItemName.toLowerCase().replace(" ", "_"));
+        cropData.putString("id", cropName.toLowerCase().replace(" ", "_"));
         cropData.putInt("quality", quality);
 
         ListTag traitsList = new ListTag();

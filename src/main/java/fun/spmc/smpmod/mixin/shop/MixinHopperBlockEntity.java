@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinHopperBlockEntity {
 
     @Inject(method = "getContainerAt(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/Container;", at = @At("HEAD"), cancellable = true)
-    private static void smpmods$blockShopSteal(Level level, BlockPos pos, CallbackInfoReturnable<Container> cir) {
+    private static void smpmod$blockShopSteal(Level level, BlockPos pos, CallbackInfoReturnable<Container> cir) {
         if (ShopManager.getByPos((ServerLevel) level, pos) != null) cir.setReturnValue(null);
     }
 }

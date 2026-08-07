@@ -30,7 +30,7 @@ public class ChunkLoaderSavedData extends SavedData {
     ).apply(instance, ChunkLoaderSavedData::new));
 
     public static final SavedDataType<ChunkLoaderSavedData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmods", "chunk_loaders"),
+            Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"),
             ChunkLoaderSavedData::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE

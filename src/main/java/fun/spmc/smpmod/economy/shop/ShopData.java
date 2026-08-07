@@ -11,8 +11,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
@@ -25,6 +27,7 @@ import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ShopData { // no records
@@ -38,7 +41,8 @@ public class ShopData { // no records
             ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold),
             Codec.INT.fieldOf("stack").forGetter(ShopData::getStack),
             Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice),
-            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", List.of()).forGetter(ShopData::getReceipts)
+            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", List.of()).forGetter(ShopData::getReceipts),
+            Codec.BOOL.optionalFieldOf("is_creative", false).forGetter(ShopData::isCreative)
     ).apply(instance, ShopData::new));
 
     private final UUID shopId;
@@ -53,24 +57,26 @@ public class ShopData { // no records
     private int stack;
     private double price;
     private final List<ShopReceipt> receipts;
+    private final boolean creative;
 
-    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text, ItemStack itemSold, int stack, double price, List<ShopReceipt> receipts) {
+    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
+                    ItemStack itemSold, int stack, double price, List<ShopReceipt> receipts, boolean creative) {
         this.shopId = shopId;
         this.ownerUuid = ownerUuid;
         this.barrelPos = barrelPos;
-
         this.interactionEntityUuid = interaction;
         this.itemDisplayUuid = item;
         this.textDisplayUuid = text;
-
         this.itemSold = itemSold;
         this.stack = stack;
         this.price = price;
         this.receipts = new ArrayList<>(receipts);
+        this.creative = creative;
     }
 
-    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text, ItemStack itemSold, int stack, double price) {
-        this(shopId, ownerUuid, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>());
+    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
+                    ItemStack itemSold, int stack, double price, boolean creative) {
+        this(shopId, ownerUuid, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>(), creative);
     }
 
     public UUID getShopId() { return shopId; }
@@ -83,6 +89,7 @@ public class ShopData { // no records
     public int getStack() { return stack; }
     public double getPrice() { return price; }
     public List<ShopReceipt> getReceipts() { return receipts; }
+    public boolean isCreative() { return creative; }
 
     public void recordReceipt(ShopReceipt receipt, ServerLevel level) {
         this.receipts.addFirst(receipt);
@@ -91,10 +98,12 @@ public class ShopData { // no records
     }
 
     public boolean isOwner(ServerPlayer player) {
+        if (creative) return player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS);
         return player.getUUID().equals(ownerUuid);
     }
 
     public int getAvailableStock(ServerLevel level) {
+        if (creative) return Integer.MAX_VALUE;
         if (!(level.getBlockEntity(barrelPos) instanceof Container container)) return 0;
 
         int totalItems = 0;
@@ -106,17 +115,16 @@ public class ShopData { // no records
     }
 
     public Component getFormattedInfoComponent(ServerLevel level) {
-        int available = getAvailableStock(level);
 
         return Component.literal("\uD83D\uDED2 ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("Shop details\n").withStyle(ChatFormatting.GOLD))
-                .append(Component.literal("• selling ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal("Shop Details\n").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal("Selling: ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(stack + "x ").withStyle(ChatFormatting.AQUA))
                 .append(itemSold.getHoverName().copy().withStyle(ChatFormatting.AQUA))
-                .append(Component.literal("\n• price ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal("\nPrice: ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(String.format("$%.2f", price)).withStyle(ChatFormatting.GOLD))
-                .append(Component.literal("\n• stock ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(available + " batches").withStyle(ChatFormatting.GREEN));
+                .append(Component.literal("\nStock: ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(creative ? "∞" : getAvailableStock(level) + " batches").withStyle(ChatFormatting.GREEN));
     }
 
     public void processPurchase(ServerPlayer buyer) {
@@ -134,8 +142,11 @@ public class ShopData { // no records
         }
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
-            eco.changeBalance(ownerUuid, price);
-            removeStockFromBarrel(level, stack);
+            if (!creative) {
+                eco.changeBalance(ownerUuid, price);
+                removeStockFromBarrel(level, stack);
+            }
+
             recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()), level);
 
             ItemStack itemsToGive = itemSold.copyWithCount(stack);
@@ -197,8 +208,8 @@ public class ShopData { // no records
     public void updateHologram(ServerLevel level) {
         Entity entity = level.getEntity(textDisplayUuid);
         if (entity instanceof Display.TextDisplay textDisplay) {
-            int stockBatches = getAvailableStock(level);
-            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %d", stack, itemSold.getHoverName().getString(), price, stockBatches);
+            String stockLabel = creative ? "∞" : String.valueOf(getAvailableStock(level));
+            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", stack, itemSold.getHoverName().getString(), price, stockLabel);
             textDisplay.setText(Component.literal(label));
         }
     }

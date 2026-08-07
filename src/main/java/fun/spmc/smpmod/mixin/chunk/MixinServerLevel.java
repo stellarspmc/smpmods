@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class MixinServerLevel {
 
     @ModifyVariable(method = "tick", at = @At(value = "STORE"), name = "runs")
-    private boolean smpmods$forceDimensionTick(boolean runs) {
+    private boolean smpmod$forceDimensionTick(boolean runs) {
         ServerLevel level = (ServerLevel) (Object) this;
         return runs || !level.getForceLoadedChunks().isEmpty();
     }

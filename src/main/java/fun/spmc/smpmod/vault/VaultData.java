@@ -53,7 +53,7 @@ public class VaultData extends SavedData {
     ).apply(instance, VaultData::new));
 
     public static final SavedDataType<VaultData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmods", "vault"),
+            Identifier.fromNamespaceAndPath("smpmod", "vault"),
             VaultData::new,
             CODEC,
             DataFixTypes.LEVEL

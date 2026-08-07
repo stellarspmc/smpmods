@@ -43,7 +43,7 @@ public class ShopManager extends SavedData {
     );
 
     public static final SavedDataType<ShopManager> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmods", "shops"),
+            Identifier.fromNamespaceAndPath("smpmod", "shops"),
             ShopManager::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE
@@ -65,10 +65,18 @@ public class ShopManager extends SavedData {
         return get(level).shopsByBarrelPos.get(pos);
     }
 
+    public static void createCreativeShop(BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
+        createShop(new UUID(0L, 0L), pos, price, sellItem, level, true);
+    }
+
     public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
-        double x = pos.getX() + 0.5;
-        double y = pos.getY() + 1.0;
-        double z = pos.getZ() + 0.5;
+        createShop(owner, pos, price, sellItem, level, false);
+    }
+
+    public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level, boolean isCreative) {
+        double x = pos.getX() + .5;
+        double y = pos.getY() + 1;
+        double z = pos.getZ() + .5;
 
         Display.ItemDisplay itemDisplay = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.TRIGGERED);
         if (itemDisplay != null) {
@@ -81,7 +89,8 @@ public class ShopManager extends SavedData {
         Display.TextDisplay textDisplay = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED);
         if (textDisplay != null) {
             textDisplay.setPos(x, y + 0.85, z);
-            String label = String.format("§f%dx §e%s\n§a$%.2f", sellItem.getCount(), sellItem.getHoverName().getString(), price);
+            String stockLabel = isCreative ? "∞" : "0";
+            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", sellItem.getCount(), sellItem.getHoverName().getString(), price, stockLabel);
             textDisplay.setText(Component.literal(label));
             textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
             level.addFreshEntity(textDisplay);
@@ -97,7 +106,9 @@ public class ShopManager extends SavedData {
 
         if (itemDisplay == null || textDisplay == null || interaction == null) return;
 
-        ShopData data = new ShopData(UUID.randomUUID(), owner, pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(), sellItem.copyWithCount(1), sellItem.getCount(), price);
+        ShopData data = new ShopData(UUID.randomUUID(), owner, pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(),
+                sellItem.copyWithCount(1), sellItem.getCount(), price, isCreative);
+
         ShopManager manager = get(level);
         manager.registerShop(data);
         manager.setDirty();
