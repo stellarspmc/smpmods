@@ -32,7 +32,7 @@ public class FishingLoot {
         if (random.nextDouble() < traitChance) {
             FishModifier[] allTraits = FishModifier.values();
             traits.add(allTraits[random.nextInt(allTraits.length)]);
-        }
+        } // TODO: give modifiers / qualities instead of whatever the fuck this is
 
         ItemStack fishStack = caughtFish.createFishInstance(quality, traits);
         if (!player.getInventory().add(fishStack)) player.drop(fishStack, false);
@@ -50,5 +50,5 @@ public class FishingLoot {
         List<Item> pool = SMPItems.FISH;
         if (pool.isEmpty()) throw new IllegalStateException("Code not working, report to admin.");
         return (FishItem) pool.get(minecraftServer.overworld().getRandom().nextInt(pool.size()));
-    }
+    } // TODO: weight system
 }
