@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.events;
 
 import fun.spmc.smpmod.events.mobs.EyeBoss;
+import fun.spmc.smpmod.events.mobs.Minotaur;
 import fun.spmc.smpmod.events.mobs.NickBoss;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -23,5 +24,6 @@ public class ServerMobSpawner {
     public static void registerMobs() {
         mobList.add(new EyeBoss());
         mobList.add(new NickBoss());
+        mobList.add(new Minotaur());
     }
 }

@@ -21,8 +21,9 @@ public class CommandRegistry {
         dispatcher.register(EconomyCommands.buildMarket(context));
         dispatcher.register(EconomyCommands.buildTop());
         dispatcher.register(EconomyCommands.buildBalanceAlias());
-        dispatcher.register(VaultCommand.buildVault());
 
+        dispatcher.register(VaultCommand.buildVault());
+        dispatcher.register(CoinflipCommand.buildCommand());
         dispatcher.register(MapArtCommand.buildCommand());
     }
 }

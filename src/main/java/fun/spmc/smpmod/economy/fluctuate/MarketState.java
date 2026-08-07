@@ -108,7 +108,7 @@ public class MarketState extends SavedData {
         ServerTickEvents.END_SERVER_TICK.register((server) -> {
             int playerCount = server.getPlayerList().getPlayerCount();
             if (playerCount == 0) return;
-            int targetInterval = 5500 + (playerCount - 1) * 500;
+            int targetInterval = 900 + (playerCount - 1) * 125;
             tickCounter++;
 
             if (tickCounter >= targetInterval) {

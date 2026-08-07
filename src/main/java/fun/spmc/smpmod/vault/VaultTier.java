@@ -11,7 +11,7 @@ import java.util.List;
 public enum VaultTier implements StringRepresentable {
     ALPHA(
             "alpha",
-            250000,
+            125000,
             List.of(
                     new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 1),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 1),
@@ -26,21 +26,21 @@ public enum VaultTier implements StringRepresentable {
     ),
     BETA(
             "beta",
-            425000,
+            225000,
             List.of(
                     new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 2),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 2),
-                    new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 1),
+                    //new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 1),
                     new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 1)
             ),
             List.of(
-                    new ConfiguredEvent(ConfiguredEvent.EventType.RESISTANCE_BUFF, 2.0),
-                    new ConfiguredEvent(ConfiguredEvent.EventType.BLOCK_TREASURE_RATE, 0.10)
+                    new ConfiguredEvent(ConfiguredEvent.EventType.RESISTANCE_BUFF, 1),
+                    new ConfiguredEvent(ConfiguredEvent.EventType.BLOCK_TREASURE_RATE, .1)
             )
     ),
     DELTA(
             "delta",
-            695000,
+            345000,
             List.of(
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 3),
                     new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 2)
@@ -55,13 +55,13 @@ public enum VaultTier implements StringRepresentable {
     ),
     GAMMA(
             "gamma",
-            1012500,
+            575000,
             List.of(
                     new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 2),
                     new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 2),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 5),
                     new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 2),
-                    new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 2),
+                    //new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 2),
                     new ActivePerk(ActivePerk.PerkType.GATHERING_INCOME, 1)
             ),
             List.of(
@@ -69,7 +69,7 @@ public enum VaultTier implements StringRepresentable {
                     new ConfiguredEvent(ConfiguredEvent.EventType.RPG_MOB_DROP_LUCK, 1.5),
                     new ConfiguredEvent(ConfiguredEvent.EventType.MACHINE_SPEED_BOOST, 2),
                     new ConfiguredEvent(ConfiguredEvent.EventType.PLANT_BUFFY_DISCOUNT, .25),
-                    new ConfiguredEvent(ConfiguredEvent.EventType.RESISTANCE_BUFF, 4),
+                    new ConfiguredEvent(ConfiguredEvent.EventType.RESISTANCE_BUFF, 2),
                     new ConfiguredEvent(ConfiguredEvent.EventType.DEPOSIT_MONEY_BOOST, .06)
             )
     );

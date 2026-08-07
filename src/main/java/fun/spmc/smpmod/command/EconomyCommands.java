@@ -292,7 +292,7 @@ public class EconomyCommands {
     private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
         EconomySavedData eco = EconomySavedData.get();
         ctx.getSource().sendSuccess(() -> Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD)
-                .append("\n" + eco.getMinecraftTop(page)), false);
+                .append("\n").append(eco.getMinecraftTop(page)), false);
         return 1;
     }
 }

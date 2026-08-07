@@ -87,7 +87,7 @@ public class FluctuationData {
     }
 
     public boolean applyMarketDecay(RandomSource source) {
-        if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited > 0 || amountWithdrawn > 0)) {
+        if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited >= 0 || amountWithdrawn >= 0)) {
             amountDeposited = processFluctuation(amountDeposited, source.nextFloat() < 0.60f);
             amountWithdrawn = processFluctuation(amountWithdrawn, source.nextFloat() < 0.60f);
             return true;
@@ -99,7 +99,7 @@ public class FluctuationData {
         if (currentAmount < 0) return 0;
         long newAmount;
         if (moveTowardsBase) {
-            if (currentAmount <= 30) return currentAmount + 1;
+            if (currentAmount <= 30) return currentAmount + 15;
             newAmount = (long) (currentAmount * 0.99);
             if (newAmount == currentAmount) newAmount--;
         } else {

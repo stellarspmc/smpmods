@@ -3,6 +3,8 @@ package fun.spmc.smpmod.vault;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
+import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.entries.*;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -24,6 +26,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +49,7 @@ public class VaultData extends SavedData {
             Codec.DOUBLE.fieldOf("current_money").forGetter(VaultData::getCurrentMoney),
             Codec.list(ActivePerk.CODEC).fieldOf("perks").forGetter(VaultData::getActivePerks),
             Codec.list(ConfiguredEvent.CODEC).fieldOf("events").forGetter(VaultData::getActiveEvents),
-            UUIDUtil.CODEC.fieldOf("").forGetter(VaultData::getMannequinUuid)
+            UUIDUtil.CODEC.fieldOf("mannequin_uuid").forGetter(VaultData::getMannequinUuid)
     ).apply(instance, VaultData::new));
 
     public static final SavedDataType<VaultData> TYPE = new SavedDataType<>(
@@ -59,7 +63,7 @@ public class VaultData extends SavedData {
     private VaultTier currentTier = VaultTier.ALPHA;
     private final List<ActivePerk> activePerks = new ArrayList<>();
     private final List<ConfiguredEvent> activeEvents = new ArrayList<>();
-    private UUID mannequinUuid;
+    public UUID mannequinUuid;
 
     public VaultData() {}
 
@@ -160,7 +164,11 @@ public class VaultData extends SavedData {
             level.addFreshEntity(mannequin);
             mannequin.setProfile(ResolvableProfile.createUnresolved("spmc"));
             mannequin.setCustomName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-            mannequin.setCustomNameVisible(true);
+            AttributeInstance knockbackResistance = mannequin.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+            if (knockbackResistance != null) knockbackResistance.setBaseValue(1.0);
+            mannequin.setNoGravity(true);
+            mannequin.setInvulnerable(true);
+            mannequin.setHideDescription(true);
             this.mannequinUuid = mannequin.getUUID();
             setDirty();
         }
@@ -223,14 +231,12 @@ public class VaultData extends SavedData {
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, _) -> {
-            for (ActivePerk perk : VaultData.get().getActivePerks()) {
-               perk.type().trigger(perk.level(), handler.getPlayer());
-            }
+            for (ActivePerk perk : VaultData.get().getActivePerks()) if (get().getMannequinUuid() != null) perk.type().trigger(perk.level(), handler.getPlayer());
         });
 
         ServerPlayerEvents.AFTER_RESPAWN.register((_, newPlayer, _) -> {
             for (ActivePerk perk : VaultData.get().getActivePerks()) {
-                perk.type().trigger(perk.level(), newPlayer);
+                if (get().getMannequinUuid() != null) perk.type().trigger(perk.level(), newPlayer);
             }
         });
 
@@ -242,7 +248,7 @@ public class VaultData extends SavedData {
                 Entity entity = level.getEntity(vault.getMannequinUuid());
 
                 if (entity instanceof Mannequin mannequin && mannequin.isAlive()) {
-                    Player nearestPlayer = level.getNearestPlayer(mannequin, 8.0);
+                    Player nearestPlayer = level.getNearestPlayer(mannequin, 12.0);
 
                     if (nearestPlayer != null) {
                         mannequin.lookAt(EntityAnchorArgument.Anchor.EYES,
@@ -280,10 +286,8 @@ public class VaultData extends SavedData {
 
             try {
                 amount = Double.parseDouble(input);
-                if (amount > 0) isValid = true;
-            } catch (NumberFormatException ignored) {
-                // Input is not a valid number
-            }
+                if (amount > 0 && EconomySavedData.get().getBalance(player.getUUID()) >= amount) isValid = true;
+            } catch (NumberFormatException ignored) {}
 
             ItemStack outputItem;
             if (isValid) {
@@ -305,14 +309,15 @@ public class VaultData extends SavedData {
                 if (!canDonate) return;
 
                 VaultData vaultData = VaultData.get();
-                vaultData.addMoney(finalAmount);
-                player.sendSystemMessage(
-                        Component.literal("Thank you! You donated ")
-                                .withStyle(ChatFormatting.GREEN)
-                                .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.GOLD))
-                                .append(Component.literal(" to the Vault!"))
-                );
-
+                if (EconomySavedData.get().changeBalance(player.getUUID(), -finalAmount)) {
+                    vaultData.addMoney(finalAmount);
+                    player.sendSystemMessage(
+                            Component.literal("Thank you! You donated ")
+                                    .withStyle(ChatFormatting.GREEN)
+                                    .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.GOLD))
+                                    .append(Component.literal(" to the Vault!"))
+                    );
+                } else MessageUtils.sendErrorMessage(player, "You do not have enough money to donate to the Vault.");
                 this.close();
             });
         }
