@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WWW"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:logs"
+    },
+    "F": {
+      "item": "minecraft:fishing_rod"
+    }
+  },
+  "result": {
+    "item": "smpmod:normal_fishing_rod",
+    "count": 1
+  }
+}

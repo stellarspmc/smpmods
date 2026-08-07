@@ -47,7 +47,13 @@ public class MarketState extends SavedData {
     }
 
     public void registerMineral(Item item, double defaultPrice, double fluctuation) {
-        marketMap.putIfAbsent(item, new FluctuationData(item, defaultPrice, fluctuation));
+        FluctuationData data = marketMap.get(item);
+        if (data == null) marketMap.put(item, new FluctuationData(item, defaultPrice, fluctuation));
+        else {
+            data.defaultPrice = defaultPrice;
+            data.fluctuation = fluctuation;
+        }
+
         setDirty();
     }
 
@@ -97,13 +103,15 @@ public class MarketState extends SavedData {
         market.registerMineral(Items.HEART_OF_THE_SEA, 2000, 6);
         market.registerMineral(Items.NETHER_STAR, 1250, 3);
         market.registerMineral(Items.NETHERITE_INGOT, 750, 2.15);
-        market.registerMineral(Items.GOLD_INGOT, 5, 1.75);
-        market.registerMineral(Items.EMERALD, 2, .25);
-        market.registerMineral(Items.IRON_INGOT, 1, 1.25);
-        market.registerMineral(Items.LAPIS_LAZULI, .5, 1.15);
-        market.registerMineral(Items.REDSTONE, .2, 1.15);
-        market.registerMineral(Items.COPPER_INGOT, .1, 2);
-        market.registerMineral(Items.COAL, .01, 25);
+        market.registerMineral(Items.ECHO_SHARD, 50, .75);
+        market.registerMineral(Items.GOLD_INGOT, 10, .5);
+        market.registerMineral(Items.EMERALD, 5, .25);
+        market.registerMineral(Items.IRON_INGOT, 2, .35);
+        market.registerMineral(Items.LAPIS_LAZULI, 1, .45);
+        market.registerMineral(Items.REDSTONE, .5, .5);
+        market.registerMineral(Items.COPPER_INGOT, .2, .75);
+        market.registerMineral(Items.COAL, .1, 1.95);
+        market.registerMineral(Items.AMETHYST_SHARD, .05, 2.15);
 
         ServerTickEvents.END_SERVER_TICK.register((server) -> {
             int playerCount = server.getPlayerList().getPlayerCount();

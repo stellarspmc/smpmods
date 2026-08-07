@@ -16,8 +16,8 @@ public class FluctuationData {
     ).apply(instance, FluctuationData::new));
 
     private final Item mineral;
-    private final double defaultPrice;
-    private final double fluctuation;
+    protected double defaultPrice;
+    protected double fluctuation;
     private long amountDeposited;
     private long amountWithdrawn;
     private long lastTransactionTime = System.currentTimeMillis();

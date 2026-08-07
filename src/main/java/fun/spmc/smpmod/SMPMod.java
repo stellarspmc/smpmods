@@ -7,6 +7,8 @@ import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.events.ServerMobSpawner;
+import fun.spmc.smpmod.fishing.mechanic.FishingLoot;
+import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.utils.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
@@ -84,7 +86,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                         Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
                 ).queue();
 
-
+                FishingManager.register();
                 MarketState.register();
                 VaultData.register();
             } catch (Exception e) {
@@ -93,6 +95,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
+        SMPItems.register();
         ShopManager.register();
         ChunkLoaderSavedData.register();
         ServerMobSpawner.registerMobs();

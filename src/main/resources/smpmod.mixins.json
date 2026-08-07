@@ -5,9 +5,12 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "AccessorGameProfile",
+    "MixinECPerms",
     "MixinEnchantment",
     "MixinLivingEntity",
+    "MixinSculkShriekerBlockEntity",
     "chunk.MixinServerLevel",
+    "fishing.MixinFishingHook",
     "player.MixinPlayerAdvancementTracker",
     "player.MixinPlayerData",
     "shop.MixinHopperBlockEntity",

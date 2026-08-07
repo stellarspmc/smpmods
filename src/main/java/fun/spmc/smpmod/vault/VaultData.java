@@ -166,7 +166,6 @@ public class VaultData extends SavedData {
             mannequin.setCustomName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
             AttributeInstance knockbackResistance = mannequin.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
             if (knockbackResistance != null) knockbackResistance.setBaseValue(1.0);
-            mannequin.setNoGravity(true);
             mannequin.setInvulnerable(true);
             mannequin.setHideDescription(true);
             this.mannequinUuid = mannequin.getUUID();

@@ -20,7 +20,7 @@ public class TreasureFatigue {
                 return 1;
             }
 
-            return Math.pow(0.85, count);
+            return Math.pow(0.95, count);
         }
     }
 

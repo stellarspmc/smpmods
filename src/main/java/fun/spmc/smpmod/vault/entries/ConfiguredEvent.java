@@ -76,6 +76,34 @@ public class ConfiguredEvent implements VaultEntry {
         } return false;
     }
 
+    @Override
+    public String toString() {
+        String[] words = type.getSerializedName().split("_");
+        StringBuilder formattedName = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) formattedName.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
+        }
+
+        String timeFormatted = formatTime(remainingTicks);
+        if (modifier > 1) return String.format("%s (+%.0f%%) - %s", formattedName.toString().trim(), (modifier - 1.0) * 100, timeFormatted);
+        return String.format("%s - %s", formattedName.toString().trim(), timeFormatted);
+    }
+
+    private String formatTime(int ticks) {
+        if (ticks <= 0) return "Expired";
+
+        int totalSeconds = ticks / 20;
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+
+        if (hours > 0) {
+            return String.format("%dh %dm", hours, minutes);
+        } else {
+            return String.format("%02d:%02d", minutes, seconds);
+        }
+    }
+
     public enum EventType implements StringRepresentable {
         TREASURE_RARITY_LUCK("treasure_rarity_luck", 1440 * 20 * 60, (value, level) -> {
         }),

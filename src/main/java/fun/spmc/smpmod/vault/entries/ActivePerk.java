@@ -37,6 +37,28 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
         if (VaultData.get().getMannequinUuid() != null) minecraftServer.getPlayerList().getPlayers().forEach((player -> type.trigger(level, player)));
     }
 
+    @Override
+    public @NonNull String toString() {
+        String[] words = type.getSerializedName().split("_");
+        StringBuilder formattedName = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) formattedName.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
+        }
+
+        return formattedName.toString().trim() + " " + toRomanNumeral(level);
+    }
+
+    private static String toRomanNumeral(int level) {
+        return switch (level) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            case 4 -> "IV";
+            case 5 -> "V";
+            default -> "Lvl " + level;
+        };
+    }
+
      public enum PerkType implements StringRepresentable {
         EXTRA_HEARTS("extra_hearts", (tierLevel, player) -> {
             var attr = player.getAttribute(Attributes.MAX_HEALTH);

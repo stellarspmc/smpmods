@@ -18,12 +18,12 @@ import net.minecraft.world.item.component.ItemLore;
 
 import java.util.*;
 
-public abstract class AbstractCropItem extends SimplePolymerItem {
+public class CropItem extends SimplePolymerItem {
     private final Item vanillaItem;
     private final String cropName;
     private final double basePrice;
 
-    public AbstractCropItem(Properties settings, Item item, String seedName, double basePrice) {
+    public CropItem(Properties settings, Item item, String seedName, double basePrice) {
         super(settings);
         vanillaItem = item;
         cropName = seedName;
