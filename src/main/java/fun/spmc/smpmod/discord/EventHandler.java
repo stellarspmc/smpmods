@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.discord;
 
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.utils.MessageUtils;
@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -48,7 +49,7 @@ public class EventHandler extends ListenerAdapter {
         if (event.getName().equals("players")) {
             int onlineCount = minecraftServer.getPlayerCount();
             String playerList = minecraftServer.getPlayerList().getPlayers().stream()
-                    .map(player -> MessageUtils.escapeMarkdown(player.getGameProfile().name()))
+                    .map(player -> MarkdownSanitizer.escape(player.getGameProfile().name()))
                     .collect(Collectors.joining(", "));
 
             if (playerList.isEmpty()) playerList = "*No players online right now.*";
@@ -66,7 +67,7 @@ public class EventHandler extends ListenerAdapter {
             OptionMapping pageOption = event.getOption("page");
             int page = pageOption != null ? pageOption.getAsInt() : 1;
 
-            EconomySavedData eco = EconomySavedData.get();
+            EconomyData eco = EconomyData.get();
             String leaderboardData = eco.top(page);
 
             MessageEmbed embed = new EmbedBuilder()

@@ -3,7 +3,7 @@ package fun.spmc.smpmod;
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
 import fun.spmc.smpmod.chunk.ChunkLoaderSavedData;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.events.ServerMobSpawner;
@@ -100,7 +100,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
             BedrockSkinFetcher.restoreSkin(server, player);
-            EconomySavedData eco = EconomySavedData.get();
+            EconomyData eco = EconomyData.get();
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
 
             if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
@@ -118,7 +118,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 String fullMessage = "☠ " + deathMessage + " at (" + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
                 messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
 
-                EconomySavedData eco = EconomySavedData.get();
+                EconomyData eco = EconomyData.get();
                 double victimBalance = eco.getBalance(player.getUUID());
 
                 if (victimBalance >= 1000) {
@@ -163,7 +163,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
                 if (playTime > 0) {
-                    EconomySavedData eco = EconomySavedData.get();
+                    EconomyData eco = EconomyData.get();
                     eco.changeBalance(player.getUUID(), 1.2);
                 }
 

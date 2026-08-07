@@ -46,9 +46,4 @@ public class MessageUtils {
         while (matcher.find()) matches.add(matcher.group(1));
         return matches;
     }
-
-    public static String escapeMarkdown(String username) {
-        if (username == null) return "";
-        return username.replaceAll("([_`~*>|])", "\\\\$1");
-    }
 }

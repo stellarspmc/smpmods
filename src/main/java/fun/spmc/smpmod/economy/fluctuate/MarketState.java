@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.economy.fluctuate;
 
 import com.mojang.serialization.Codec;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,7 +61,7 @@ public class MarketState extends SavedData {
         if (data == null || amount <= 0) return -2;
 
         double totalCost = Math.round(data.getBulkBuyCost(amount) * 100.0) / 100.0;
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
 
         if (!eco.changeBalance(player.getUUID(), -totalCost)) return -1;
         data.withdraw(amount);
@@ -72,7 +72,7 @@ public class MarketState extends SavedData {
     public static double sellMineral(ServerPlayer player, Item item, int amount, double multiplier) {
         MarketState market = MarketState.getState();
         FluctuationData data = market.get(item);
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
 
         if (item == Items.DIAMOND) return eco.changeBalance(player.getUUID(), 100 * amount * multiplier) ? 100 * amount * multiplier : 0;
         if (data == null || amount <= 0) return 0;

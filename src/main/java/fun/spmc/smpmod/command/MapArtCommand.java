@@ -2,7 +2,7 @@ package fun.spmc.smpmod.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -53,7 +53,7 @@ public class MapArtCommand {
                 double cost = 300 * mapW * mapH;
 
                 minecraftServer.execute(() -> {
-                    EconomySavedData eco = EconomySavedData.get();
+                    EconomyData eco = EconomyData.get();
 
                     if (eco.getBalance(player.getUUID()) < cost) {
                         MessageUtils.sendErrorMessage(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH));

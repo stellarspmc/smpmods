@@ -3,7 +3,7 @@ package fun.spmc.smpmod.vault;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.entries.*;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -286,7 +286,7 @@ public class VaultData extends SavedData {
 
             try {
                 amount = Double.parseDouble(input);
-                if (amount > 0 && EconomySavedData.get().getBalance(player.getUUID()) >= amount) isValid = true;
+                if (amount > 0 && EconomyData.get().getBalance(player.getUUID()) >= amount) isValid = true;
             } catch (NumberFormatException ignored) {}
 
             ItemStack outputItem;
@@ -309,7 +309,7 @@ public class VaultData extends SavedData {
                 if (!canDonate) return;
 
                 VaultData vaultData = VaultData.get();
-                if (EconomySavedData.get().changeBalance(player.getUUID(), -finalAmount)) {
+                if (EconomyData.get().changeBalance(player.getUUID(), -finalAmount)) {
                     vaultData.addMoney(finalAmount);
                     player.sendSystemMessage(
                             Component.literal("Thank you! You donated ")

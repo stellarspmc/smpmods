@@ -3,7 +3,7 @@ package fun.spmc.smpmod.command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -23,7 +23,7 @@ public class CoinflipCommand {
 
     private static int processCoinflip(CommandSourceStack source, double cash) throws CommandSyntaxException {
         if (!source.isPlayer()) return 0;
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         ServerPlayer player = source.getPlayerOrException();
         if (playerTimeMap.get(player.getUUID()) == null || playerTimeMap.getOrDefault(player.getUUID(), 0L) + 3600000L >= System.currentTimeMillis()) {
             if (eco.getBalance(player.getUUID()) > cash) {

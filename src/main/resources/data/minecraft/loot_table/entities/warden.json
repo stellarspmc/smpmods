@@ -19,9 +19,9 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:diamond",
-          "weight": 50,
+          "weight": 25,
           "functions": [
-            { "function": "minecraft:set_count", "count": 6 }
+            { "function": "minecraft:set_count", "count": 3 }
           ]
         },
         {
@@ -29,15 +29,15 @@
           "name": "minecraft:diamond_block",
           "weight": 15,
           "functions": [
-            { "function": "minecraft:set_count", "count": 2 }
+            { "function": "minecraft:set_count", "count": 1 }
           ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:emerald_block",
-          "weight": 35,
+          "weight": 45,
           "functions": [
-            { "function": "minecraft:set_count", "count": 4 }
+            { "function": "minecraft:set_count", "count": 15 }
           ]
         }
       ]

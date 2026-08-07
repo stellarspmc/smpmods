@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.atm.ATMMenu;
 import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
@@ -49,7 +49,7 @@ public class EconomyCommands {
     }
 
     private static int balanceCommand(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target, @Nullable NameAndId id) {
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         String name = (target != null) ? "You" : Objects.requireNonNull(id).name();
         double bal = (target != null) ? eco.getBalance(target.getUUID()) : eco.getBalance(Objects.requireNonNull(id).id());
         ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
@@ -133,7 +133,7 @@ public class EconomyCommands {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         if (item == Items.DIAMOND) {
-            EconomySavedData.get().changeBalance(player.getUUID(), -count * 100);
+            EconomyData.get().changeBalance(player.getUUID(), -count * 100);
             giveExactItems(player, Items.DIAMOND, count);
             MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", count, count * 100));
             return 1;
@@ -172,7 +172,7 @@ public class EconomyCommands {
                         return -1;
                     }
 
-                    EconomySavedData eco = EconomySavedData.get();
+                    EconomyData eco = EconomyData.get();
                     if (eco.changeBalance(sender.getUUID(), -amount)) {
                         eco.changeBalance(target.id(), amount);
 
@@ -290,7 +290,7 @@ public class EconomyCommands {
     }
 
     private static int topCommand(CommandContext<CommandSourceStack> ctx, int page) {
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         ctx.getSource().sendSuccess(() -> Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD)
                 .append("\n").append(eco.getMinecraftTop(page)), false);
         return 1;

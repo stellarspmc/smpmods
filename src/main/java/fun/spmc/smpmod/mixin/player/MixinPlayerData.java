@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.mixin.player;
 
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -18,8 +19,8 @@ public class MixinPlayerData {
     @Inject(method = "setAfk", at = @At("TAIL"))
     private void onSetAfkTail(boolean afk, CallbackInfo ci) {
         if (this.player != null) {
-            if (afk) messageChannel.sendMessage(String.format("%s is now AFK.", player.getScoreboardName())).queue();
-            else messageChannel.sendMessage(String.format("%s is no longer AFK.", player.getScoreboardName())).queue();
+            if (afk) messageChannel.sendMessage(String.format("%s is now AFK.", MarkdownSanitizer.escape(player.getScoreboardName()))).queue();
+            else messageChannel.sendMessage(String.format("%s is no longer AFK.", MarkdownSanitizer.escape(player.getScoreboardName()))).queue();
         }
     }
 }

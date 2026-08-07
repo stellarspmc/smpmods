@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.treasure;
 
-import fun.spmc.smpmod.economy.EconomySavedData;
-import fun.spmc.smpmod.utils.MessageUtils;
+import fun.spmc.smpmod.economy.EconomyData;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -77,7 +77,7 @@ public class TreasureSpawner {
     }
 
     private static void announceLoot(ServerLevel world, String rarityName, ChatFormatting color, ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         double balance = eco.getBalance(player.getUUID());
         double balanceScale = (balance <= 0) ? 1 : Math.clamp(1000 / balance, 0, 1);
         eco.changeBalance(player.getUUID(), 3 * balanceScale);
@@ -90,6 +90,6 @@ public class TreasureSpawner {
                 .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD));
 
         world.getServer().getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
-        messageChannel.sendMessage("**" + MessageUtils.escapeMarkdown(player.getScoreboardName()) + "** just got a **" + rarityName + "** loot drop!").queue();
+        messageChannel.sendMessage("**" + MarkdownSanitizer.escape(player.getScoreboardName()) + "** just got a **" + rarityName + "** loot drop!").queue();
     }
 }

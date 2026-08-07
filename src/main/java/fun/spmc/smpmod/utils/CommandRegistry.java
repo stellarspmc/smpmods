@@ -3,7 +3,6 @@ package fun.spmc.smpmod.utils;
 import fun.spmc.smpmod.command.*;
 
 import com.mojang.brigadier.CommandDispatcher;
-import fun.spmc.smpmod.economy.EconomySavedData;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

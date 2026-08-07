@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -127,7 +127,7 @@ public class ShopData { // no records
             return;
         }
 
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         if (eco.getBalance(buyer.getUUID()) < price) {
             MessageUtils.sendErrorMessage(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price));
             return;

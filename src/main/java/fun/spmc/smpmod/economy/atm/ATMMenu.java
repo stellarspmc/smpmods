@@ -2,7 +2,7 @@ package fun.spmc.smpmod.economy.atm;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import fun.spmc.smpmod.economy.EconomySavedData;
+import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -34,7 +34,7 @@ public class ATMMenu {
     }
 
     private static void refreshGui(SimpleGui gui, ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
 
         GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
         for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
@@ -66,7 +66,7 @@ public class ATMMenu {
     }
 
     private static void openBedrockForm(ServerPlayer player) {
-        EconomySavedData eco = EconomySavedData.get();
+        EconomyData eco = EconomyData.get();
         double balance = eco.getBalance(player.getUUID());
 
         SimpleForm form = SimpleForm.builder()
