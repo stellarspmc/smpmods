@@ -1,25 +1,31 @@
 package fun.spmc.smpmod.fishing.rod;
 
-import eu.pb4.polymer.core.api.item.SimplePolymerItem;
-import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import fun.spmc.smpmod.utils.SimplerPolymerItem;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
+import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class RodItem extends SimplePolymerItem {
+public class RodItem extends SimplerPolymerItem {
     private final RodTiers tier;
 
     public RodItem(Properties settings, RodTiers tier) {
-        super(settings, Items.FISHING_ROD);
+        super(settings.stacksTo(1).durability(tier.getDurability()), Items.FISHING_ROD);
         this.tier = tier;
     }
 
@@ -27,41 +33,46 @@ public class RodItem extends SimplePolymerItem {
         return tier;
     }
 
-    public ItemStack createStack() {
-        ItemStack stack = new ItemStack(this);
-
-        CompoundTag tag = new CompoundTag();
-        tag.putString("rod_tier", tier.name());
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-
-        stack.set(DataComponents.ITEM_NAME,
-                Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()));
-
-        List<Component> loreLines = new ArrayList<>();
-        loreLines.add(Component.literal("Tier: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(tier.getName()).withStyle(tier.getColor())));
-        loreLines.add(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
-                .withStyle(ChatFormatting.GREEN));
-        loreLines.add(Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
-                .withStyle(ChatFormatting.AQUA));
-        loreLines.add(Component.empty());
-        loreLines.add(Component.literal("Use in water to start fishing minigame!").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
-
-        stack.set(DataComponents.LORE, new ItemLore(loreLines));
-
-        return stack;
+    @Override
+    public Component buildName(ItemStack stack) {
+        return Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false));
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        super.modifyBasePolymerItemStack(out, stack, context, lookup);
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        if (!customData.isEmpty()) out.set(DataComponents.CUSTOM_DATA, customData);
+    public List<Component> buildLore(ItemStack stack) {
+        return List.of(
+                Component.literal("Tier: ").withStyle(ChatFormatting.GRAY).withStyle(style -> style.withItalic(false))
+                        .append(Component.literal(tier.getName()).withStyle(tier.getColor())).withStyle(style -> style.withItalic(false)),
+                Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
+                        .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
+                Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
+                        .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false)),
+                Component.empty(),
+                Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
+        );
+    }
 
-        Component name = stack.get(DataComponents.ITEM_NAME);
-        if (name != null) out.set(DataComponents.ITEM_NAME, name);
+    @Override
+    public void modifyItem(ItemStack stack) {
+        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+    }
 
-        ItemLore lore = stack.get(DataComponents.LORE);
-        if (lore != null) out.set(DataComponents.LORE, lore);
+    @Override
+    public @NonNull InteractionResult use(final @NonNull Level level, final Player player, final @NonNull InteractionHand hand) {
+        ItemStack itemStack = player.getItemInHand(hand);
+        if (player.fishing == null) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL,
+                    .5f, .4f / (level.getRandom().nextFloat() * .4f + .8f));
+            if (level instanceof ServerLevel serverLevel) {
+                int lureSpeed = (int)(EnchantmentHelper.getFishingTimeReduction(serverLevel, itemStack, player) * 20.0F);
+                int luck = EnchantmentHelper.getFishingLuckBonus(serverLevel, itemStack, player);
+                Projectile.spawnProjectile(new FishingHook(player, level, luck, lureSpeed), serverLevel, itemStack);
+            }
+
+            player.awardStat(Stats.ITEM_USED.get(this));
+            itemStack.causeUseVibration(player, GameEvent.ITEM_INTERACT_START);
+            itemStack.hurtAndBreak(1, player, hand.asEquipmentSlot());
+        }
+        return InteractionResult.SUCCESS;
     }
 }

@@ -16,7 +16,7 @@ public class FishingSession {
     private float cursor = 0.0f;
     private float speed = 0.05f;
     private boolean movingRight = true;
-    private boolean wasJumping = false;
+    private boolean wasJumping;
     private int ticksLeft = 200;
 
     private final float greenStart;
@@ -36,6 +36,7 @@ public class FishingSession {
     public boolean tick() {
         if (!player.isAlive() || hook.isRemoved() || ticksLeft-- <= 0) {
             onFail("Time ran out!");
+            player.sendSystemMessage(Component.empty(), true);
             return true;
         }
 
@@ -48,7 +49,7 @@ public class FishingSession {
         }
 
         player.sendSystemMessage(buildActionBarComponent(), true);
-        boolean isJumping = player.isJumping();
+        boolean isJumping = player.getLastClientInput().jump();
         if (isJumping && !wasJumping) {
             boolean hit = (cursor >= greenStart && cursor <= greenEnd);
             if (hit) onSuccess();

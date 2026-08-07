@@ -21,11 +21,11 @@ public class MixinECPerms {
             // modify homes here, too lazy to do today
         }
         return 1;
-    }**/
+    }
     @ModifyReturnValue(method = "require", at = @At("RETURN"))
     public @NotNull Predicate<CommandSourceStack> smpmod$require(Predicate<CommandSourceStack> original, @NotNull Identifier permission, int defaultRequireLevel, CallbackInfo ci) {
         if (permission.getPath().contains("randomteleport")) return _ -> true;
         return original;
-    }
+    }**/
 
 }

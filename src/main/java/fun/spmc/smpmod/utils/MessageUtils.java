@@ -15,7 +15,7 @@ public class MessageUtils {
     }
 
     public static void sendSuccessMessage(ServerPlayer player, String message) {
-        player.sendSystemMessage(Component.literal("🏢: " + message).withStyle(ChatFormatting.GREEN));
+        player.sendSystemMessage(Component.literal("✔: " + message).withStyle(ChatFormatting.GREEN));
     }
 
     public static String parseMarkdown(String message) {
