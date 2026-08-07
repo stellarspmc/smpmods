@@ -1,6 +1,6 @@
-package fun.spmc.smpmod.events.mobs;
+package fun.spmc.smpmod.mobs;
 
-import fun.spmc.smpmod.events.ServerMob;
+import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -19,11 +19,7 @@ public class Minotaur implements ServerMob {
     @Override public void setLegs(LivingEntity entity) {}
     @Override public void setBoots(LivingEntity entity) {}
 
-    @Override
-    public void setItems(LivingEntity entity) {
-
-    }
-
+    @Override public void setItems(LivingEntity entity) {}
     @Override public void setEffects(LivingEntity entity) {}
 
     @Override

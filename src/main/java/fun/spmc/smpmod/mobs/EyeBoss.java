@@ -1,11 +1,11 @@
-package fun.spmc.smpmod.events.mobs;
+package fun.spmc.smpmod.mobs;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-import fun.spmc.smpmod.events.ServerMob;
+import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;

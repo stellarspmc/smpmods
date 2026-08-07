@@ -1,6 +1,6 @@
-package fun.spmc.smpmod.events.mobs;
+package fun.spmc.smpmod.mobs;
 
-import fun.spmc.smpmod.events.ServerMob;
+import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;

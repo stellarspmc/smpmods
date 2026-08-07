@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.bedrock;
+package fun.spmc.smpmod.misc;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;

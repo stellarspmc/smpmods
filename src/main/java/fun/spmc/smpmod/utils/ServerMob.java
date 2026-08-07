@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.events;
+package fun.spmc.smpmod.utils;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;

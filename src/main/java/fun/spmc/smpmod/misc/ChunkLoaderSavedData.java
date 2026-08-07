@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.chunk;
+package fun.spmc.smpmod.misc;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

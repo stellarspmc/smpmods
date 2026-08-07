@@ -2,17 +2,16 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.chunk.ChunkLoaderSavedData;
+import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.events.ServerMobSpawner;
-import fun.spmc.smpmod.fishing.mechanic.FishingLoot;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.treasure.TreasureEvents;
-import fun.spmc.smpmod.utils.CommandRegistry;
+import fun.spmc.smpmod.command.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
-import fun.spmc.smpmod.bedrock.BedrockSkinFetcher;
+import fun.spmc.smpmod.misc.BedrockSkinFetcher;
 
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.VaultData;

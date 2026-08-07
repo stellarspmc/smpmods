@@ -1,8 +1,9 @@
 package fun.spmc.smpmod.events;
 
-import fun.spmc.smpmod.events.mobs.EyeBoss;
-import fun.spmc.smpmod.events.mobs.Minotaur;
-import fun.spmc.smpmod.events.mobs.NickBoss;
+import fun.spmc.smpmod.mobs.EyeBoss;
+import fun.spmc.smpmod.mobs.Minotaur;
+import fun.spmc.smpmod.mobs.NickBoss;
+import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;

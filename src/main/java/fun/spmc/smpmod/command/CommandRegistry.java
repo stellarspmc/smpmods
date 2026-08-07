@@ -1,6 +1,4 @@
-package fun.spmc.smpmod.utils;
-
-import fun.spmc.smpmod.command.*;
+package fun.spmc.smpmod.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandBuildContext;
