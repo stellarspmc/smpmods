@@ -1,8 +1,8 @@
-package fun.spmc.smpmod.fishing;
+package fun.spmc.smpmod.misc;
 
 import net.minecraft.ChatFormatting;
 
-public enum FishRarity {
+public enum ItemRarity {
     COMMON(ChatFormatting.WHITE),
     UNCOMMON(ChatFormatting.GREEN),
     RARE(ChatFormatting.BLUE),
@@ -14,7 +14,7 @@ public enum FishRarity {
 
     private final ChatFormatting color;
 
-    FishRarity(ChatFormatting color) {
+    ItemRarity(ChatFormatting color) {
         this.color = color;
     }
 

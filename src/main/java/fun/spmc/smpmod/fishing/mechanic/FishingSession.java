@@ -14,10 +14,10 @@ public class FishingSession {
     private final RodTiers tier;
 
     private float cursor = 0.0f;
-    private float speed = 0.05f;
     private boolean movingRight = true;
     private boolean wasJumping;
-    private int ticksLeft = 200;
+    private int ticksLeft = 150;
+    private int streak = 0;
 
     private final float greenStart;
     private final float greenEnd;
@@ -40,6 +40,7 @@ public class FishingSession {
             return true;
         }
 
+        float speed = 0.05f;
         if (movingRight) {
             cursor += speed;
             if (cursor >= 1.0f) { cursor = 1.0f; movingRight = false; }
@@ -79,11 +80,13 @@ public class FishingSession {
     }
 
     private void onSuccess() {
-        FishingLoot.rewardFish(player, tier);
+        if (streak > 0) streak++;
+        FishingLoot.rewardFish(player, tier, streak);
         hook.discard();
     }
 
     private void onFail(String reason) {
+        streak = 0;
         MessageUtils.sendErrorMessage(player, reason);
         hook.discard();
     }

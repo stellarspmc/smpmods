@@ -125,10 +125,7 @@ public class EconomyData extends SavedData {
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<UUID, Double> entry = filtered.get(i);
 
-            // Do NOT use MessageUtils.escapeMarkdown() here for Minecraft
             String name = resolveName(entry.getKey());
-
-            // Format: #01 name • $500.00
             MutableComponent line = Component.literal(String.format("#%02d ", i + 1)).withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(name).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
                     .append(Component.literal(" • ").withStyle(ChatFormatting.DARK_GRAY))

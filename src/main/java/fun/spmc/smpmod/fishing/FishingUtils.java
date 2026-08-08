@@ -12,10 +12,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.Mannequin;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 public class FishingUtils {
      public static Mannequin spawnFishSeller(ServerLevel level, BlockPos pos) {
@@ -43,27 +49,8 @@ public class FishingUtils {
 
             if (entity instanceof Mannequin mannequin) {
                 if (mannequin.getUUID().equals(NPCData.get().getUuid("fish_seller"))) {
-                    NPCData.talkAsMannequin(mannequin, Component.literal("Ahoy! Let me take a peek at your haul and see if you brought anything worth buying..."), (ServerPlayer) player);
-                    double totalPayout = 0;
-                    int totalFish = 0;
-                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                        ItemStack stack = player.getInventory().getItem(i);
-                        if (stack.isEmpty()) continue;
-                        if (stack.getItem() instanceof FishItem) {
-                            double payout = FishItem.getModifiedPrice(stack);
-                            if (payout > 0) {
-                                totalPayout += payout;
-                                totalFish++;
-                                player.getInventory().removeItem(i, stack.getCount());
-                            }
-                        }
-
-                    }
-                    if (totalPayout == 0) NPCData.talkAsMannequin(mannequin, Component.literal("Bah! Not a single fish in your pockets... Go cast a line and come back when you've got something with scales!"), (ServerPlayer) player);
-                    else {
-                        NPCData.talkAsMannequin(mannequin, Component.literal(String.format("Fine catch! I'll take those %d fish off your hands for $%.2f. Smooth sailing!", totalFish, totalPayout)), (ServerPlayer) player);
-                        EconomyData.get().changeBalance(player.getUUID(), totalPayout);
-                    }
+                    NPCData.talkAsMannequin(mannequin, Component.literal("Ahoy! Drop whatever fish you want to sell into the bin, then close it when you're done."), (ServerPlayer) player);
+                    openSellBin((ServerPlayer) player, mannequin);
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -81,5 +68,40 @@ public class FishingUtils {
             }
             return InteractionResult.PASS;
         });
+    }
+
+    private static void openSellBin(ServerPlayer player, Mannequin mannequin) {
+        SimpleContainer sellContainer = new SimpleContainer(54);
+
+        player.openMenu(new SimpleMenuProvider(
+                (containerId, playerInventory, _) -> new ChestMenu(MenuType.GENERIC_9x6, containerId, playerInventory, sellContainer, 6) {
+                    @Override public boolean stillValid(@NonNull Player player) { return true; }
+
+                    @Override
+                    public void removed(@NonNull Player player) {
+                        super.removed(player);
+
+                        double totalPayout = 0;
+                        int totalFishCount = 0;
+                        for (int i = 0; i < sellContainer.getContainerSize(); i++) {
+                            ItemStack stack = sellContainer.getItem(i);
+                            if (stack.isEmpty()) continue;
+
+                            if (stack.getItem() instanceof FishItem) {
+                                double price = FishItem.getModifiedPrice(stack);
+                                totalPayout += price;
+                                totalFishCount += stack.getCount();
+                            } else player.getInventory().placeItemBackInInventory(stack);
+                            sellContainer.setItem(i, ItemStack.EMPTY);
+                        }
+
+                        if (totalPayout > 0) {
+                            EconomyData.get().changeBalance(player.getUUID(), totalPayout);
+                            NPCData.talkAsMannequin(mannequin, Component.literal(String.format("Fine catch! I'll buy those %d fish for $%.2f. Smooth sailing!", totalFishCount, totalPayout)), (ServerPlayer) player);
+                        } else NPCData.talkAsMannequin(mannequin, Component.literal("Bah! You didn't leave any fish in the bin... Come back when you've got something with scales!"), (ServerPlayer) player);
+                    }
+                },
+                Component.literal("Fish Merchant - Sell Bin")
+        ));
     }
 }

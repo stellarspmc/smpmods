@@ -243,9 +243,7 @@ public class VaultData extends SavedData {
         });
 
         ServerPlayerEvents.AFTER_RESPAWN.register((_, newPlayer, _) -> {
-            for (ActivePerk perk : VaultData.get().getActivePerks()) {
-                if (get().getMannequinUuid() != null) perk.type().trigger(perk.level(), newPlayer);
-            }
+            for (ActivePerk perk : VaultData.get().getActivePerks()) if (get().getMannequinUuid() != null) perk.type().trigger(perk.level(), newPlayer);
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -273,7 +271,7 @@ public class VaultData extends SavedData {
     }
 
     private LinkedHashSet<Map.Entry<UUID, Double>> getTopDonors() {
-        return getLeaderboard().entrySet().stream().sorted(Map.Entry.comparingByValue()).limit(5)
+        return getLeaderboard().entrySet().stream().sorted(Map.Entry.<UUID, Double>comparingByValue().reversed()).limit(5)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

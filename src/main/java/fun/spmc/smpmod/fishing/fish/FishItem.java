@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.fishing.fish;
 
-import fun.spmc.smpmod.fishing.FishModifier;
-import fun.spmc.smpmod.fishing.FishRarity;
+import fun.spmc.smpmod.misc.ItemModifier;
+import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.utils.SimplerPolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -11,22 +11,23 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
 public class FishItem extends SimplerPolymerItem {
     private final String fishName;
     private final double basePrice;
-    private final FishRarity rarity;
+    private final ItemRarity rarity;
 
-    public FishItem(Properties settings, Item vanillaItem, String fishName, double basePrice, FishRarity rarity) {
+    public FishItem(Properties settings, Item vanillaItem, String fishName, double basePrice, ItemRarity rarity) {
         super(settings.stacksTo(64), vanillaItem);
         this.fishName = fishName;
         this.basePrice = basePrice;
         this.rarity = rarity;
     }
 
-    public FishRarity getRarity() { return rarity; }
+    public ItemRarity getRarity() { return rarity; }
     public String getFishName() { return fishName; }
     public double getBasePrice() { return basePrice; }
 
@@ -43,15 +44,20 @@ public class FishItem extends SimplerPolymerItem {
     }
 
     @Override
+    public @NonNull Component getName(@NonNull ItemStack itemStack) {
+        return buildName(itemStack);
+    }
+
+    @Override
     public Component buildName(ItemStack stack) {
         Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
         if (fishTag.isPresent()) {
             CompoundTag tag = fishTag.get();
-            Set<FishModifier> traits = getModifiers(tag).keySet();
+            Set<ItemModifier> traits = getModifiers(tag).keySet();
             int quality = getQuality(tag);
 
             MutableComponent title = Component.empty();
-            for (FishModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
+            for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
             title.append(Component.literal(this.fishName).withStyle(rarity.getColor()));
             if (quality > 0) title.append(Component.literal(" " + "★".repeat(quality)).withStyle(ChatFormatting.YELLOW));
             return title.withStyle(style -> style.withItalic(false));
@@ -67,11 +73,11 @@ public class FishItem extends SimplerPolymerItem {
         return lore;
     }
 
-    private static Map<FishModifier, Integer> getModifiers(CompoundTag tag) {
-        Map<FishModifier, Integer> map = new HashMap<>();
+    private static Map<ItemModifier, Integer> getModifiers(CompoundTag tag) {
+        Map<ItemModifier, Integer> map = new HashMap<>();
         if (tag.getCompound("modifier").isPresent()) {
             CompoundTag modTag = tag.getCompound("modifier").get();
-            modTag.forEach((id, level) -> FishModifier.fromId(id).ifPresent(mod -> level.asInt().ifPresent(lvl -> map.put(mod, lvl))));
+            modTag.forEach((id, level) -> ItemModifier.fromId(id).ifPresent(mod -> level.asInt().ifPresent(lvl -> map.put(mod, lvl))));
         }
         return map;
     }
@@ -80,7 +86,7 @@ public class FishItem extends SimplerPolymerItem {
         return tag.getIntOr("quality", 0);
     }
 
-    public ItemStack createFishInstance(int quality, Map<FishModifier, Integer> mods) {
+    public ItemStack createFishInstance(int quality, Map<ItemModifier, Integer> mods) {
         ItemStack stack = new ItemStack(this);
 
         CompoundTag fishData = new CompoundTag();
@@ -99,9 +105,9 @@ public class FishItem extends SimplerPolymerItem {
         if (fishTag.isPresent()) {
             CompoundTag tag = fishTag.get();
             int quality = getQuality(tag);
-            Map<FishModifier, Integer> modifiers = getModifiers(tag);
+            Map<ItemModifier, Integer> modifiers = getModifiers(tag);
             double price = ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
-            for (Map.Entry<FishModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * Math.min(1, entry.getValue());
+            for (Map.Entry<ItemModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * Math.min(1, entry.getValue());
             return Math.round(price * (quality * .4 + 1) * 100) / 100d;
         } return ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
     }
