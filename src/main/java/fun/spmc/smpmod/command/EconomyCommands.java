@@ -133,10 +133,13 @@ public class EconomyCommands {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         if (item == Items.DIAMOND) {
-            EconomyData.get().changeBalance(player.getUUID(), -count * 100);
-            giveExactItems(player, Items.DIAMOND, count);
-            MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", count, count * 100));
-            return 1;
+            if (EconomyData.get().changeBalance(player.getUUID(), -count * 100)) {
+                giveExactItems(player, Items.DIAMOND, count);
+                MessageUtils.sendSuccessMessage(player, String.format("Withdrew %dx Diamonds for $%d.", count, count * 100));
+                return 1;
+            }
+            player.sendSystemMessage(Component.literal(String.format("✖: Insufficient balance. You need $%d to withdraw %dx ", count * 100, count)).append(Component.translatable(item.getDescriptionId())).append(".").withStyle(ChatFormatting.RED));
+            return -1;
         }
 
         double totalCost = MarketState.buyMineral(player, item, count);
