@@ -18,5 +18,5 @@ public class SyntheticMineral extends SimplerPolymerItem {
     @Override public List<Component> buildLore(ItemStack stack) {
         return List.of();
     }
-    @Override public void modifyItem(ItemStack stack) {}
+    @Override public void modifyItem(ItemStack stack, ItemStack stackData) {}
 }

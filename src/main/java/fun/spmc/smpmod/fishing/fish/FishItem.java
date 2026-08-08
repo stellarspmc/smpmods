@@ -31,6 +31,18 @@ public class FishItem extends SimplerPolymerItem {
     public double getBasePrice() { return basePrice; }
 
     @Override
+    public void modifyItem(ItemStack stack, ItemStack stackData) {
+        Optional<CompoundTag> fishTag = stackData.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
+        if (fishTag.isPresent()) {
+            int quality = getQuality(fishTag.get());
+            if (quality > 3) {
+                stackData.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+                stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+            }
+        }
+    }
+
+    @Override
     public Component buildName(ItemStack stack) {
         Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
         if (fishTag.isPresent()) {
@@ -51,32 +63,8 @@ public class FishItem extends SimplerPolymerItem {
     public List<Component> buildLore(ItemStack stack) {
         List<Component> lore = new ArrayList<>();
         Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
-        if (fishTag.isPresent()) {
-            CompoundTag tag = fishTag.get();
-            int quality = getQuality(tag);
-
-            double multiplier = 1.0 + (quality * 0.25);
-            Map<FishModifier, Integer> modifiers = getModifiers(tag);
-            for (FishModifier mod : modifiers.keySet()) multiplier += mod.getPriceMultiplier();
-            double finalPrice = Math.round((basePrice * multiplier) * 100.0) / 100.0;
-
-            lore.add(Component.literal("Base Price: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("$" + finalPrice).withStyle(ChatFormatting.GREEN)));
-
-            if (!modifiers.isEmpty()) {
-                lore.add(Component.empty());
-                lore.add(Component.literal("Traits:").withStyle(ChatFormatting.GRAY));
-                for (Map.Entry<FishModifier, Integer> entry : modifiers.entrySet()) {
-                    lore.add(Component.literal(" • " + entry.getKey().toString()).withStyle(entry.getKey().getColor()));
-                }
-            }
-        }
+        if (fishTag.isPresent()) lore.add(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + getModifiedPrice(stack)).withStyle(ChatFormatting.GREEN)).withStyle(style -> style.withItalic(false)));
         return lore;
-    }
-
-    @Override
-    public void modifyItem(ItemStack stack) {
-        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
     private Map<FishModifier, Integer> getModifiers(CompoundTag tag) {
@@ -92,7 +80,7 @@ public class FishItem extends SimplerPolymerItem {
         return tag.getIntOr("quality", 0);
     }
 
-    public ItemStack createFishInstance(int quality, List<FishModifier> traits) {
+    public ItemStack createFishInstance(int quality, Map<FishModifier, Integer> mods) {
         ItemStack stack = new ItemStack(this);
 
         CompoundTag fishData = new CompoundTag();
@@ -100,10 +88,21 @@ public class FishItem extends SimplerPolymerItem {
         fishData.putInt("quality", quality);
 
         CompoundTag modTag = new CompoundTag();
-        for (FishModifier trait : traits) modTag.putInt(trait.name().toLowerCase(), 1);
+        mods.forEach((mod, level) -> modTag.putInt(mod.name().toLowerCase(), level));
         fishData.put("modifier", modTag);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.put("fish", fishData));
-
         return stack;
+    }
+
+    public double getModifiedPrice(ItemStack stack) {
+        Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
+        if (fishTag.isPresent()) {
+            CompoundTag tag = fishTag.get();
+            int quality = getQuality(tag);
+            Map<FishModifier, Integer> modifiers = getModifiers(tag);
+            double price = getBasePrice();
+            for (Map.Entry<FishModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * entry.getValue();
+            return Math.round(price * (quality * .4 + 1) * 100) / 100d;
+        } return getBasePrice();
     }
 }

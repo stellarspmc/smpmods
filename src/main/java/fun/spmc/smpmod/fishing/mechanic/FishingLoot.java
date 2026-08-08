@@ -12,35 +12,28 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class FishingLoot {
-    public static void rewardFish(ServerPlayer player, FishingHook hook, RodTiers tier) {
+    public static void rewardFish(ServerPlayer player, RodTiers tier) {
         RandomSource random = minecraftServer.overworld().getRandom();
         FishItem caughtFish = getRandomFishForTier(tier);
-        int maxStars = Math.min(3, tier.ordinal() + 1);
-        int quality = random.nextInt(maxStars + 1);
-        List<FishModifier> traits = new ArrayList<>();
+        Map<FishModifier, Integer> modMap = new HashMap<>();
         double traitChance = 0.2 * tier.getCatchLuckBonus();
 
-        List<FishModifier> allTraits = new ArrayList<>(Arrays.stream(FishModifier.values()).toList());
-        while (!allTraits.isEmpty() && random.nextDouble() < traitChance) {
-            int index = random.nextInt(allTraits.size());
-            FishModifier selected = allTraits.remove(index);
-            allTraits.add(selected);
-
-            traitChance *= 0.5;
+        List<FishModifier> mods = new ArrayList<>(Arrays.stream(FishModifier.values()).toList());
+        while (!mods.isEmpty() && random.nextDouble() < traitChance) {
+            int index = random.nextInt(mods.size());
+            modMap.put(mods.remove(index), random.nextInt(5) + 1);
+            traitChance *= .75 * tier.getCatchLuckBonus() / 1.8;
         }
 
-        ItemStack fishStack = caughtFish.createFishInstance(quality, traits);
+        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, tier.getCatchLuckBonus()), modMap);
         if (!player.getInventory().add(fishStack)) player.drop(fishStack, false);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1.0f, 1.2f);
@@ -49,13 +42,13 @@ public class FishingLoot {
     }
 
     private static final double[][] RARITY_WEIGHTS_PER_TIER = {
-            {70, 25, 4.5, .344, .125, .025, .005, .001},
-            {55, 30, 12, 2.7, .225, .75, 0, 0},
-            {40, 32, 18, 8, 1.9, .1, 0, 0},
-            {25, 30, 25, 12, 6, 1.8, .2, 0},
-            {15, 22, 28, 18, 11, 4.5, 1.4, .1},
-            {8, 14, 24, 22, 16, 10, 5, 1},
-            {3, 7, 15, 25, 22, 15, 9.5, 3.5}
+            { 75, 20, 4.2, .7, .09, .008, .0015, .0005 },
+            { 62, 27, 8.5, 2, .4, .08, .018, .002 },
+            { 48, 30, 15, 5.5, 1.2, .25, .04, .01 },
+            { 35, 32, 20, 9, 3.0, .8, .15, .05 },
+            { 24, 30, 26, 13, 5.5, 1.1, .3, .1 },
+            { 14, 24, 30, 18, 9.0, 3.5, 1.1, .4 },
+            { 8, 17, 32, 22, 12, 5.5, 2.5, 1 }
     };
 
     private static FishItem getRandomFishForTier(RodTiers tier) {
@@ -103,5 +96,33 @@ public class FishingLoot {
         }
 
         return matchingFish.getFirst();
+    }
+
+    private static final double[] BASE_STAR_WEIGHTS = { 1000.0, 600.0, 300.0, 120.0, 35.0, 6.0 };
+
+    private static int rollStarQuality(RandomSource random, float luckBonus) {
+        double[] adjustedWeights = new double[BASE_STAR_WEIGHTS.length];
+        double totalWeight = 0;
+
+        // Adjust weights based on luck bonus
+        for (int star = 0; star < BASE_STAR_WEIGHTS.length; star++) {
+            // Weight * (luckBonus ^ star)
+            double weight = BASE_STAR_WEIGHTS[star] * Math.pow(luckBonus, star);
+            adjustedWeights[star] = weight;
+            totalWeight += weight;
+        }
+
+        // Roll weighted random value
+        double roll = random.nextDouble() * totalWeight;
+        double cumulative = 0;
+
+        for (int star = 0; star < adjustedWeights.length; star++) {
+            cumulative += adjustedWeights[star];
+            if (roll < cumulative) {
+                return star;
+            }
+        }
+
+        return 0; // Fallback
     }
 }

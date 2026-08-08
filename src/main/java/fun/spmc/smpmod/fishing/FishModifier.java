@@ -5,7 +5,7 @@ import net.minecraft.ChatFormatting;
 import java.util.Optional;
 
 public enum FishModifier {
-    GIANT(ChatFormatting.DARK_AQUA,1),
+    GIANT(ChatFormatting.DARK_AQUA, 1),
     SPEEDY(ChatFormatting.GREEN, .9),
     POWERFUL(ChatFormatting.RED, 1.4),
     STUPID(ChatFormatting.DARK_PURPLE, .7),

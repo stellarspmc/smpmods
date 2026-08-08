@@ -37,9 +37,8 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
@@ -49,7 +48,8 @@ public class VaultData extends SavedData {
             Codec.DOUBLE.fieldOf("current_money").forGetter(VaultData::getCurrentMoney),
             Codec.list(ActivePerk.CODEC).fieldOf("perks").forGetter(VaultData::getActivePerks),
             Codec.list(ConfiguredEvent.CODEC).fieldOf("events").forGetter(VaultData::getActiveEvents),
-            UUIDUtil.CODEC.fieldOf("mannequin_uuid").forGetter(VaultData::getMannequinUuid)
+            UUIDUtil.CODEC.fieldOf("mannequin_uuid").forGetter(VaultData::getMannequinUuid),
+            Codec.unboundedMap(UUIDUtil.CODEC, Codec.DOUBLE).optionalFieldOf("leaderboard", Map.of()).forGetter(VaultData::getLeaderboard)
     ).apply(instance, VaultData::new));
 
     public static final SavedDataType<VaultData> TYPE = new SavedDataType<>(
@@ -64,26 +64,33 @@ public class VaultData extends SavedData {
     private final List<ActivePerk> activePerks = new ArrayList<>();
     private final List<ConfiguredEvent> activeEvents = new ArrayList<>();
     public UUID mannequinUuid;
+    private final Map<UUID, Double> leaderboard = new HashMap<>();
 
     public VaultData() {}
 
-    public VaultData(VaultTier currentTier, double currentMoney, List<ActivePerk> perks, List<ConfiguredEvent> events, UUID mannequinUuid) {
+    public VaultData(VaultTier currentTier, double currentMoney, List<ActivePerk> perks, List<ConfiguredEvent> events, UUID mannequinUuid, Map<UUID, Double> leaderboard) {
         this.currentTier = currentTier;
         this.currentMoney = currentMoney;
         this.activePerks.addAll(perks);
         this.activeEvents.addAll(events);
         this.mannequinUuid = mannequinUuid;
+        this.leaderboard.putAll(leaderboard);
     }
 
-    public static VaultData get() {
-        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
+    public Map<UUID, Double> getLeaderboard() { return leaderboard; }
+    public static VaultData get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
+
+    public void recordDonation(UUID playerUuid, double amount) {
+        this.leaderboard.merge(playerUuid, amount, Double::sum);
+        this.addMoney(amount);
     }
 
-    public void addMoney(double amount) {
+    private void addMoney(double amount) {
         this.currentMoney += amount;
 
         boolean unlockedSomething = false;
         while (canAdvance()) {
+            currentMoney = Math.min(0, currentMoney - currentTier.getCostGoal());
             advance();
             unlockedSomething = true;
         }
@@ -94,14 +101,10 @@ public class VaultData extends SavedData {
     private boolean canAdvance() {
         List<ConfiguredEvent> availableEvents = getAvailableEvents();
         List<ActivePerk> availablePerks = getAvailablePerks();
+        boolean check = this.currentMoney >= currentTier.getCostGoal();
 
-        if (availableEvents.isEmpty() && availablePerks.isEmpty()) return this.currentTier != VaultTier.GAMMA;
-        int totalTierItems = currentTier.getPerks().size() + currentTier.getEventPool().size();
-        double stepCost = currentTier.getCostGoal() / (double) Math.max(1, totalTierItems);
-        int unlockedItems = totalTierItems - (availableEvents.size() + availablePerks.size());
-        double requiredMoneyForNextUnlock = stepCost * (unlockedItems + 1);
-
-        return this.currentMoney >= requiredMoneyForNextUnlock;
+        if (availableEvents.isEmpty() && availablePerks.isEmpty()) return (this.currentTier != VaultTier.GAMMA) && check;
+        return check;
     }
 
     private void advance() {
@@ -112,10 +115,7 @@ public class VaultData extends SavedData {
         List<ActivePerk> availablePerks = getAvailablePerks();
 
         if (availableEvents.isEmpty() && availablePerks.isEmpty()) {
-            if (this.currentTier != VaultTier.GAMMA) {
-                this.currentTier = this.currentTier.getNextTier();
-                if (canAdvance()) advance();
-            }
+            if (this.currentTier != VaultTier.GAMMA) this.currentTier = this.currentTier.getNextTier();
             return;
         }
 
@@ -189,6 +189,19 @@ public class VaultData extends SavedData {
                     player.sendSystemMessage(Component.literal("Balance: ")
                             .withStyle(ChatFormatting.YELLOW)
                             .append(Component.literal(String.format("$%.2f / $%.2f", data.getCurrentMoney(), data.getCurrentTier().getCostGoal())).withStyle(ChatFormatting.AQUA)));
+
+                    player.sendSystemMessage(Component.literal("Top Donors:").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                    List<Map.Entry<UUID, Double>> topDonors = data.getTopDonors().stream().toList();
+                    if (topDonors.isEmpty()) player.sendSystemMessage(Component.literal("  - No donations yet").withStyle(ChatFormatting.GRAY));
+                    else {
+                        int rank = 1;
+                        for (Map.Entry<UUID, Double> entry : topDonors) {
+                            player.sendSystemMessage(Component.literal(String.format("  #%d %s: ", rank++, EconomyData.get().resolveName(entry.getKey())))
+                                    .withStyle(ChatFormatting.YELLOW)
+                                    .append(Component.literal(String.format("$%.2f", entry.getValue())).withStyle(ChatFormatting.GREEN)));
+                        }
+                    }
+
                     player.sendSystemMessage(Component.literal("Active Perks:").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
                     if (data.getActivePerks().isEmpty()) {
                         player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
@@ -198,7 +211,6 @@ public class VaultData extends SavedData {
                                     .append(Component.literal(perk.toString()).withStyle(ChatFormatting.GRAY)));
                         }
                     }
-
                     player.sendSystemMessage(Component.literal("Active Events:").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
                     if (data.getActiveEvents().isEmpty()) {
                         player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
@@ -263,6 +275,11 @@ public class VaultData extends SavedData {
         });
     }
 
+    private LinkedHashSet<Map.Entry<UUID, Double>> getTopDonors() {
+        return getLeaderboard().entrySet().stream().sorted(Map.Entry.comparingByValue()).limit(5)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     static class DonateAnvilGui extends AnvilInputGui {
 
         public DonateAnvilGui(ServerPlayer player) {
@@ -309,7 +326,7 @@ public class VaultData extends SavedData {
 
                 VaultData vaultData = VaultData.get();
                 if (EconomyData.get().changeBalance(player.getUUID(), -finalAmount)) {
-                    vaultData.addMoney(finalAmount);
+                    vaultData.recordDonation(player.getUUID(), finalAmount);
                     player.sendSystemMessage(
                             Component.literal("Thank you! You donated ")
                                     .withStyle(ChatFormatting.GREEN)

@@ -34,14 +34,13 @@ public abstract class SimplerPolymerItem extends Item implements PolymerItem {
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        out.set(DataComponents.ITEM_NAME, buildName(out));
-        //out.set(DataComponents.CUSTOM_NAME, buildName(out));
-        out.set(DataComponents.LORE, new ItemLore(buildLore(out)));
-        modifyItem(stack);
+        out.set(DataComponents.CUSTOM_NAME, buildName(stack));
+        out.set(DataComponents.LORE, new ItemLore(buildLore(stack)));
+        modifyItem(out, stack);
     }
 
     public abstract Component buildName(ItemStack stack);
     public abstract List<Component> buildLore(ItemStack stack);
-    public abstract void modifyItem(ItemStack stack);
+    public abstract void modifyItem(ItemStack stack, ItemStack stackData);
 }
 

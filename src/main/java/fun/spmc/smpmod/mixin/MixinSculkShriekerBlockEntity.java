@@ -11,10 +11,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(SculkShriekerBlockEntity.class)
 public class MixinSculkShriekerBlockEntity {
     @Unique private int smpmod$spawnedWardenCount = 0;
+    @Unique private long smpmod$lastWardenResetTime = 0L;
 
     @Inject(method = "trySummonWarden", at = @At("HEAD"), cancellable = true)
     private void smpmod$limitWardenSpawns(ServerLevel level, CallbackInfoReturnable<Boolean> cir) {
-        if (this.smpmod$spawnedWardenCount >= 5) cir.setReturnValue(false);
+        long currentTime = level.getGameTime();
+
+        if (currentTime - this.smpmod$lastWardenResetTime >= 6000L) {
+            this.smpmod$spawnedWardenCount = 0;
+            this.smpmod$lastWardenResetTime = currentTime;
+        }
+
+        if (this.smpmod$spawnedWardenCount >= 15) cir.setReturnValue(false);
     }
 
     @Inject(method = "trySummonWarden", at = @At("RETURN"))

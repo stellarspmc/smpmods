@@ -16,6 +16,7 @@ public enum VaultTier implements StringRepresentable {
                     new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 1),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 1),
                     new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 1)
+                    // new ActivePerk(ActivePerk.PerkType.EXP_MULTIPLIER, 1)
             ),
             List.of(
                     new ConfiguredEvent(ConfiguredEvent.EventType.TREASURE_RARITY_LUCK, 1),
@@ -30,8 +31,8 @@ public enum VaultTier implements StringRepresentable {
             List.of(
                     new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 2),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 2),
-                    //new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 1),
                     new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 1)
+                    //new ActivePerk(ActivePerk.PerkType.MOVEMENT_SPEED, 1)
             ),
             List.of(
                     new ConfiguredEvent(ConfiguredEvent.EventType.RESISTANCE_BUFF, 1),
@@ -42,8 +43,12 @@ public enum VaultTier implements StringRepresentable {
             "delta",
             345000,
             List.of(
+                    new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 2),
+                    new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 3),
                     new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 3),
                     new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 2)
+                    //new ActivePerk(ActivePerk.PerkType.EXP_MULTIPLIER, 2),
+                    //new ActivePerk(ActivePerk.PerkType.GLOBAL_LUCK, 1)
             ),
             List.of(
                     new ConfiguredEvent(ConfiguredEvent.EventType.TREASURE_ALWAYS_RARE, 1),
@@ -57,12 +62,12 @@ public enum VaultTier implements StringRepresentable {
             "gamma",
             575000,
             List.of(
-                    new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 2),
-                    new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 2),
-                    new ActivePerk(ActivePerk.PerkType.EXTRA_HEARTS, 5),
-                    new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 2),
-                    //new ActivePerk(ActivePerk.PerkType.MAX_HOMES, 2),
+                    new ActivePerk(ActivePerk.PerkType.BONUS_SHARPNESS, 3),
+                    new ActivePerk(ActivePerk.PerkType.BONUS_EFFICIENCY, 4),
+                    new ActivePerk(ActivePerk.PerkType.BONUS_PROTECTION, 3),
                     new ActivePerk(ActivePerk.PerkType.GATHERING_INCOME, 1)
+                    //new ActivePerk(ActivePerk.PerkType.FAST_SMELTING, 1),
+                    //new ActivePerk(ActivePerk.PerkType.EXP_MULTIPLIER, 3)
             ),
             List.of(
                     new ConfiguredEvent(ConfiguredEvent.EventType.BLOCK_TREASURE_RATE, .2),

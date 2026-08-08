@@ -79,7 +79,7 @@ public class FishingSession {
     }
 
     private void onSuccess() {
-        FishingLoot.rewardFish(player, hook, tier);
+        FishingLoot.rewardFish(player, tier);
         hook.discard();
     }
 

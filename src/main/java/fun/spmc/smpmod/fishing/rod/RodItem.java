@@ -1,9 +1,13 @@
 package fun.spmc.smpmod.fishing.rod;
 
-import fun.spmc.smpmod.utils.SimplerPolymerItem;
+import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,33 +18,38 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public class RodItem extends SimplerPolymerItem {
+public class RodItem extends FishingRodItem implements PolymerItem {
     private final RodTiers tier;
+    private final Item vanillaItem;
 
-    public RodItem(Properties settings, RodTiers tier) {
-        super(settings.stacksTo(1).durability(tier.getDurability()), Items.FISHING_ROD);
+    public RodItem(Properties properties, RodTiers tier) {
+        super(properties.stacksTo(1).durability(tier.getDurability()));
+        this.vanillaItem = Items.FISHING_ROD;
         this.tier = tier;
     }
 
-    public RodTiers getTier() {
-        return tier;
+    @Override
+    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
+        return vanillaItem;
     }
 
     @Override
-    public Component buildName(ItemStack stack) {
-        return Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false));
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
+        return BuiltInRegistries.ITEM.getKey(vanillaItem);
     }
 
     @Override
-    public List<Component> buildLore(ItemStack stack) {
-        return List.of(
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
+        out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false)));
+        out.set(DataComponents.LORE, new ItemLore(List.of(
                 Component.literal("Tier: ").withStyle(ChatFormatting.GRAY).withStyle(style -> style.withItalic(false))
                         .append(Component.literal(tier.getName()).withStyle(tier.getColor())).withStyle(style -> style.withItalic(false)),
                 Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
@@ -49,12 +58,12 @@ public class RodItem extends SimplerPolymerItem {
                         .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false)),
                 Component.empty(),
                 Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
-        );
+        )));
+        out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
-    @Override
-    public void modifyItem(ItemStack stack) {
-        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+    public RodTiers getTier() {
+        return tier;
     }
 
     @Override
@@ -64,9 +73,7 @@ public class RodItem extends SimplerPolymerItem {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL,
                     .5f, .4f / (level.getRandom().nextFloat() * .4f + .8f));
             if (level instanceof ServerLevel serverLevel) {
-                int lureSpeed = (int)(EnchantmentHelper.getFishingTimeReduction(serverLevel, itemStack, player) * 20.0F);
-                int luck = EnchantmentHelper.getFishingLuckBonus(serverLevel, itemStack, player);
-                Projectile.spawnProjectile(new FishingHook(player, level, luck, lureSpeed), serverLevel, itemStack);
+                Projectile.spawnProjectile(new FishingHook(player, level, tier.ordinal(), Math.min(500, 20 * (tier.ordinal() * 3))), serverLevel, itemStack);
             }
 
             player.awardStat(Stats.ITEM_USED.get(this));
