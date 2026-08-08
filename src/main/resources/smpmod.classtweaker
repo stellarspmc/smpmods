@@ -4,3 +4,4 @@ accessible method net/minecraft/server/level/ChunkMap removeEntity (Lnet/minecra
 accessible method net/minecraft/server/level/ChunkMap addEntity (Lnet/minecraft/world/entity/Entity;)V
 accessible method net/minecraft/world/entity/decoration/Mannequin setProfile (Lnet/minecraft/world/item/component/ResolvableProfile;)V
 accessible method net/minecraft/world/entity/decoration/Mannequin setHideDescription (Z)V
+accessible method net/minecraft/world/entity/decoration/Mannequin setImmovable (Z)V

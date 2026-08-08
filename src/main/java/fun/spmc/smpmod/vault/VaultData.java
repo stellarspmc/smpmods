@@ -26,8 +26,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -164,8 +162,7 @@ public class VaultData extends SavedData {
             level.addFreshEntity(mannequin);
             mannequin.setProfile(ResolvableProfile.createUnresolved("spmc"));
             mannequin.setCustomName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-            AttributeInstance knockbackResistance = mannequin.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
-            if (knockbackResistance != null) knockbackResistance.setBaseValue(1.0);
+            mannequin.setImmovable(true);
             mannequin.setInvulnerable(true);
             mannequin.setHideDescription(true);
             this.mannequinUuid = mannequin.getUUID();
