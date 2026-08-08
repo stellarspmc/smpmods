@@ -8,6 +8,7 @@ public enum FishModifier {
     GIANT(ChatFormatting.DARK_AQUA,1),
     SPEEDY(ChatFormatting.GREEN, .9),
     POWERFUL(ChatFormatting.RED, 1.4),
+    STUPID(ChatFormatting.DARK_PURPLE, .7),
     LUCKY(ChatFormatting.GOLD, 1.1);
 
     private final ChatFormatting color;

@@ -79,7 +79,6 @@ public class FishingSession {
     }
 
     private void onSuccess() {
-        MessageUtils.sendSuccessMessage(player, "You landed the catch!");
         FishingLoot.rewardFish(player, hook, tier);
         hook.discard();
     }

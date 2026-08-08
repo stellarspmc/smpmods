@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.fishing.fish;
 
 import fun.spmc.smpmod.fishing.FishModifier;
+import fun.spmc.smpmod.fishing.FishRarity;
 import fun.spmc.smpmod.utils.SimplerPolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -16,13 +17,16 @@ import java.util.*;
 public class FishItem extends SimplerPolymerItem {
     private final String fishName;
     private final double basePrice;
+    private final FishRarity rarity;
 
-    public FishItem(Properties settings, Item vanillaItem, String fishName, double basePrice) {
+    public FishItem(Properties settings, Item vanillaItem, String fishName, double basePrice, FishRarity rarity) {
         super(settings.stacksTo(64), vanillaItem);
         this.fishName = fishName;
         this.basePrice = basePrice;
+        this.rarity = rarity;
     }
 
+    public FishRarity getRarity() { return rarity; }
     public String getFishName() { return fishName; }
     public double getBasePrice() { return basePrice; }
 
@@ -36,11 +40,11 @@ public class FishItem extends SimplerPolymerItem {
 
             MutableComponent title = Component.empty();
             for (FishModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
-            title.append(Component.literal(this.fishName).withStyle(ChatFormatting.GOLD));
+            title.append(Component.literal(this.fishName).withStyle(rarity.getColor()));
             if (quality > 0) title.append(Component.literal(" " + "★".repeat(quality)).withStyle(ChatFormatting.YELLOW));
-            return title;
+            return title.withStyle(style -> style.withItalic(false));
         }
-        return Component.literal(this.fishName);
+        return Component.literal(this.fishName).withStyle(rarity.getColor()).withStyle(style -> style.withItalic(false));
     }
 
     @Override
@@ -79,9 +83,7 @@ public class FishItem extends SimplerPolymerItem {
         Map<FishModifier, Integer> map = new HashMap<>();
         if (tag.getCompound("modifier").isPresent()) {
             CompoundTag modTag = tag.getCompound("modifier").get();
-            modTag.forEach((id, level) -> {
-                FishModifier.fromId(id).ifPresent(mod -> level.asInt().ifPresent(lvl -> map.put(mod, lvl)));
-            });
+            modTag.forEach((id, level) -> FishModifier.fromId(id).ifPresent(mod -> level.asInt().ifPresent(lvl -> map.put(mod, lvl))));
         }
         return map;
     }
@@ -93,14 +95,14 @@ public class FishItem extends SimplerPolymerItem {
     public ItemStack createFishInstance(int quality, List<FishModifier> traits) {
         ItemStack stack = new ItemStack(this);
 
-        CompoundTag cropData = new CompoundTag();
-        cropData.putString("id", fishName.toLowerCase().replace(" ", "_"));
-        cropData.putInt("quality", quality);
+        CompoundTag fishData = new CompoundTag();
+        fishData.putString("id", fishName.toLowerCase().replace(" ", "_"));
+        fishData.putInt("quality", quality);
 
         CompoundTag modTag = new CompoundTag();
         for (FishModifier trait : traits) modTag.putInt(trait.name().toLowerCase(), 1);
-        cropData.put("modifier", modTag);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.put("fish", cropData));
+        fishData.put("modifier", modTag);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.put("fish", fishData));
 
         return stack;
     }

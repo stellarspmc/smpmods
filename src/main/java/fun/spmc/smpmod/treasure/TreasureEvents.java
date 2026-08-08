@@ -47,8 +47,8 @@ public class TreasureEvents {
 
         double fatigueMultiplier = TreasureFatigue.getMultiplier(player.getUUID()) * eventPercentage;
 
-        if (EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) > 5) fatigueMultiplier *= Math.pow(0.65, EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) - 5);
-        if (player.getEffect(MobEffects.HASTE) != null && Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() > 1) fatigueMultiplier *= Math.pow(0.55, Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() - 1);
+        if (EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) > 5) fatigueMultiplier *= Math.pow(.97, EnchantmentHelper.getItemEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.EFFICIENCY), mainHand) - 5);
+        if (player.getEffect(MobEffects.HASTE) != null && Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() > 1) fatigueMultiplier *= Math.pow(.95, Objects.requireNonNull(player.getEffect(MobEffects.HASTE)).getAmplifier() - 1);
 
         Rarity rarity = rollTreasureRarity(state, fatigueMultiplier, world.getRandom(), world.dimension());
         if (rarity == null) return;
