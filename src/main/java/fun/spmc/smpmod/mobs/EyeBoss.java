@@ -1,10 +1,6 @@
 package fun.spmc.smpmod.mobs;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
+import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -19,7 +15,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.Objects;
@@ -32,18 +27,8 @@ public class EyeBoss implements ServerMob {
 
     @Override
     public void setHead(LivingEntity entity) {
-        UUID headUuid = UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378");
-
-        String textureValue = "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0=";
-        Multimap<String, Property> propertiesMultimap = HashMultimap.create();
-        propertiesMultimap.put("textures", new Property("textures", textureValue));
-
-        PropertyMap properties = new PropertyMap(propertiesMultimap);
-
-        GameProfile gameProfile = new GameProfile(headUuid, "eyelol", properties);
-
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
-        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createResolved(gameProfile));
+        playerHead.set(DataComponents.PROFILE, NPCData.createCustomProfile("eyelol", UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378"), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0="));
         entity.setItemSlot(EquipmentSlot.HEAD, playerHead);
         ((Mob) entity).setDropChance(EquipmentSlot.HEAD, .15f);
     }

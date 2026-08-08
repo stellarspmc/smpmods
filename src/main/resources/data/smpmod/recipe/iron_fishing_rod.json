@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "minecraft:iron_block",
+    "F": "smpmod:copper_fishing_rod",
+    "S": "smpmod:rowlen"
+  },
+  "result": {
+    "id": "smpmod:iron_fishing_rod",
+    "count": 1
+  }
+}

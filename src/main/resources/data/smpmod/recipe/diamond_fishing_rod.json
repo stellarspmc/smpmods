@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "minecraft:diamond",
+    "F": "smpmod:emerald_fishing_rod",
+    "S": "smpmod:epic_skillz"
+  },
+  "result": {
+    "id": "smpmod:diamond_fishing_rod",
+    "count": 1
+  }
+}

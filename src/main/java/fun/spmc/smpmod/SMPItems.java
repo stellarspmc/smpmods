@@ -125,7 +125,7 @@ public class SMPItems {
         registerFish("terrash", Items.TROPICAL_FISH, 6720, FishRarity.EPIC);
         registerFish("skool", Items.COD, 6940, FishRarity.EPIC);
         registerFish("sporfie", Items.PUFFERFISH, 8160, FishRarity.EPIC);
-        registerFish("epicskillz", Items.TROPICAL_FISH, 9170, FishRarity.EPIC);
+        registerFish("epic_skillz", Items.TROPICAL_FISH, 9170, FishRarity.EPIC);
         registerFish("marine", Items.COD, 10120, FishRarity.EPIC);
         registerFish("hokona", Items.SALMON, 11840, FishRarity.EPIC);
 

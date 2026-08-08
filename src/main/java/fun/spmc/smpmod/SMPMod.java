@@ -2,12 +2,14 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.fishing.FishingUtils;
 import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.events.ServerMobSpawner;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
+import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
@@ -88,6 +90,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 FishingManager.register();
                 MarketState.register();
                 VaultData.register();
+                NPCData.register();
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);

@@ -67,7 +67,7 @@ public class FishItem extends SimplerPolymerItem {
         return lore;
     }
 
-    private Map<FishModifier, Integer> getModifiers(CompoundTag tag) {
+    private static Map<FishModifier, Integer> getModifiers(CompoundTag tag) {
         Map<FishModifier, Integer> map = new HashMap<>();
         if (tag.getCompound("modifier").isPresent()) {
             CompoundTag modTag = tag.getCompound("modifier").get();
@@ -76,7 +76,7 @@ public class FishItem extends SimplerPolymerItem {
         return map;
     }
 
-    private int getQuality(CompoundTag tag) {
+    private static int getQuality(CompoundTag tag) {
         return tag.getIntOr("quality", 0);
     }
 
@@ -94,15 +94,15 @@ public class FishItem extends SimplerPolymerItem {
         return stack;
     }
 
-    public double getModifiedPrice(ItemStack stack) {
+    public static double getModifiedPrice(ItemStack stack) {
         Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
         if (fishTag.isPresent()) {
             CompoundTag tag = fishTag.get();
             int quality = getQuality(tag);
             Map<FishModifier, Integer> modifiers = getModifiers(tag);
-            double price = getBasePrice();
-            for (Map.Entry<FishModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * entry.getValue();
+            double price = ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
+            for (Map.Entry<FishModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * Math.min(1, entry.getValue());
             return Math.round(price * (quality * .4 + 1) * 100) / 100d;
-        } return getBasePrice();
+        } return ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
     }
 }

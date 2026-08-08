@@ -10,7 +10,6 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.inventory.ChestMenu;
 
 public class EnderChestCommand {
-
     public static LiteralArgumentBuilder<CommandSourceStack> buildCommand() {
         return Commands.literal("enderchest")
                 .executes(context -> {

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "#minecraft:copper",
+    "F": "smpmod:normal_fishing_rod",
+    "S": "smpmod:pufferfish"
+  },
+  "result": {
+    "id": "smpmod:copper_fishing_rod",
+    "count": 1
+  }
+}

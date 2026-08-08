@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
+import fun.spmc.smpmod.fishing.FishingUtils;
 import fun.spmc.smpmod.fishing.rod.RodItem;
 import fun.spmc.smpmod.fishing.rod.RodTiers;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -15,6 +16,7 @@ public class FishingManager {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(_ -> ACTIVE_SESSIONS.entrySet().removeIf(entry -> entry.getValue().tick()));
+        FishingUtils.register();
     }
 
     public static boolean isFishing(UUID playerUuid) {

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "minecraft:gold_ingot",
+    "F": "smpmod:copper_fishing_rod",
+    "S": "smpmod:chicken_jockey"
+  },
+  "result": {
+    "id": "smpmod:gold_fishing_rod",
+    "count": 1
+  }
+}

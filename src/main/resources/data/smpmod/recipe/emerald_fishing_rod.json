@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "minecraft:emerald_block",
+    "F": "smpmod:iron_fishing_rod",
+    "S": "smpmod:slcoyd"
+  },
+  "result": {
+    "id": "smpmod:emerald_fishing_rod",
+    "count": 1
+  }
+}
