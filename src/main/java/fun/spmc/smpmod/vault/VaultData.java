@@ -47,7 +47,7 @@ public class VaultData extends SavedData {
             Codec.list(ActivePerk.CODEC).fieldOf("perks").forGetter(VaultData::getActivePerks),
             Codec.list(ConfiguredEvent.CODEC).fieldOf("events").forGetter(VaultData::getActiveEvents),
             UUIDUtil.CODEC.fieldOf("mannequin_uuid").forGetter(VaultData::getMannequinUuid),
-            Codec.unboundedMap(UUIDUtil.CODEC, Codec.DOUBLE).optionalFieldOf("leaderboard", Map.of()).forGetter(VaultData::getLeaderboard)
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.DOUBLE).optionalFieldOf("leaderboard", Map.of()).forGetter(VaultData::getLeaderboard)
     ).apply(instance, VaultData::new));
 
     public static final SavedDataType<VaultData> TYPE = new SavedDataType<>(
