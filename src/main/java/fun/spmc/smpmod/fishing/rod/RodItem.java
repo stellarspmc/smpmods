@@ -83,8 +83,4 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         }
         return InteractionResult.SUCCESS;
     }
-
-    public ItemModifier[] obtainableModifiers() {
-        return null;
-    }
 }

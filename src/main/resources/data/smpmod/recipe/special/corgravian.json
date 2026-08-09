@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "BSC",
+    "SDS"
+  ],
+  "key": {
+    "A": "smpmod:cor",
+    "B": "smpmod:gra",
+    "C": "smpmod:vi",
+    "D": "smpmod:an",
+    "S": "minecraft:nether_star"
+  },
+  "result": {
+    "id": "smpmod:corgravian",
+    "count": 1
+  }
+}

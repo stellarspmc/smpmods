@@ -57,7 +57,7 @@ public class FishItem extends BasePolymerItem {
             int quality = getQuality(tag);
 
             MutableComponent title = Component.empty();
-            for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withStyle(trait.getColor()));
+            for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.getColor()));
             title.append(Component.literal(this.fishName).withStyle(rarity.getColor()));
             if (quality > 0) title.append(Component.literal(" " + "★".repeat(quality)).withStyle(ChatFormatting.YELLOW));
             return title.withStyle(style -> style.withItalic(false));

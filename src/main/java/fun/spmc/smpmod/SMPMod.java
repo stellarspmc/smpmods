@@ -107,6 +107,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             BedrockSkinFetcher.restoreSkin(server, player);
             EconomyData eco = EconomyData.get();
             eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
+            player.awardRecipes(server.getRecipeManager().getRecipes()); // unlock everything, temporary
 
             if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });

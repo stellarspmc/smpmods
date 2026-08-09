@@ -2,6 +2,7 @@ package fun.spmc.smpmod.mixin;
 
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.fishing.rod.RodItem;
+import fun.spmc.smpmod.fishing.rod.RodTiers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,15 +26,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(FishingHook.class)
 public abstract class MixinFishingHook {
     @Shadow private int nibble;
-
-    @Shadow
-    public abstract @Nullable Player getPlayerOwner();
+    @Shadow public abstract @Nullable Player getPlayerOwner();
 
     @Inject(method = "catchingFish", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/projectile/FishingHook;nibble:I", ordinal = 1, opcode = Opcodes.GETFIELD))
     public void smpmod$catchingFishOverride(BlockPos blockPos, CallbackInfo ci) {
         FishingHook hook = (FishingHook) (Object) this;
         if (!hook.level().isClientSide()) {
-            ServerPlayer player = (ServerPlayer) hook.getPlayerOwner();
+            ServerPlayer player = (ServerPlayer) getPlayerOwner();
             if (player != null) {
                 if (player.getMainHandItem().getItem() instanceof RodItem) {
                     this.nibble = 100;
@@ -70,12 +69,12 @@ public abstract class MixinFishingHook {
     )
     private boolean smpmod$supportLavaAndVoidFluids(FluidState instance, TagKey<Fluid> tagKey) {
         FishingHook hook = (FishingHook) (Object) this;
-        ServerPlayer player = (ServerPlayer) hook.getPlayerOwner();
+        ServerPlayer player = (ServerPlayer) getPlayerOwner();
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
                 if (tagKey == FluidTags.WATER) {
-                    if (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA)) return true;
-                    if (hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
+                    if (item.getTier().equals(RodTiers.NETHERITE) && (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA))) return true;
+                    if (item.getTier().equals(RodTiers.NETHERITE) && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
                 }
             }
         }
@@ -86,10 +85,15 @@ public abstract class MixinFishingHook {
     @Inject(method = "tick", at = @At("HEAD"))
     private void smpmod$preventHookDestruction(CallbackInfo ci) {
         FishingHook hook = (FishingHook) (Object) this;
-        if (hook.isInLava()) hook.clearFire();
-        if (hook.level().dimension() == ServerLevel.END && hook.getY() < 0) {
-            Vec3 vel = hook.getDeltaMovement();
-            hook.setDeltaMovement(vel.x * 0.8, Math.max(vel.y * 0.5, -0.02), vel.z * 0.8);
+        ServerPlayer player = (ServerPlayer) getPlayerOwner();
+        if (player != null) {
+            if (player.getMainHandItem().getItem() instanceof RodItem item) {
+                if (item.getTier().equals(RodTiers.NETHERITE) && hook.isInLava()) hook.clearFire();
+                if (item.getTier().equals(RodTiers.NETHERITE) && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) {
+                    Vec3 vel = hook.getDeltaMovement();
+                    hook.setDeltaMovement(vel.x * 0.8, Math.max(vel.y * 0.5, -0.02), vel.z * 0.8);
+                }
+            }
         }
     }
 }

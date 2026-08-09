@@ -25,15 +25,14 @@ import static fun.spmc.smpmod.SMPMod.messageChannel;
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class FishingLoot {
-    private static final Map<ResourceKey<Biome>, String> BIOME_MAP = new ConcurrentHashMap<>();
-
     public static void rewardFish(ServerPlayer player, RodTiers tier, int streak) {
         RandomSource random = minecraftServer.overworld().getRandom();
         FishItem caughtFish = getRandomFishForTier(player, tier);
         Map<ItemModifier, Integer> modMap = new HashMap<>();
         double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.getCatchLuckBonus());
 
-        List<ItemModifier> mods = new ArrayList<>(Arrays.stream(ItemModifier.values()).toList());
+        List<ItemModifier> mods = new ArrayList<>(Arrays.stream(ItemModifier.values()).filter(ItemModifier::isNotLocked).toList());
+        mods.addAll(Arrays.stream(tier.getObtainable()).toList());
         while (!mods.isEmpty() && random.nextDouble() < traitChance) {
             int index = random.nextInt(mods.size());
             modMap.put(mods.remove(index), random.nextInt(5) + 1);
@@ -52,8 +51,8 @@ public class FishingLoot {
     }
 
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
-        BiomeCategory category = BiomeCategory.getCategory(player);
         List<Item> pool = PolymerFishes.FISH;
+        pool.addAll(BiomeCategory.getCategory(player).getFishArray());
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
         double[] weights = tier.getRates();
         double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;
@@ -70,12 +69,12 @@ public class FishingLoot {
         }
 
         ItemRarity finalRarity = selectedRarity;
-        List<FishItem> matchingFish = PolymerFishes.FISH.stream()
+        List<FishItem> matchingFish = pool.stream()
                 .filter(item -> item instanceof FishItem fish && fish.getRarity() == finalRarity)
                 .map(item -> (FishItem) item)
                 .toList();
 
-        if (matchingFish.isEmpty()) return (FishItem) PolymerFishes.FISH.getFirst();
+        if (matchingFish.isEmpty()) return (FishItem) pool.getFirst();
 
         double exponent = -1 + (tier.ordinal() * .2);
 
