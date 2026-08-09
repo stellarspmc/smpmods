@@ -30,7 +30,7 @@ public class BaseMineralItem extends BasePolymerItem {
 
     @Override
     public Component buildName(ItemStack stack) {
-        return id;
+        return Component.empty().append(id).withStyle(style -> style.withItalic(false));
     }
 
     @Override

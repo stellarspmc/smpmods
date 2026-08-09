@@ -82,8 +82,8 @@ public class PolymerIndustrial {
         registerHead("nether_core", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyNDEyMjhhZWY4NGUzNTY3MWNjMzEwMTE2ZDExYjhkMGYwODc2MjIwNTM1NTNjMGRjNGU0YTVkYWMzYzQwNSJ9fX0=", TextColor.DARK_RED);
     }
     public static void registerBlocks() {
-        PolymerRegistry.createBlockWithItem("compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of());
-        PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of());
+        PolymerRegistry.createBlockWithItem("compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), Items.SCULK_CATALYST);
+        PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");

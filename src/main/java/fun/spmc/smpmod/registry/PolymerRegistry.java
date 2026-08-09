@@ -33,11 +33,11 @@ public class PolymerRegistry {
         return Registry.register(BuiltInRegistries.ITEM, key, item);
     }
 
-    protected static Block createBlockWithItem(String id, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties) {
+    protected static Block createBlockWithItem(String id, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties, Item item) {
         Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
         BlockItemId blockId = BlockItemId.create(identifier, identifier);
         Block block = blockFactory.apply(properties.setId(blockId.block()));
-        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new PolymerBlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item())));
+        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new PolymerBlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item));
         return Registry.register(BuiltInRegistries.BLOCK, id, block);
     }
 
