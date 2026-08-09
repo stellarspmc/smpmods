@@ -3,13 +3,17 @@ package fun.spmc.smpmod.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import fun.spmc.smpmod.fishing.FishingUtils;
+import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.VaultData;
+import fun.spmc.smpmod.vault.VaultUtils;
 import fun.spmc.smpmod.vault.entries.ActivePerk;
 import fun.spmc.smpmod.vault.entries.ConfiguredEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -24,21 +28,20 @@ public class VaultCommand {
                 .executes(VaultCommand::getVaultStatus)
                 .then(Commands.literal("setup")
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .executes(VaultCommand::setupVault)
+                        .executes(VaultCommand::setup)
                 ).then(Commands.literal("kill")
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .executes(VaultCommand::killVault));
+                        .executes(VaultCommand::kill));
     }
 
-    private static int killVault(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int kill(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerLevel level = ctx.getSource().getLevel();
 
-        VaultData vault = VaultData.get();
-        if (vault.getMannequinUuid() != null) {
-            Entity entity = level.getEntity(vault.getMannequinUuid());
+        if (NPCData.get().hasNpc("vault_guardian")) {
+            Entity entity = NPCData.get().getMannequin(level, "vault_guardian");
             if (entity != null) {
+                NPCData.get().removeNpc("vault_guardian");
                 entity.discard();
-                vault.mannequinUuid = null;
                 MessageUtils.sendSuccessMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin killed!");
                 return 1;
             }
@@ -48,17 +51,16 @@ public class VaultCommand {
         return 0;
     }
 
-    private static int setupVault(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int setup(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerLevel level = ctx.getSource().getLevel();
         Vec3 pos = ctx.getSource().getPosition();
 
-        VaultData vault = VaultData.get();
-        if (vault.getMannequinUuid() != null) {
+        if (NPCData.get().hasNpc("vault_guardian")) {
             MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin already exists!");
             return 0;
         }
 
-        if (vault.getOrCreateMannequin(level, pos) == null) {
+        if (VaultUtils.spawnVaultGuardian(level, BlockPos.containing(pos)) == null) {
             MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Vault mannequin already exists!");
             return 0;
         }
@@ -71,37 +73,32 @@ public class VaultCommand {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
 
         VaultData data = VaultData.get();
-        if (data.getMannequinUuid() != null) {
-            player.sendSystemMessage(Component.literal("Vault Status").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-            player.sendSystemMessage(Component.literal("Tier: ")
-                    .withStyle(ChatFormatting.YELLOW)
-                    .append(Component.literal(data.getCurrentTier().name()).withStyle(ChatFormatting.GREEN)));
-            player.sendSystemMessage(Component.literal("Balance: ")
-                    .withStyle(ChatFormatting.YELLOW)
-                    .append(Component.literal(String.format("$%.2f / $%.2f", data.getCurrentMoney(), data.getCurrentTier().getCostGoal())).withStyle(ChatFormatting.AQUA)));
-            player.sendSystemMessage(Component.literal("Active Perks:").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
-            if (data.getActivePerks().isEmpty()) {
-                player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
-            } else {
-                for (ActivePerk perk : data.getActivePerks()) {
-                    player.sendSystemMessage(Component.literal("  • ").withStyle(ChatFormatting.DARK_GRAY)
-                            .append(Component.literal(perk.toString()).withStyle(ChatFormatting.GRAY)));
-                }
+        player.sendSystemMessage(Component.literal("Vault Status").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        player.sendSystemMessage(Component.literal("Tier: ")
+                .withStyle(ChatFormatting.YELLOW)
+                .append(Component.literal(data.getCurrentTier().name()).withStyle(ChatFormatting.GREEN)));
+        player.sendSystemMessage(Component.literal("Balance: ")
+                .withStyle(ChatFormatting.YELLOW)
+                .append(Component.literal(String.format("$%.2f / $%.2f", data.getCurrentMoney(), data.getCurrentTier().getCostGoal())).withStyle(ChatFormatting.AQUA)));
+        player.sendSystemMessage(Component.literal("Active Perks:").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
+        if (data.getActivePerks().isEmpty()) {
+            player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
+        } else {
+            for (ActivePerk perk : data.getActivePerks()) {
+                player.sendSystemMessage(Component.literal("  • ").withStyle(ChatFormatting.DARK_GRAY)
+                        .append(Component.literal(perk.toString()).withStyle(ChatFormatting.GRAY)));
             }
-
-            player.sendSystemMessage(Component.literal("Active Events:").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-            if (data.getActiveEvents().isEmpty()) {
-                player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
-            } else {
-                for (ConfiguredEvent event : data.getActiveEvents()) {
-                    player.sendSystemMessage(Component.literal("  • ").withStyle(ChatFormatting.DARK_GRAY)
-                            .append(Component.literal(event.toString()).withStyle(ChatFormatting.GRAY)));
-                }
-            }
-            return 1;
         }
 
-        MessageUtils.sendErrorMessage(player, "Vault has not been initialized yet!");
-        return 0;
+        player.sendSystemMessage(Component.literal("Active Events:").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+        if (data.getActiveEvents().isEmpty()) {
+            player.sendSystemMessage(Component.literal("  - None").withStyle(ChatFormatting.GRAY));
+        } else {
+            for (ConfiguredEvent event : data.getActiveEvents()) {
+                player.sendSystemMessage(Component.literal("  • ").withStyle(ChatFormatting.DARK_GRAY)
+                        .append(Component.literal(event.toString()).withStyle(ChatFormatting.GRAY)));
+            }
+        }
+        return 1;
     }
 }
