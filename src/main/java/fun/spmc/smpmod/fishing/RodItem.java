@@ -41,15 +41,9 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         this.tier = tier;
     }
 
-    @Override
-    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        return vanillaItem;
-    }
-
-    @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        return BuiltInRegistries.ITEM.getKey(vanillaItem);
-    }
+    @Override public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return vanillaItem; }
+    @Override public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) { return BuiltInRegistries.ITEM.getKey(vanillaItem); }
+    @Override public @NonNull Component getName(@NonNull ItemStack itemStack) { return Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)); }
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {

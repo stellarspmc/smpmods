@@ -44,11 +44,6 @@ public class FishItem extends BasePolymerItem {
     }
 
     @Override
-    public @NonNull Component getName(@NonNull ItemStack itemStack) {
-        return buildName(itemStack);
-    }
-
-    @Override
     public Component buildName(ItemStack stack) {
         Optional<CompoundTag> fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish");
         if (fishTag.isPresent()) {

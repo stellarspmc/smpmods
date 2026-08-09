@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -22,15 +23,9 @@ public abstract class BasePolymerItem extends Item implements PolymerItem {
         this.vanillaItem = vanillaItem;
     }
 
-    @Override
-    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        return vanillaItem;
-    }
-
-    @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        return BuiltInRegistries.ITEM.getKey(vanillaItem);
-    }
+    @Override public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return vanillaItem; }
+    @Override public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) { return BuiltInRegistries.ITEM.getKey(vanillaItem); }
+    @Override public @NonNull Component getName(@NonNull ItemStack itemStack) { return buildName(itemStack); }
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
