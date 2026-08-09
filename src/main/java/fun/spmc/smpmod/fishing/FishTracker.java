@@ -37,26 +37,27 @@ public class FishTracker extends SavedData {
     );
 
     private final Map<UUID, List<String>> fishUnlocked;
+    public FishTracker(Map<UUID, List<String>> fishUnlocked) {
+        this.fishUnlocked = new HashMap<>();
+        fishUnlocked.forEach((uuid, list) -> this.fishUnlocked.put(uuid, new ArrayList<>(list)));
+    }
 
-    public FishTracker(Map<UUID, List<String>> fishUnlocked) { this.fishUnlocked = fishUnlocked; }
     public FishTracker() { this(new HashMap<>()); }
     public Map<UUID, List<String>> getUnlocked() { return fishUnlocked; }
     public static FishTracker get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
-    private boolean checkAlreadyAdded(UUID id, String fish) { return getUnlockedFish(id).contains(fish); }
     public List<String> getUnlockedFish(UUID id) { return fishUnlocked.getOrDefault(id, new ArrayList<>()); }
 
     public void registerPlayer(UUID uuid) {
-        if (!fishUnlocked.containsKey(uuid)) fishUnlocked.put(uuid, new ArrayList<>());
+        fishUnlocked.computeIfAbsent(uuid, _ -> new ArrayList<>());
         this.setDirty();
     }
 
     public void addFish(UUID id, String fish) {
-        List<String> set = getUnlockedFish(id);
-        if (BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath("smpmod", fish)).isEmpty()) return;
-        if (!checkAlreadyAdded(id, fish)) {
-            set.add(fish);
-            fishUnlocked.replace(id, set);
-            setDirty();
+        List<String> list = fishUnlocked.computeIfAbsent(id, _ -> new ArrayList<>());
+
+        if (!list.contains(fish)) {
+            list.add(fish);
+            this.setDirty();
         }
     }
 

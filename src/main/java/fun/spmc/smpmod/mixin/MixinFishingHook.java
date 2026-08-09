@@ -123,8 +123,9 @@ public abstract class MixinFishingHook {
                 if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END) {
                     if (hook.getY() < -4) {
                         if (!hook.isNoGravity()) hook.setNoGravity(true);
+                        hook.setPos(hook.getX(), -4, hook.getZ());
                         Vec3 vel = hook.getDeltaMovement();
-                        hook.setDeltaMovement(vel.x * 0.8, 0.0, vel.z * 0.8);
+                        hook.setDeltaMovement(vel.x * .8, 0, vel.z * .8);
                     }
                     if (!hook.level().isClientSide()) catchingFish(hook.blockPosition());
                 }
