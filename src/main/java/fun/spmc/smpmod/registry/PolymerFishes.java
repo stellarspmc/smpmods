@@ -127,12 +127,12 @@ public class PolymerFishes {
         registerFish("polargish", Items.COD, 743, ItemRarity.RARE);
         registerFish("marksfish", Items.SALMON, 755, ItemRarity.RARE);
         registerFish("cyberfish", Items.SALMON, 806, ItemRarity.RARE);
-        registerFish("sculk_infused_cod", Items.COD, 935, ItemRarity.RARE);
-        registerFish("sculk_infused_clownfish", Items.TROPICAL_FISH, 1012, ItemRarity.RARE);
+        registerFish("sculk_infused_cod", Items.ECHO_SHARD, 935, ItemRarity.RARE);
+        registerFish("sculk_infused_clownfish", Items.ECHO_SHARD, 1012, ItemRarity.RARE);
         registerFish("jenus", Items.COD, 1526, ItemRarity.RARE);
         registerFish("deitumus", Items.SALMON, 1789, ItemRarity.RARE);
-        registerFish("sculk_infused_salmon", Items.SALMON, 1914, ItemRarity.RARE);
-        registerFish("sculk_infused_pufferfish", Items.PUFFERFISH, 2310, ItemRarity.RARE);
+        registerFish("sculk_infused_salmon", Items.ECHO_SHARD, 1914, ItemRarity.RARE);
+        registerFish("sculk_infused_pufferfish", Items.ECHO_SHARD, 2310, ItemRarity.RARE);
 
         registerFish("slcoyd", Items.SALMON, 4200, ItemRarity.EPIC);
         registerFish("trapezoin", Items.SALMON, 4800, ItemRarity.EPIC);
@@ -309,7 +309,7 @@ public class PolymerFishes {
         registerBiomeFish("clam", Items.TROPICAL_FISH, 361, ItemRarity.UNCOMMON, SNOWY);
         registerBiomeFish("byronne", Items.TROPICAL_FISH, 419, ItemRarity.UNCOMMON, SNOWY);
         registerBiomeFish("gugutang", Items.TROPICAL_FISH, 505, ItemRarity.UNCOMMON, SNOWY);
-        registerBiomeFish("moonfish", Items.TROPICAL_FISH, 706, ItemRarity.RARE, SNOWY);
+        registerBiomeFish("sculk_infused_moonfish", Items.ECHO_SHARD, 706, ItemRarity.RARE, SNOWY);
         registerBiomeFish("electric_eel", Items.SALMON, 882, ItemRarity.RARE, SNOWY);
         registerBiomeFish("lionfish", Items.TROPICAL_FISH, 925, ItemRarity.RARE, SNOWY);
         registerBiomeFish("axolotl", Items.PUFFERFISH, 1180, ItemRarity.RARE, SNOWY);
@@ -323,7 +323,7 @@ public class PolymerFishes {
         registerBiomeFish("beluga", Items.COD, 10560, ItemRarity.EPIC, SNOWY);
         registerBiomeFish("berg", Items.COD, 13100, ItemRarity.EPIC, SNOWY);
         registerBiomeFish("painted_salmon", Items.COD, 18800, ItemRarity.LEGENDARY, SNOWY);
-        registerBiomeFish("chimera", Items.COD, 34200, ItemRarity.LEGENDARY, SNOWY);
+        registerBiomeFish("sculk_infused_chimera", Items.ECHO_SHARD, 34200, ItemRarity.LEGENDARY, SNOWY);
         registerBiomeFish("thresher", Items.SALMON, 51600, ItemRarity.LEGENDARY, SNOWY);
         registerBiomeFish("great_white_shark", Items.SALMON, 72300, ItemRarity.LEGENDARY, SNOWY);
         registerBiomeFish("poseidon", Items.COD, 82500, ItemRarity.MYTHIC, SNOWY);
