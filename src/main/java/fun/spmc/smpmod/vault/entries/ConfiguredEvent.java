@@ -3,8 +3,8 @@ package fun.spmc.smpmod.vault.entries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
+import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.treasure.TreasureEvents;
-import fun.spmc.smpmod.vault.VaultData;
 import fun.spmc.smpmod.vault.VaultUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +17,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class ConfiguredEvent implements VaultEntry {
 
@@ -64,11 +66,11 @@ public class ConfiguredEvent implements VaultEntry {
 
     @Override
     public void apply(ServerLevel level) {
-        if (VaultData.get().getMannequinUuid() != null) type.trigger(modifier, level);
+        if (NPCData.get().getMannequin(minecraftServer.overworld(), "vault_guardian") != null) type.trigger(modifier, level);
     }
 
     public boolean tick(ServerLevel level) {
-        if (VaultData.get().getMannequinUuid() != null) {
+        if (NPCData.get().getMannequin(minecraftServer.overworld(), "vault_guardian") != null) {
             this.remainingTicks--;
             if (this.remainingTicks % 20 == 0) type.triggerTick(modifier, level);
             if (this.remainingTicks <= 0) type.triggerEnd(level);

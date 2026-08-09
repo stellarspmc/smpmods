@@ -2,7 +2,7 @@ package fun.spmc.smpmod.vault.entries;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.vault.VaultData;
+import fun.spmc.smpmod.misc.NPCData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,7 +34,7 @@ public record ActivePerk(PerkType type, int level) implements VaultEntry {
 
     @Override
     public void apply(ServerLevel serverLevel) {
-        if (VaultData.get().getMannequinUuid() != null) minecraftServer.getPlayerList().getPlayers().forEach((player -> type.trigger(level, player)));
+        if (NPCData.get().getMannequin(minecraftServer.overworld(), "vault_guardian") != null) minecraftServer.getPlayerList().getPlayers().forEach((player -> type.trigger(level, player)));
     }
 
     @Override
