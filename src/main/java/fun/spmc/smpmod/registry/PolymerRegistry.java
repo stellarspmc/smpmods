@@ -2,6 +2,7 @@ package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
+import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -14,7 +15,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -37,7 +37,7 @@ public class PolymerRegistry {
         Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
         BlockItemId blockId = BlockItemId.create(identifier, identifier);
         Block block = blockFactory.apply(properties.setId(blockId.block()));
-        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new BlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item())));
+        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new PolymerBlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item())));
         return Registry.register(BuiltInRegistries.BLOCK, id, block);
     }
 
