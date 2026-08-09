@@ -1,7 +1,6 @@
 package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
@@ -17,17 +16,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings({"DataFlowIssue", "UnusedReturnValue", "SameParameterValue"})
 public class PolymerRegistry {
     protected static <T extends Item> T createItem(String id, Function<Item.Properties, T> factory) {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id));
@@ -60,7 +57,7 @@ public class PolymerRegistry {
         return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), new RecipeSerializer<>(codec, streamCodec));
     }
 
-    protected static <T extends LivingEntity> void registerEntity(String id, EntityType.Builder<T> builder, AttributeSupplier supplier) {
+    protected static <T extends LivingEntity> void registerEntity(String id, EntityType.Builder<T> builder, AttributeSupplier.Builder supplier) {
         ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("smpmod", id));
         EntityType<T> type = Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,

@@ -6,6 +6,6 @@ import net.minecraft.world.entity.MobCategory;
 
 public class PolymerMisc {
     protected static void register() {
-        PolymerRegistry.registerEntity("crystal_boss", EntityType.Builder.of(CrystalBoss::new, MobCategory.MONSTER).sized(0.9f, 2.9f), CrystalBoss.createAttributes().build());
+        PolymerRegistry.registerEntity("crystal_boss", EntityType.Builder.of(CrystalBoss::new, MobCategory.MONSTER).sized(0.9f, 2.9f), CrystalBoss.createAttributes());
     }
 }
