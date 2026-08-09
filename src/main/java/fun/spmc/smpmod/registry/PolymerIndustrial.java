@@ -3,6 +3,7 @@ package fun.spmc.smpmod.registry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.industrial.machine.SculkCompressorBlock;
+import fun.spmc.smpmod.industrial.machine.SmeltryBlock;
 import fun.spmc.smpmod.industrial.mineral.BaseMineralItem;
 import fun.spmc.smpmod.industrial.recipe.CompressorRecipe;
 import fun.spmc.smpmod.utils.MessageUtils;
@@ -82,6 +83,7 @@ public class PolymerIndustrial {
     }
     public static void registerBlocks() {
         PolymerRegistry.createBlockWithItem("compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of());
+        PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of());
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");

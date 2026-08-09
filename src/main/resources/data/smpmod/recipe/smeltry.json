@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "ASA",
+    "SDS"
+  ],
+  "key": {
+    "A": "minecraft:furnace",
+    "D": "minecraft:coal_block",
+    "S": "minecraft:smoker"
+  },
+  "result": {
+    "id": "smpmod:smeltry",
+    "count": 1
+  }
+}
