@@ -14,9 +14,7 @@ public enum ItemRarity {
 
     private final ChatFormatting color;
 
-    ItemRarity(ChatFormatting color) {
-        this.color = color;
-    }
-
+    ItemRarity(ChatFormatting color) { this.color = color; }
     public ChatFormatting getColor() { return color; }
+    @Override public String toString() { return name().charAt(0) + name().substring(1).toLowerCase(); }
 }

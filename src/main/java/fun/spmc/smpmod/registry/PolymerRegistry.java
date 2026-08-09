@@ -42,5 +42,7 @@ public class PolymerRegistry {
     public static void register() {
         PolymerFishes.registerRods();
         PolymerFishes.registerFishes();
+        PolymerPlants.register();
+        PolymerIndustrial.registerMinerals();
     }
 }

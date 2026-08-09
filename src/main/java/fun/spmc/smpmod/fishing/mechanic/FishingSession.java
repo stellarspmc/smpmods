@@ -16,7 +16,7 @@ public class FishingSession {
     private float cursor = 0.0f;
     private boolean movingRight = true;
     private boolean wasJumping;
-    private int ticksLeft = 150;
+    private int ticksLeft = 100;
     private int streak = 0;
 
     private final float greenStart;

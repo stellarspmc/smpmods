@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.fishing.rod;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import fun.spmc.smpmod.misc.ItemModifier;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -55,14 +56,12 @@ public class RodItem extends FishingRodItem implements PolymerItem {
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false)));
         out.set(DataComponents.LORE, new ItemLore(List.of(
-                Component.literal("Tier: ").withStyle(ChatFormatting.GRAY).withStyle(style -> style.withItalic(false))
-                        .append(Component.literal(tier.getName()).withStyle(tier.getColor())).withStyle(style -> style.withItalic(false)),
                 Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
                         .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
                 Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
                         .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false)),
                 Component.empty(),
-                Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
+                Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY)
         )));
         out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
@@ -76,12 +75,16 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         ItemStack itemStack = player.getItemInHand(hand);
         if (player.fishing == null) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, .5f, .4f / (level.getRandom().nextFloat() * .4f + .8f));
-            if (level instanceof ServerLevel serverLevel) Projectile.spawnProjectile(new FishingHook(player, level, tier.ordinal(), Math.min(500, 20 * (tier.ordinal() * 3))), serverLevel, itemStack);
+            if (level instanceof ServerLevel serverLevel) Projectile.spawnProjectile(new FishingHook(player, level, 0, Math.min(500, tier.getLureSpeed() * 20)), serverLevel, itemStack);
 
             player.awardStat(Stats.ITEM_USED.get(this));
             itemStack.causeUseVibration(player, GameEvent.ITEM_INTERACT_START);
             itemStack.hurtAndBreak(1, player, hand.asEquipmentSlot());
         }
         return InteractionResult.SUCCESS;
+    }
+
+    public ItemModifier[] obtainableModifiers() {
+        return null;
     }
 }

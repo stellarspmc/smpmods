@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.mixin.chunk;
+package fun.spmc.smpmod.mixin;
 
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;

@@ -15,13 +15,10 @@ public class PolymerFishes {
     public static List<Item> FISH = new ArrayList<>();
     public static List<Item> DEFAULT_FISH = new ArrayList<>();
 
+    private static void registerRod(String id, RodTiers tier) { PolymerRegistry.createItem(id, properties -> new RodItem(properties, tier)); }
     private static void registerFish(String id, Item vanillaModel, double basePrice, ItemRarity rarity) {
         Item item = PolymerRegistry.createItem(id, properties -> new FishItem(properties, vanillaModel, MessageUtils.formatName(id), basePrice, rarity));
         FISH.add(item);
-    }
-
-    private static void registerRod(String id, RodTiers tier) {
-        PolymerRegistry.createItem(id, properties -> new RodItem(properties, tier));
     }
 
     protected static void registerRods() {
@@ -126,11 +123,12 @@ public class PolymerFishes {
         registerFish("porealis", Items.PUFFERFISH, 150000, ItemRarity.CHROMATIC);
 
         registerFish("moncavia", Items.COD, 250000, ItemRarity.CELESTIAL);
+
+        PolymerRegistry.createItem("corgravian", properties -> new FishItem(properties, Items.SALMON, "Corgravian", 1000000, ItemRarity.CELESTIAL));
     }
 
 
     private static void registerPlains() {
-        // plains
         registerFish("crab", Items.SALMON, 17, ItemRarity.COMMON);
         registerFish("frog", Items.COD, 19, ItemRarity.COMMON);
         registerFish("bass", Items.COD, 22, ItemRarity.COMMON);

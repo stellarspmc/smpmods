@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
+import fun.spmc.smpmod.fishing.BiomeCategory;
 import fun.spmc.smpmod.registry.PolymerFishes;
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
@@ -28,7 +29,7 @@ public class FishingLoot {
 
     public static void rewardFish(ServerPlayer player, RodTiers tier, int streak) {
         RandomSource random = minecraftServer.overworld().getRandom();
-        FishItem caughtFish = getRandomFishForTier(tier);
+        FishItem caughtFish = getRandomFishForTier(player, tier);
         Map<ItemModifier, Integer> modMap = new HashMap<>();
         double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.getCatchLuckBonus());
 
@@ -60,7 +61,8 @@ public class FishingLoot {
             { 18.0, 28.0, 31.0, 15.0, 5.000, 2.000, 0.8000, 0.2000 }
     };
 
-    private static FishItem getRandomFishForTier(RodTiers tier) {
+    private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
+        BiomeCategory category = BiomeCategory.getCategory(player.);
         List<Item> pool = PolymerFishes.FISH;
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
         double[] weights = RARITY_WEIGHTS_PER_TIER[tier.ordinal()];
@@ -128,39 +130,5 @@ public class FishingLoot {
         }
 
         return 0;
-    }
-
-    public static String getBiome(ResourceKey<Biome> biomeKey) {
-        return BIOME_MAP.computeIfAbsent(biomeKey, key -> {
-            String path = key.identifier().getPath();
-
-            if (path.contains("badlands")) return "badlands";
-            if (path.contains("desert")) return "desert";
-            if (path.contains("dripstone")) return "dripstone";
-            if (path.contains("dark_forest")) return "dark_forest";
-            if (path.contains("deep_dark")) return "deep_dark";
-            if (path.contains("lush_caves")) return "lush_caves";
-            if (path.contains("mushroom")) return "mushroom";
-            if (path.contains("swamp")) return "swamp";
-            if (path.contains("jungle")) return "jungle";
-            if (path.contains("taiga")) return "taiga";
-            if (path.contains("savanna")) return "savanna";
-            if (path.contains("ocean") || path.contains("beach")) return "ocean";
-
-            if (path.contains("flower") || path.contains("meadow") || path.contains("cherry")) return "flower";
-            if (path.contains("ice") || path.contains("frozen") || path.contains("snow")) return "ice";
-            if (path.contains("peaks") || path.contains("slopes") || path.contains("stony")) return "mountain";
-            if (path.contains("windswept")) return "wind";
-
-            if (path.contains("basalt_deltas")) return "basalt";
-            if (path.contains("crimson_forest")) return "crimson";
-            if (path.contains("warped_forest")) return "warped";
-            if (path.contains("soul_sand_valley")) return "soul_valley";
-            if (path.contains("nether_wastes")) return "nether";
-
-            if (key.identifier().getNamespace().equals("minecraft") && path.contains("end")) return "end";
-
-            return "default";
-        });
     }
 }

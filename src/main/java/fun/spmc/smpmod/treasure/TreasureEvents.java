@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.treasure;
 
+import fun.spmc.smpmod.misc.ItemRarity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -42,12 +43,12 @@ public class TreasureEvents {
                 .orElse(Biomes.PLAINS);
 
         String folderName = getFolderFromBiome(biomeKey);
-        Rarity rarity = rollTreasureRarity(state, eventPercentage, world.getRandom(), world.dimension());
+        ItemRarity rarity = rollTreasureRarity(state, eventPercentage, world.getRandom(), world.dimension());
         if (rarity == null) return;
 
-        String rarityName = rarity.getName();
+        String rarityName = rarity.toString();
 
-        Identifier tableLocation = rarityName.equals("mythical")
+        Identifier tableLocation = rarityName.equals("mythic")
                 ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical")
                 : Identifier.fromNamespaceAndPath("treasure", folderName + "/" + rarityName);
 
@@ -92,25 +93,25 @@ public class TreasureEvents {
 
     public static boolean rigTreasures = false;
 
-    public static Rarity rollTreasureRarity(BlockState state, double fatigueMultiplier, RandomSource random, ResourceKey<Level> dimension) {
+    public static ItemRarity rollTreasureRarity(BlockState state, double fatigueMultiplier, RandomSource random, ResourceKey<Level> dimension) {
         float commonChance = (float) (getBaseCommonChance(state, dimension) * fatigueMultiplier);
         if (commonChance <= 0) return null;
         float val = (random.nextFloat() * 100f) / commonChance;
-        if (val < THRESHOLD_MYTHICAL) return Rarity.MYTHICAL;
-        if (val < THRESHOLD_LEGENDARY) return adjustRarity(Rarity.LEGENDARY);
-        if (val < THRESHOLD_EPIC) return adjustRarity(Rarity.EPIC);
-        if (val < THRESHOLD_RARE) return adjustRarity(Rarity.RARE);
-        if (val < THRESHOLD_COMMON) return adjustRarity(Rarity.COMMON);
+        if (val < THRESHOLD_MYTHICAL) return ItemRarity.MYTHIC;
+        if (val < THRESHOLD_LEGENDARY) return adjustRarity(ItemRarity.LEGENDARY);
+        if (val < THRESHOLD_EPIC) return adjustRarity(ItemRarity.EPIC);
+        if (val < THRESHOLD_RARE) return adjustRarity(ItemRarity.RARE);
+        if (val < THRESHOLD_COMMON) return adjustRarity(ItemRarity.COMMON);
         return null;
     }
 
-    private static Rarity adjustRarity(Rarity rarity) {
+    private static ItemRarity adjustRarity(ItemRarity rarity) {
         if (!rigTreasures) return rarity;
         return switch (rarity) {
-            case LEGENDARY -> Rarity.MYTHICAL;
-            case EPIC -> Rarity.LEGENDARY;
-            case RARE -> Rarity.EPIC;
-            case COMMON -> Rarity.RARE;
+            case LEGENDARY -> ItemRarity.MYTHIC;
+            case EPIC -> ItemRarity.LEGENDARY;
+            case RARE -> ItemRarity.EPIC;
+            case COMMON -> ItemRarity.RARE;
             default -> rarity;
         };
     }
@@ -164,17 +165,5 @@ public class TreasureEvents {
 
             return "default";
         });
-    }
-
-    public enum Rarity {
-        MYTHICAL("mythical"),
-        LEGENDARY("legendary"),
-        EPIC("epic"),
-        RARE("rare"),
-        COMMON("common");
-
-        private final String name;
-        Rarity(String name) { this.name = name; }
-        public String getName() { return name; }
     }
 }
