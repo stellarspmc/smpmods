@@ -54,7 +54,7 @@ public class RodItem extends FishingRodItem implements PolymerItem {
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.getName() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false)));
+        out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.toString() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false)));
         out.set(DataComponents.LORE, new ItemLore(List.of(
                 Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
                         .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),

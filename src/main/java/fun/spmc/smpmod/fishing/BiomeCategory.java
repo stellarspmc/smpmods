@@ -3,6 +3,8 @@ package fun.spmc.smpmod.fishing;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
@@ -22,7 +24,11 @@ public enum BiomeCategory {
     private static final TagKey<Biome> C_JUNGLE = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_jungle"));
     private static final TagKey<Biome> C_OCEAN = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_ocean"));
 
-    public static BiomeCategory getCategory(Holder<Biome> biomeHolder, boolean isInLava, double yPos, boolean isEndDimension) {
+    public static BiomeCategory getCategory(ServerPlayer player) {
+        Holder<Biome> biomeHolder = player.level().getBiome(player.getOnPos());
+        boolean isInLava = player.isInLava();
+        double yPos = player.getY();
+        boolean isEndDimension = player.level().dimension() == ServerLevel.END;
         if (isInLava) return LAVA;
         if (isEndDimension && yPos < 0) return VOID;
         if (yPos < 0) return DEEP;

@@ -88,7 +88,7 @@ public class VaultData extends SavedData {
 
         boolean unlockedSomething = false;
         while (canAdvance()) {
-            currentMoney = Math.min(0, currentMoney - currentTier.getCostGoal());
+            currentMoney = Math.max(0, currentMoney - currentTier.getCostGoal());
             advance();
             unlockedSomething = true;
         }
@@ -132,7 +132,7 @@ public class VaultData extends SavedData {
             this.activePerks.add((ActivePerk) entry);
         }
         entry.apply(level);
-    } // TODO: bugfix + sanity check
+    }
 
     private List<ConfiguredEvent> getAvailableEvents() {
         return currentTier.getEventPool().stream().filter(e -> !this.activeEvents.contains(e)).toList();

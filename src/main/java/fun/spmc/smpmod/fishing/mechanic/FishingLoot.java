@@ -51,21 +51,11 @@ public class FishingLoot {
         else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
     }
 
-    private static final double[][] RARITY_WEIGHTS_PER_TIER = {
-            { 78.0, 18.0, 3.50, 0.45, 0.045, 0.004, 0.0008, 0.0002 },
-            { 68.0, 23.0, 7.50, 1.20, 0.250, 0.040, 0.0080, 0.0020 },
-            { 56.0, 27.0, 12.0, 3.80, 0.900, 0.200, 0.0800, 0.0200 },
-            { 44.0, 30.0, 17.0, 6.50, 2.000, 0.400, 0.0800, 0.0200 },
-            { 34.0, 31.0, 21.0, 10.0, 3.200, 0.650, 0.1200, 0.0300 },
-            { 25.0, 32.0, 25.0, 12.5, 4.200, 0.950, 0.3000, 0.0500 },
-            { 18.0, 28.0, 31.0, 15.0, 5.000, 2.000, 0.8000, 0.2000 }
-    };
-
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
-        BiomeCategory category = BiomeCategory.getCategory(player.);
+        BiomeCategory category = BiomeCategory.getCategory(player);
         List<Item> pool = PolymerFishes.FISH;
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
-        double[] weights = RARITY_WEIGHTS_PER_TIER[tier.ordinal()];
+        double[] weights = tier.getRates();
         double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;
         double current = 0;
         ItemRarity selectedRarity = ItemRarity.COMMON;
@@ -109,7 +99,7 @@ public class FishingLoot {
         return matchingFish.getFirst();
     }
 
-    private static final double[] BASE_STAR_WEIGHTS = { 1000.0, 600.0, 300.0, 120.0, 35.0, 6.0 };
+    private static final double[] BASE_STAR_WEIGHTS = { 1000.0, 600.0, 300.0, 120.0, 35, 6 };
 
     private static int rollStarQuality(RandomSource random, float luckBonus) {
         double[] adjustedWeights = new double[BASE_STAR_WEIGHTS.length];
