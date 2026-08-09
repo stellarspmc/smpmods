@@ -8,7 +8,6 @@
     "MixinECPerms",
     "MixinEnchantment",
     "MixinLivingEntity",
-    "MixinSculkShriekerBlockEntity",
     "chunk.MixinServerLevel",
     "fishing.MixinFishingHook",
     "player.MixinPlayerAdvancementTracker",

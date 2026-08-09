@@ -1,56 +1,30 @@
-package fun.spmc.smpmod;
+package fun.spmc.smpmod.registry;
 
-import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.fishing.fish.FishItem;
 import fun.spmc.smpmod.fishing.rod.RodItem;
 import fun.spmc.smpmod.fishing.rod.RodTiers;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
+import fun.spmc.smpmod.misc.ItemRarity;
+import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
-@SuppressWarnings("ALL")
-public class SMPItems {
+public class PolymerFishes {
     public static List<Item> FISH = new ArrayList<>();
     public static List<Item> DEFAULT_FISH = new ArrayList<>();
 
-    private static <T extends Item> T create(String id, Function<Item.Properties, T> factory) {
-        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id));
-        Item.Properties properties = new Item.Properties().setId(key);
-        T item = factory.apply(properties);
-        return Registry.register(BuiltInRegistries.ITEM, key, item);
-    }
-
-    private static void registerRod(String id, RodTiers tier) {
-        create(id, properties -> new RodItem(properties, tier));
-    }
-
     private static void registerFish(String id, Item vanillaModel, double basePrice, ItemRarity rarity) {
-        Item item = create(id, properties -> new FishItem(properties, vanillaModel, formatName(id), basePrice, rarity));
+        Item item = PolymerRegistry.createItem(id, properties -> new FishItem(properties, vanillaModel, MessageUtils.formatName(id), basePrice, rarity));
         FISH.add(item);
     }
 
-    private static String formatName(String id) {
-        String[] words = id.split("_");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                sb.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1))
-                        .append(" ");
-            }
-        }
-        return sb.toString().trim();
+    private static void registerRod(String id, RodTiers tier) {
+        PolymerRegistry.createItem(id, properties -> new RodItem(properties, tier));
     }
 
-    public static void register() {
+    protected static void registerRods() {
         registerRod("normal_fishing_rod", RodTiers.NORMAL);
         registerRod("copper_fishing_rod", RodTiers.COPPER);
         registerRod("iron_fishing_rod", RodTiers.IRON);
@@ -58,7 +32,9 @@ public class SMPItems {
         registerRod("emerald_fishing_rod", RodTiers.EMERALD);
         registerRod("diamond_fishing_rod", RodTiers.DIAMOND);
         registerRod("netherite_fishing_rod", RodTiers.NETHERITE);
+    }
 
+    protected static void registerFishes() {
         registerFish("cod", Items.COD, 15, ItemRarity.COMMON);
         registerFish("seafish", Items.COD, 21, ItemRarity.COMMON);
         registerFish("joes", Items.COD, 23, ItemRarity.COMMON);
@@ -152,7 +128,8 @@ public class SMPItems {
         registerFish("moncavia", Items.COD, 250000, ItemRarity.CELESTIAL);
     }
 
-    private static void registerBiomeSpecific() {
+
+    private static void registerPlains() {
         // plains
         registerFish("crab", Items.SALMON, 17, ItemRarity.COMMON);
         registerFish("frog", Items.COD, 19, ItemRarity.COMMON);

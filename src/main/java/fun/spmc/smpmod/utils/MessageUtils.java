@@ -46,4 +46,17 @@ public class MessageUtils {
         while (matcher.find()) matches.add(matcher.group(1));
         return matches;
     }
+
+    public static String formatName(String id) {
+        String[] words = id.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                sb.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+        return sb.toString().trim();
+    }
 }

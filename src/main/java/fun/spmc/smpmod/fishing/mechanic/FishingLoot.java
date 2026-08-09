@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
-import fun.spmc.smpmod.SMPItems;
+import fun.spmc.smpmod.registry.PolymerFishes;
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.fishing.fish.FishItem;
@@ -51,17 +51,17 @@ public class FishingLoot {
     }
 
     private static final double[][] RARITY_WEIGHTS_PER_TIER = {
-            { 75, 20, 4.2, .7, .09, .008, .0015, .0005 },
-            { 62, 27, 8.5, 2, .4, .08, .018, .002 },
-            { 48, 30, 15, 5.5, 1.2, .25, .04, .01 },
-            { 35, 32, 20, 9, 3.0, .8, .15, .05 },
-            { 24, 30, 26, 13, 5.5, 1.1, .3, .1 },
-            { 14, 24, 30, 18, 9.0, 3.5, 1.1, .4 },
-            { 8, 17, 32, 22, 12, 5.5, 2.5, 1 }
+            { 78.0, 18.0, 3.50, 0.45, 0.045, 0.004, 0.0008, 0.0002 },
+            { 68.0, 23.0, 7.50, 1.20, 0.250, 0.040, 0.0080, 0.0020 },
+            { 56.0, 27.0, 12.0, 3.80, 0.900, 0.200, 0.0800, 0.0200 },
+            { 44.0, 30.0, 17.0, 6.50, 2.000, 0.400, 0.0800, 0.0200 },
+            { 34.0, 31.0, 21.0, 10.0, 3.200, 0.650, 0.1200, 0.0300 },
+            { 25.0, 32.0, 25.0, 12.5, 4.200, 0.950, 0.3000, 0.0500 },
+            { 18.0, 28.0, 31.0, 15.0, 5.000, 2.000, 0.8000, 0.2000 }
     };
 
     private static FishItem getRandomFishForTier(RodTiers tier) {
-        List<Item> pool = SMPItems.FISH;
+        List<Item> pool = PolymerFishes.FISH;
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
         double[] weights = RARITY_WEIGHTS_PER_TIER[tier.ordinal()];
         double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;
@@ -78,12 +78,12 @@ public class FishingLoot {
         }
 
         ItemRarity finalRarity = selectedRarity;
-        List<FishItem> matchingFish = SMPItems.FISH.stream()
+        List<FishItem> matchingFish = PolymerFishes.FISH.stream()
                 .filter(item -> item instanceof FishItem fish && fish.getRarity() == finalRarity)
                 .map(item -> (FishItem) item)
                 .toList();
 
-        if (matchingFish.isEmpty()) return (FishItem) SMPItems.FISH.getFirst();
+        if (matchingFish.isEmpty()) return (FishItem) PolymerFishes.FISH.getFirst();
 
         double exponent = -1 + (tier.ordinal() * .2);
 

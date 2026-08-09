@@ -2,7 +2,7 @@ package fun.spmc.smpmod.fishing.fish;
 
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
-import fun.spmc.smpmod.utils.SimplerPolymerItem;
+import fun.spmc.smpmod.utils.BasePolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +15,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-public class FishItem extends SimplerPolymerItem {
+public class FishItem extends BasePolymerItem {
     private final String fishName;
     private final double basePrice;
     private final ItemRarity rarity;
@@ -108,7 +108,7 @@ public class FishItem extends SimplerPolymerItem {
             Map<ItemModifier, Integer> modifiers = getModifiers(tag);
             double price = ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
             for (Map.Entry<ItemModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * Math.min(1, entry.getValue());
-            return Math.round(price * (quality * .4 + 1) * 100) / 100d;
+            return Math.round(price * (quality * .15 + 1) * 100) / 100d;
         } return ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
     }
 }

@@ -14,10 +14,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public abstract class SimplerPolymerItem extends Item implements PolymerItem {
+public abstract class BasePolymerItem extends Item implements PolymerItem {
     private final Item vanillaItem;
 
-    public SimplerPolymerItem(Properties properties, Item vanillaItem) {
+    public BasePolymerItem(Properties properties, Item vanillaItem) {
         super(properties);
         this.vanillaItem = vanillaItem;
     }

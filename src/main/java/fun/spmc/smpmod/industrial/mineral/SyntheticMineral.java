@@ -1,13 +1,13 @@
 package fun.spmc.smpmod.industrial.mineral;
 
-import fun.spmc.smpmod.utils.SimplerPolymerItem;
+import fun.spmc.smpmod.utils.BasePolymerItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-public class SyntheticMineral extends SimplerPolymerItem {
+public class SyntheticMineral extends BasePolymerItem {
     public SyntheticMineral(Properties properties, Item vanillaItem) {
         super(properties.stacksTo(64), vanillaItem);
     }

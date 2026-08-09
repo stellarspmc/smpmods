@@ -21,7 +21,7 @@
           "name": "minecraft:diamond",
           "weight": 45,
           "functions": [
-            { "function": "minecraft:set_count", "count": 1 }
+            { "function": "minecraft:set_count", "count": 15 }
           ]
         },
         {
@@ -29,7 +29,7 @@
           "name": "minecraft:diamond_block",
           "weight": 5,
           "functions": [
-            { "function": "minecraft:set_count", "count": 1 }
+            { "function": "minecraft:set_count", "count": 4 }
           ]
         },
         {
@@ -37,7 +37,7 @@
           "name": "minecraft:emerald_block",
           "weight": 3,
           "functions": [
-            { "function": "minecraft:set_count", "count": 5 }
+            { "function": "minecraft:set_count", "count": 35 }
           ]
         },
         {
@@ -45,7 +45,7 @@
           "name": "minecraft:iron_block",
           "weight": 25,
           "functions": [
-            { "function": "minecraft:set_count", "count": 5 }
+            { "function": "minecraft:set_count", "count": 75 }
           ]
         },
         {
@@ -53,7 +53,7 @@
           "name": "minecraft:echo_shard",
           "weight": 3,
           "functions": [
-            { "function": "minecraft:set_count", "count": 2 }
+            { "function": "minecraft:set_count", "count": 10 }
           ]
         }
       ]
