@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,7 +51,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
         private int progressTicks = 0;
 
         public CompressorUI(ServerPlayer player) {
-            super(net.minecraft.world.inventory.MenuType.GENERIC_9x3, player, true);
+            super(MenuType.GENERIC_9x3, player, false);
             this.setTitle(Component.literal("Sculk Compressor").withColor(TextColor.fromRgb(0x00AAAA)));
 
             for (int i = 0; i < 27; i++) this.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.black()).setName(Component.literal("")));
@@ -58,6 +59,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
             this.clearSlot(INPUT_SLOT);
             this.clearSlot(OUTPUT_SLOT);
             updateProgressDisplay(0, 200);
+            setLockPlayerInventory(false);
         }
 
         @Override

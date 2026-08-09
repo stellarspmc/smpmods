@@ -2,7 +2,7 @@ package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
-import eu.pb4.polymer.core.api.item.PolymerBlockItem;
+import fun.spmc.smpmod.industrial.machine.MachineItem;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,7 +37,7 @@ public class PolymerRegistry {
         Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
         BlockItemId blockId = BlockItemId.create(identifier, identifier);
         Block block = blockFactory.apply(properties.setId(blockId.block()));
-        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new PolymerBlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item));
+        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new MachineItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id));
         return Registry.register(BuiltInRegistries.BLOCK, id, block);
     }
 
