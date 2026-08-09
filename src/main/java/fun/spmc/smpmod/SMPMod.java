@@ -11,6 +11,7 @@ import fun.spmc.smpmod.events.ServerMobSpawner;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.mobs.boss.CrystalBoss;
+import fun.spmc.smpmod.plant.PlantUtils;
 import fun.spmc.smpmod.registry.PolymerRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
@@ -19,6 +20,7 @@ import fun.spmc.smpmod.misc.BedrockSkinFetcher;
 
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.VaultData;
+import fun.spmc.smpmod.vault.VaultUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -94,6 +96,8 @@ public class SMPMod implements DedicatedServerModInitializer {
                 MarketState.register();
                 VaultData.register();
                 NPCData.register();
+                VaultUtils.register();
+                PlantUtils.register();
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);
