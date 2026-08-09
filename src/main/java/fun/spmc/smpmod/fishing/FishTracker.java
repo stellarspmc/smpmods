@@ -102,5 +102,5 @@ public class FishTracker extends SavedData {
         if (page > 0) gui.setSlot(45, new GuiElementBuilder(Items.ARROW).setName(Component.literal("← Previous Page").withColor(TextColor.fromRgb(0xFFFF55))).setCallback((_) -> openFishIndexMenu(player, page - 1)));
         gui.setSlot(49, new GuiElementBuilder(Items.PAPER).setName(Component.literal("Page " + (page + 1) + " of " + maxPages).withColor(TextColor.fromRgb(0xFFFFFF))).addLoreLine(Component.literal("Unlocked: " + unlockedList.size() + " / " + allFish.size()).withColor(TextColor.fromRgb(0xAAFFAA))));
         if (page < maxPages - 1) gui.setSlot(53, new GuiElementBuilder(Items.ARROW).setName(Component.literal("Next Page →").withColor(TextColor.fromRgb(0xFFFF55))).setCallback((_) -> openFishIndexMenu(player, page + 1)));
-    }
+    } // TODO: fix
 }

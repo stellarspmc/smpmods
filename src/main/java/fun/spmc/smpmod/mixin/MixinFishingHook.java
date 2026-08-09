@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinFishingHook {
     @Shadow private int nibble;
     @Shadow public abstract @Nullable Player getPlayerOwner();
+    @Shadow protected abstract void catchingFish(BlockPos blockPos);
 
     @Inject(method = "catchingFish", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/projectile/FishingHook;nibble:I", ordinal = 1, opcode = Opcodes.GETFIELD))
     public void smpmod$catchingFishOverride(BlockPos blockPos, CallbackInfo ci) {
@@ -87,9 +88,13 @@ public abstract class MixinFishingHook {
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
                 if (item.canLavaFish() && hook.isInLava()) hook.clearFire();
-                if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) {
+                if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END) {
                     Vec3 vel = hook.getDeltaMovement();
-                    hook.setDeltaMovement(vel.x * 0.8, Math.max(vel.y * 0.5, -0.02), vel.z * 0.8);
+                    if (hook.getY() < -2.0) {
+                        hook.setDeltaMovement(vel.x * 0.8, 0.05, vel.z * 0.8);
+                        hook.setPos(hook.getX(), -2.0, hook.getZ());
+                    } else hook.setDeltaMovement(vel.x * 0.8, Math.max(vel.y * 0.5, -0.02), vel.z * 0.8);
+                    if (!hook.level().isClientSide()) catchingFish(hook.blockPosition());
                 }
             }
         }
