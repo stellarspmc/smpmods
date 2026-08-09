@@ -7,6 +7,7 @@ import fun.spmc.smpmod.plant.seed.SeedItem;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;

@@ -2,6 +2,8 @@ package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -10,6 +12,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.references.BlockItemId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +60,16 @@ public class PolymerRegistry {
         return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), new RecipeSerializer<>(codec, streamCodec));
     }
 
+    protected static <T extends LivingEntity> void registerEntity(String id, EntityType.Builder<T> builder, AttributeSupplier supplier) {
+        ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("smpmod", id));
+        EntityType<T> type = Registry.register(
+                BuiltInRegistries.ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath("smpmod", id),
+                builder.build(key));
+        PolymerEntityUtils.registerType(type);
+        FabricDefaultAttributeRegistry.register(type, supplier);
+    }
+
     public static void register() {
         PolymerFishes.registerRods();
         PolymerFishes.registerFishes();
@@ -62,5 +77,6 @@ public class PolymerRegistry {
         PolymerIndustrial.registerMinerals();
         PolymerIndustrial.registerBlocks();
         PolymerIndustrial.registerRecipes();
+        PolymerMisc.register();
     }
 }

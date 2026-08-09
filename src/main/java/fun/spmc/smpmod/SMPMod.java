@@ -10,6 +10,7 @@ import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.events.ServerMobSpawner;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.misc.NPCData;
+import fun.spmc.smpmod.mobs.boss.CrystalBoss;
 import fun.spmc.smpmod.registry.PolymerRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
@@ -38,6 +39,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
@@ -187,5 +189,6 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
         ServerEntityEvents.ENTITY_LOAD.register(ServerMobSpawner::onEntityJoin);
+        UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss);
     }
 }
