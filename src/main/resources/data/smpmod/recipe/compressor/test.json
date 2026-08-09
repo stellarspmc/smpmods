@@ -1,9 +1,9 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": ["minecraft:charcoal"],
+  "ingredient": "minecraft:iron_ingot",
   "count": 48,
   "result": {
-    "id": "minecraft:charcoal",
+    "id": "minecraft:stick",
     "count": 1
   },
   "process_time": 50

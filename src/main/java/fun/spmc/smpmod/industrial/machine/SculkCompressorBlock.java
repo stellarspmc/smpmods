@@ -89,7 +89,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
 
             CompressorRecipe recipe = match.get().value();
             ItemStack outputStack = inventory.getItem(1);
-            if (!canOutput(outputStack, recipe.result())) {
+            if (!canOutput(outputStack, recipe.result().create())) {
                 resetProgress();
                 return;
             }
@@ -103,9 +103,9 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
                 inputStack.shrink(recipe.count());
 
                 if (outputStack.isEmpty()) {
-                    this.inventory.setItem(1, recipe.result().copy());
+                    this.inventory.setItem(1, recipe.result().create());
                 } else {
-                    outputStack.grow(recipe.result().getCount());
+                    outputStack.grow(recipe.result().count());
                 }
 
                 inventory.setChanged();

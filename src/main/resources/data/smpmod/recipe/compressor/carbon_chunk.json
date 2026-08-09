@@ -1,10 +1,11 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": ["smpmod:compressed_carbon"],
+  "ingredient": "smpmod:compressed_carbon",
   "count": 4,
   "result": {
     "id": "smpmod:carbon_chunk",
     "count": 1
   },
+  "result_count": 1,
   "process_time": 80
 }

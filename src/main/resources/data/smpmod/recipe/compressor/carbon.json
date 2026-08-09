@@ -1,6 +1,6 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": ["minecraft:charcoal"],
+  "ingredient": "minecraft:charcoal",
   "count": 48,
   "result": {
     "id": "smpmod:carbon",

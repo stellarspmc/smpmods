@@ -111,7 +111,6 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
             BedrockSkinFetcher.restoreSkin(server, player);
-            FishTracker.get().registerPlayer(player.getUUID());
             EconomyData.get().registerPlayer(player.getUUID(), player.getGameProfile().name());
             player.awardRecipes(server.getRecipeManager().getRecipes()); // unlock everything, temporary
 

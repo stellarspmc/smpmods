@@ -13,7 +13,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -90,12 +90,12 @@ public class PolymerIndustrial {
         COMPRESSOR_SERIALIZER = PolymerRegistry.registerSingleInputSerializer("compressing", RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count),
-                ItemStack.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
                 Codec.INT.optionalFieldOf("process_time", 200).forGetter(CompressorRecipe::processTime) // Default 10 sec (200 ticks)
         ).apply(instance, CompressorRecipe::new)), StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient,
                 ByteBufCodecs.VAR_INT, CompressorRecipe::count,
-                ItemStack.STREAM_CODEC, CompressorRecipe::result,
+                ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result,
                 ByteBufCodecs.VAR_INT, CompressorRecipe::processTime,
                 CompressorRecipe::new
         ));

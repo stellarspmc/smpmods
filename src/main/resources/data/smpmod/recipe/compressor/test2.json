@@ -1,6 +1,6 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": ["minecraft:diamond"],
+  "ingredient": "minecraft:diamond",
   "count": 48,
   "result": {
     "id": "smpmod:cor",

@@ -21,8 +21,6 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.*;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
-import static fun.spmc.smpmod.SMPMod.modLogger;
-
 public class FishTracker extends SavedData {
     private static final Codec<Map<UUID, List<String>>> UNLOCKED_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.list(Codec.STRING));
 
@@ -47,11 +45,6 @@ public class FishTracker extends SavedData {
     public Map<UUID, List<String>> getUnlocked() { return fishUnlocked; }
     public static FishTracker get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
     public List<String> getUnlockedFish(UUID id) { return fishUnlocked.getOrDefault(id, new ArrayList<>()); }
-
-    public void registerPlayer(UUID uuid) {
-        fishUnlocked.computeIfAbsent(uuid, _ -> new ArrayList<>());
-        this.setDirty();
-    }
 
     public void addFish(UUID id, String fish) {
         List<String> list = fishUnlocked.computeIfAbsent(id, _ -> new ArrayList<>());
@@ -84,7 +77,6 @@ public class FishTracker extends SavedData {
 
         int startIndex = page * 45;
         int endIndex = Math.min(startIndex + 45, allFish.size());
-
         for (int i = 0; i < 45; i++) {
             int fishIndex = startIndex + i;
 
@@ -102,5 +94,5 @@ public class FishTracker extends SavedData {
         if (page > 0) gui.setSlot(45, new GuiElementBuilder(Items.ARROW).setName(Component.literal("← Previous Page").withColor(TextColor.fromRgb(0xFFFF55))).setCallback((_) -> openFishIndexMenu(player, page - 1)));
         gui.setSlot(49, new GuiElementBuilder(Items.PAPER).setName(Component.literal("Page " + (page + 1) + " of " + maxPages).withColor(TextColor.fromRgb(0xFFFFFF))).addLoreLine(Component.literal("Unlocked: " + unlockedList.size() + " / " + allFish.size()).withColor(TextColor.fromRgb(0xAAFFAA))));
         if (page < maxPages - 1) gui.setSlot(53, new GuiElementBuilder(Items.ARROW).setName(Component.literal("Next Page →").withColor(TextColor.fromRgb(0xFFFF55))).setCallback((_) -> openFishIndexMenu(player, page + 1)));
-    } // TODO: fix
+    }
 }

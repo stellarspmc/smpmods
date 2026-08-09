@@ -24,7 +24,7 @@ public class PolymerFishes {
     public static List<Item> SKY = new ArrayList<>();
 
     public static List<Item> getAllFish() {
-        return Stream.of(PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY)
+        return Stream.of(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY)
                 .flatMap(List::stream)
                 .toList(); // immutable bruv
     }
