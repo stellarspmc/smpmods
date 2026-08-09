@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
@@ -48,6 +49,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
         public static final int INPUT_SLOT = 10;
         public static final int PROCESS_SLOT = 13;
         public static final int OUTPUT_SLOT = 16;
+        private final SimpleContainer inventory = new SimpleContainer(2);
         private int progressTicks = 0;
 
         public CompressorUI(ServerPlayer player) {
@@ -55,9 +57,8 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
             this.setTitle(Component.literal("Sculk Compressor").withColor(TextColor.fromRgb(0x00AAAA)));
 
             for (int i = 0; i < 27; i++) this.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.black()).setName(Component.literal("")));
-
-            this.clearSlot(INPUT_SLOT);
-            this.clearSlot(OUTPUT_SLOT);
+            this.setSlot(INPUT_SLOT, new Slot(inventory, 0, 0, 0));
+            this.setSlot(OUTPUT_SLOT, new Slot(inventory, 1, 0, 0) {@Override public boolean mayPlace(@NonNull ItemStack stack) { return false; }});
             updateProgressDisplay(0, 200);
             setLockPlayerInventory(false);
         }
@@ -70,14 +71,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
 
         @Override
         public void onTick() {
-            Slot inputSlot = this.getCustomSlot(INPUT_SLOT);
-            Slot outputSlot = this.getCustomSlot(OUTPUT_SLOT);
-
-            if (inputSlot == null || outputSlot == null) {
-                return;
-            }
-
-            ItemStack inputStack = inputSlot.getItem();
+            ItemStack inputStack = inventory.getItem(0);
             if (inputStack.isEmpty()) {
                 resetProgress();
                 return;
@@ -94,7 +88,7 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
             }
 
             CompressorRecipe recipe = match.get().value();
-            ItemStack outputStack = outputSlot.getItem();
+            ItemStack outputStack = inventory.getItem(1);
             if (!canOutput(outputStack, recipe.result())) {
                 resetProgress();
                 return;
@@ -107,13 +101,14 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
                 progressTicks = 0;
 
                 inputStack.shrink(recipe.count());
-                inputSlot.setChanged();
 
-                if (outputStack.isEmpty()) outputSlot.set(recipe.result().copy());
-                else {
+                if (outputStack.isEmpty()) {
+                    this.inventory.setItem(1, recipe.result().copy());
+                } else {
                     outputStack.grow(recipe.result().getCount());
-                    outputSlot.setChanged();
                 }
+
+                inventory.setChanged();
             }
         }
 

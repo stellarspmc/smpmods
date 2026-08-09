@@ -8,7 +8,6 @@ import fun.spmc.smpmod.fishing.RodItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
@@ -54,7 +53,7 @@ public abstract class MixinFishingHook {
             method = "catchingFish",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I")
     )
-    private int smpmod$swapParticleTypes(ServerLevel instance, SimpleParticleType particle, double x, double y, double z, int count, double xDist, double yDist, double zDist, double speed, Operation<Integer> original) {
+    private int smpmod$swapParticleTypes(ServerLevel instance, ParticleOptions particle, double x, double y, double z, int count, double xDist, double yDist, double zDist, double speed, Operation<Integer> original) {
         FishingHook hook = (FishingHook) (Object) this;
         if (hook.isInLava()) particle = ParticleTypes.FLAME;
         else if (hook.getY() < 0) particle = ParticleTypes.PORTAL;
@@ -122,7 +121,11 @@ public abstract class MixinFishingHook {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
                 if (item.canLavaFish() && hook.isInLava()) hook.clearFire();
                 if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END) {
-                    if (hook.getY() < -2.0 && !hook.isNoGravity()) hook.setNoGravity(true);
+                    if (hook.getY() < -4) {
+                        if (!hook.isNoGravity()) hook.setNoGravity(true);
+                        Vec3 vel = hook.getDeltaMovement();
+                        hook.setDeltaMovement(vel.x * 0.8, 0.0, vel.z * 0.8);
+                    }
                     if (!hook.level().isClientSide()) catchingFish(hook.blockPosition());
                 }
             }

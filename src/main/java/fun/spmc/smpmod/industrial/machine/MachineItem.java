@@ -20,7 +20,7 @@ public class MachineItem extends BasePolymerBlockItem {
 
     @Override
     public Component buildName(ItemStack stack) {
-        return Component.literal(MessageUtils.formatName(id));
+        return Component.literal(MessageUtils.formatName(id)).withStyle(style -> style.withItalic(false));
     }
 
     @Override

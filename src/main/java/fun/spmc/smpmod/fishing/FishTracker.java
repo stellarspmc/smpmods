@@ -53,7 +53,7 @@ public class FishTracker extends SavedData {
     public void addFish(UUID id, String fish) {
         List<String> set = getUnlockedFish(id);
         if (BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath("smpmod", fish)).isEmpty()) return;
-        if (checkAlreadyAdded(id, fish)) {
+        if (!checkAlreadyAdded(id, fish)) {
             set.add(fish);
             fishUnlocked.replace(id, set);
             setDirty();
@@ -78,7 +78,7 @@ public class FishTracker extends SavedData {
     }
 
     private static void refreshGui(SimpleGui gui, ServerPlayer player, int page, int maxPages) {
-        List<Item> allFish = PolymerFishes.FISH;
+        List<Item> allFish = PolymerFishes.getAllFish();
         List<String> unlockedList = FishTracker.get().getUnlockedFish(player.getUUID());
 
         int startIndex = page * 45;

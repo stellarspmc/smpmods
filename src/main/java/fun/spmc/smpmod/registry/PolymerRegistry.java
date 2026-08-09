@@ -73,7 +73,7 @@ public class PolymerRegistry {
         PolymerPlants.register();
         PolymerIndustrial.registerMinerals();
         PolymerIndustrial.registerBlocks();
-        PolymerIndustrial.registerRecipes();
         PolymerMisc.register();
+        PolymerIndustrial.registerRecipes();
     }
 }
