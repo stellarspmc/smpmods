@@ -2,6 +2,7 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.fishing.FishTracker;
 import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
@@ -105,8 +106,8 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
             BedrockSkinFetcher.restoreSkin(server, player);
-            EconomyData eco = EconomyData.get();
-            eco.registerPlayer(player.getUUID(), player.getGameProfile().name());
+            FishTracker.get().registerPlayer(player.getUUID());
+            EconomyData.get().registerPlayer(player.getUUID(), player.getGameProfile().name());
             player.awardRecipes(server.getRecipeManager().getRecipes()); // unlock everything, temporary
 
             if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();

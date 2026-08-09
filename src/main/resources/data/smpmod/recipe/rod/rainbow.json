@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "BSC",
+    "SDS"
+  ],
+  "key": {
+    "A": "smpmod:green_snapper",
+    "B": "smpmod:blue_snapper",
+    "C": "smpmod:yellow_snapper",
+    "D": "smpmod:red_snapper",
+    "S": "#minecraft:copper",
+    "R": "smpmod:normal_fishing_rod"
+  },
+  "result": {
+    "id": "smpmod:rainbow_fishing_rod",
+    "count": 1
+  }
+}

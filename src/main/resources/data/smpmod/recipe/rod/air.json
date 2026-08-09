@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NEN",
+    "SFM",
+    "NNN"
+  ],
+  "key": {
+    "E": "minecraft:elytra",
+    "N": "minecraft:phantom_membrane",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:aerie",
+    "M": "smpmod:illumi"
+  },
+  "result": {
+    "id": "smpmod:air_fishing_rod",
+    "count": 1
+  }
+}

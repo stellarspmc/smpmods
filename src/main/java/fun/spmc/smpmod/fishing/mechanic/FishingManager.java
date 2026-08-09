@@ -1,8 +1,8 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
 import fun.spmc.smpmod.fishing.FishingUtils;
-import fun.spmc.smpmod.fishing.rod.RodItem;
-import fun.spmc.smpmod.fishing.rod.RodTiers;
+import fun.spmc.smpmod.fishing.RodItem;
+import fun.spmc.smpmod.fishing.RodTiers;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.projectile.FishingHook;

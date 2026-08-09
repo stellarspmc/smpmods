@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DEG",
+    "SFS",
+    "ACB"
+  ],
+  "key": {
+    "F": "smpmod:cthulhu_fishing_rod",
+    "E": "smpmod:elemental_fishing_rod",
+    "C": "smpmod:celestial_fishing_rod",
+    "S": "smpmod:fish_de_ckc",
+    "A": "smpmod:asteri",
+    "B": "smpmod:beelzebub",
+    "G": "smpmod:icarus",
+    "D": "smpmod:sentinel"
+  },
+  "result": {
+    "id": "smpmod:everything_fishing_rod",
+    "count": 1
+  }
+}

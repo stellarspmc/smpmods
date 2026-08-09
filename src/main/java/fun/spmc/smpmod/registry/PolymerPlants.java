@@ -15,14 +15,27 @@ import java.util.List;
 public class PolymerPlants {
     public final static List<SeedItem> SEEDS = new ArrayList<>();
 
-    private static void registerPlant(String cropId, Item baseCropItem, Item baseSeedItem, double basePrice, ItemRarity rarity) {
-        CropItem cropItem = PolymerRegistry.createItem(cropId, properties -> new CropItem(properties, baseCropItem, MessageUtils.formatName(cropId), basePrice, rarity));
+    private static Item getBaseSeed(Item baseCrop) {
+        if (baseCrop == Items.WHEAT) return Items.WHEAT_SEEDS;
+        if (baseCrop == Items.CARROT) return Items.CARROT;
+        if (baseCrop == Items.POTATO) return Items.POTATO;
+        if (baseCrop == Items.BEETROOT) return Items.BEETROOT_SEEDS;
+        if (baseCrop == Items.TORCHFLOWER) return Items.TORCHFLOWER_SEEDS;
+        if (baseCrop == Items.MELON) return Items.MELON_SEEDS;
+        if (baseCrop == Items.PUMPKIN) return Items.PUMPKIN_SEEDS;
+        return Items.AIR;
+    }
+    private static void registerPlant(String cropId, Item baseCrop, double basePrice, ItemRarity rarity) {
+        Item baseSeed = getBaseSeed(baseCrop);
+
+        CropItem cropItem = PolymerRegistry.createItem(cropId, properties -> new CropItem(properties, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity));
         SeedBlock seedBlock = (SeedBlock) PolymerRegistry.createBlockOnly(cropId + "_crop", properties -> new SeedBlock(properties, () -> cropItem), BlockBehaviour.Properties.of());
-        SeedItem seedItem = PolymerRegistry.createItem(cropId + "_seeds", properties -> new SeedItem(seedBlock, properties, baseSeedItem, MessageUtils.formatName(cropId + "_seeds")));
+        SeedItem seedItem = PolymerRegistry.createItem(cropId + "_seeds", properties -> new SeedItem(seedBlock, properties, baseSeed, MessageUtils.formatName(cropId + "_seeds")));
         SEEDS.add(seedItem);
     }
 
     protected static void register() {
-        registerPlant("wheat", Items.WHEAT, Items.WHEAT_SEEDS, 1f, ItemRarity.COMMON);
+        registerPlant("wheat", Items.WHEAT, 1f, ItemRarity.COMMON);
+        registerPlant("beetroot", Items.BEETROOT, 2f, ItemRarity.COMMON);
     }
 }

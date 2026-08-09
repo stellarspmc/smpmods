@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SWS",
+    "SFS",
+    "SSS"
+  ],
+  "key": {
+    "W": "smpmod:sierra",
+    "F": "smpmod:elemental_fishing_rod",
+    "S": "smpmod:cthulhu"
+  },
+  "result": {
+    "id": "smpmod:cthulhu_fishing_rod",
+    "count": 1
+  }
+}

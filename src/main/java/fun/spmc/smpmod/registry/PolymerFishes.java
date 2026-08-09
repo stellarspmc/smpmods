@@ -1,8 +1,8 @@
 package fun.spmc.smpmod.registry;
 
-import fun.spmc.smpmod.fishing.fish.FishItem;
-import fun.spmc.smpmod.fishing.rod.RodItem;
-import fun.spmc.smpmod.fishing.rod.RodTiers;
+import fun.spmc.smpmod.fishing.FishItem;
+import fun.spmc.smpmod.fishing.RodItem;
+import fun.spmc.smpmod.fishing.RodTiers;
 import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.world.item.Item;
@@ -10,6 +10,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class PolymerFishes {
     public static List<Item> FISH = new ArrayList<>();
@@ -22,7 +23,13 @@ public class PolymerFishes {
     public static List<Item> END = new ArrayList<>();
     public static List<Item> SKY = new ArrayList<>();
 
-    private static void registerRod(String id, RodTiers tier) { PolymerRegistry.createItem(id, properties -> new RodItem(properties, tier)); }
+    public static List<Item> getAllFish() {
+        return Stream.of(PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY)
+                .flatMap(List::stream)
+                .toList(); // immutable bruv
+    }
+
+    private static void registerRod(RodTiers tier) { PolymerRegistry.createItem(tier.name().toLowerCase() + "_fishing_rod", properties -> new RodItem(properties, tier)); }
     private static void registerFish(String id, Item vanillaModel, double basePrice, ItemRarity rarity) {
         Item item = PolymerRegistry.createItem(id, properties -> new FishItem(properties, vanillaModel, MessageUtils.formatName(id), basePrice, rarity));
         FISH.add(item);
@@ -34,13 +41,24 @@ public class PolymerFishes {
     }
 
     protected static void registerRods() {
-        registerRod("normal_fishing_rod", RodTiers.NORMAL);
-        registerRod("copper_fishing_rod", RodTiers.COPPER);
-        registerRod("iron_fishing_rod", RodTiers.IRON);
-        registerRod("gold_fishing_rod", RodTiers.GOLD);
-        registerRod("emerald_fishing_rod", RodTiers.EMERALD);
-        registerRod("diamond_fishing_rod", RodTiers.DIAMOND);
-        registerRod("netherite_fishing_rod", RodTiers.NETHERITE);
+        registerRod(RodTiers.NORMAL);
+        registerRod(RodTiers.RAINBOW);
+        registerRod(RodTiers.COPPER);
+        registerRod(RodTiers.IRON);
+        registerRod(RodTiers.GOLD);
+        registerRod(RodTiers.EMERALD);
+        registerRod(RodTiers.LUNA);
+        registerRod(RodTiers.DIAMOND);
+        registerRod(RodTiers.NETHERITE);
+        registerRod(RodTiers.TOXIC);
+        registerRod(RodTiers.DEATH);
+        registerRod(RodTiers.AIR);
+        registerRod(RodTiers.SEA);
+        registerRod(RodTiers.FLICKERING);
+        registerRod(RodTiers.CELESTIAL);
+        registerRod(RodTiers.ELEMENTAL);
+        registerRod(RodTiers.CTHULHU);
+        registerRod(RodTiers.EVERYTHING);
     }
 
     protected static void registerFishes() {
@@ -56,7 +74,6 @@ public class PolymerFishes {
         registerEnd();
         registerSky();
     }
-    
     private static void registerDefault() {
         registerFish("cod", Items.COD, 15, ItemRarity.COMMON);
         registerFish("seafish", Items.COD, 21, ItemRarity.COMMON);

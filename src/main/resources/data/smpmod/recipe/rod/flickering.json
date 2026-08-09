@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NNN",
+    "SFS",
+    "NNN"
+  ],
+  "key": {
+    "N": "minecraft:beacon",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:prismite"
+  },
+  "result": {
+    "id": "smpmod:flickering_fishing_rod",
+    "count": 1
+  }
+}

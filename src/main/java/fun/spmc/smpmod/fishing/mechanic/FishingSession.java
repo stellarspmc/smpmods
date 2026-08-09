@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
-import fun.spmc.smpmod.fishing.rod.RodTiers;
+import fun.spmc.smpmod.fishing.RodTiers;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

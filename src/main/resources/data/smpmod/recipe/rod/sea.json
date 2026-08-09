@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ENE",
+    "SFM",
+    "ENE"
+  ],
+  "key": {
+    "E": "minecraft:nautilus_shell",
+    "N": "minecraft:heart_of_the_sea",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:hydra",
+    "M": "smpmod:poseidon"
+  },
+  "result": {
+    "id": "smpmod:sea_fishing_rod",
+    "count": 1
+  }
+}

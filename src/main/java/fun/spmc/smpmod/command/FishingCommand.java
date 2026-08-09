@@ -3,6 +3,7 @@ package fun.spmc.smpmod.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import fun.spmc.smpmod.fishing.FishTracker;
 import fun.spmc.smpmod.fishing.FishingUtils;
 import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.utils.MessageUtils;
@@ -17,11 +18,9 @@ import net.minecraft.world.phys.Vec3;
 
 public class FishingCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> buildCommand() {
-        return Commands.literal("fishing").then(Commands.literal("setup")
-                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .executes(FishingCommand::setup)).then(Commands.literal("kill")
-                        .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .executes(FishingCommand::kill));
+        return Commands.literal("fishing").executes((ctx) -> FishTracker.openFishIndexMenu(ctx.getSource().getPlayerOrException()))
+                .then(Commands.literal("setup").requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)).executes(FishingCommand::setup))
+                .then(Commands.literal("kill").requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)).executes(FishingCommand::kill));
     }
 
     private static int kill(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

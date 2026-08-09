@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABC",
+    "GNG",
+    "DEF"
+  ],
+  "key": {
+    "N": "minecraft:nether_star",
+    "A": "smpmod:netherite_fishing_rod",
+    "B": "smpmod:toxic_fishing_rod",
+    "C": "smpmod:death_fishing_rod",
+    "D": "smpmod:air_fishing_rod",
+    "E": "smpmod:sea_fishing_rod",
+    "F": "smpmod:flickering_fishing_rod",
+    "G": "smpmod:corgravian"
+  },
+  "result": {
+    "id": "smpmod:celestial_fishing_rod",
+    "count": 1
+  }
+}

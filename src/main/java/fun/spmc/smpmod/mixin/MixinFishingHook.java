@@ -1,8 +1,7 @@
 package fun.spmc.smpmod.mixin;
 
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
-import fun.spmc.smpmod.fishing.rod.RodItem;
-import fun.spmc.smpmod.fishing.rod.RodTiers;
+import fun.spmc.smpmod.fishing.RodItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -73,23 +72,22 @@ public abstract class MixinFishingHook {
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
                 if (tagKey == FluidTags.WATER) {
-                    if (item.getTier().equals(RodTiers.NETHERITE) && (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA))) return true;
-                    if (item.getTier().equals(RodTiers.NETHERITE) && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
+                    if (item.canLavaFish() && (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA))) return true;
+                    if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
                 }
             }
         }
         return instance.is(tagKey);
     }
 
-    // 2. Prevent the hook from burning in lava or void-despawning
     @Inject(method = "tick", at = @At("HEAD"))
     private void smpmod$preventHookDestruction(CallbackInfo ci) {
         FishingHook hook = (FishingHook) (Object) this;
         ServerPlayer player = (ServerPlayer) getPlayerOwner();
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
-                if (item.getTier().equals(RodTiers.NETHERITE) && hook.isInLava()) hook.clearFire();
-                if (item.getTier().equals(RodTiers.NETHERITE) && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) {
+                if (item.canLavaFish() && hook.isInLava()) hook.clearFire();
+                if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) {
                     Vec3 vel = hook.getDeltaMovement();
                     hook.setDeltaMovement(vel.x * 0.8, Math.max(vel.y * 0.5, -0.02), vel.z * 0.8);
                 }

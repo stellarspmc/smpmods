@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.fishing.fish;
+package fun.spmc.smpmod.fishing;
 
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;

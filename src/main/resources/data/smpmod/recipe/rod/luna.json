@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "SFM",
+    "GGG"
+  ],
+  "key": {
+    "G": "minecraft:gold_block",
+    "F": "smpmod:gold_fishing_rod",
+    "S": "smpmod:sunfish",
+    "M": "smpmod:moonfish"
+  },
+  "result": {
+    "id": "smpmod:luna_fishing_rod",
+    "count": 1
+  }
+}

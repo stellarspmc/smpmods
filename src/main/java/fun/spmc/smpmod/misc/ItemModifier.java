@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public enum ItemModifier {
     GIANT(TextColor.fromRgb(0x2B7A78), 1.2),
-    SPEEDY(TextColor.fromRgb(0x38B000), .9),
+    SPEEDY(TextColor.fromRgb(0x38B000), 2.1),
     POWERFUL(TextColor.fromRgb(0xE63946), 1.6),
     STUPID(TextColor.fromRgb(0x8D5B4C), .7),
     GOLDEN(TextColor.fromRgb(0xFFC300), 2.0),
@@ -31,7 +31,7 @@ public enum ItemModifier {
     public TextColor getColor() { return color; }
     public String toString() { return name().charAt(0) + name().substring(1).toLowerCase(); }
     public double getPriceMultiplier() { return priceMultiplier; }
-    public boolean isNotLocked() { return !(getPriceMultiplier() >= 3); }
+    public boolean isNotLocked() { return !(getPriceMultiplier() >= 2); }
 
     public static Optional<ItemModifier> fromId(String id) {
         for (ItemModifier mod : values()) if (mod.name().equalsIgnoreCase(id)) return Optional.of(mod);

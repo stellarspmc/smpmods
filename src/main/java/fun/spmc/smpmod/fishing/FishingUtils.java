@@ -1,7 +1,6 @@
 package fun.spmc.smpmod.fishing;
 
 import fun.spmc.smpmod.economy.EconomyData;
-import fun.spmc.smpmod.fishing.fish.FishItem;
 import fun.spmc.smpmod.misc.NPCData;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;

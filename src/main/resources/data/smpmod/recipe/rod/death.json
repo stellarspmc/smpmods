@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ENE",
+    "SFM",
+    "ENE"
+  ],
+  "key": {
+    "E": "minecraft:echo_shard",
+    "N": "minecraft:netherite_block",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:reaper",
+    "M": "smpmod:slash"
+  },
+  "result": {
+    "id": "smpmod:death_fishing_rod",
+    "count": 1
+  }
+}

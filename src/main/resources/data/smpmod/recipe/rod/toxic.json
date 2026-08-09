@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "SFM",
+    "GGG"
+  ],
+  "key": {
+    "G": "minecraft:diamond_block",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:poisonquill",
+    "M": "smpmod:tox"
+  },
+  "result": {
+    "id": "smpmod:toxic_fishing_rod",
+    "count": 1
+  }
+}

@@ -1,7 +1,6 @@
-package fun.spmc.smpmod.fishing.rod;
+package fun.spmc.smpmod.fishing;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
-import fun.spmc.smpmod.misc.ItemModifier;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -54,7 +53,7 @@ public class RodItem extends FishingRodItem implements PolymerItem {
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.toString() + " Fishing Rod").withStyle(tier.getColor()).withStyle(style -> style.withItalic(false)));
+        out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)));
         out.set(DataComponents.LORE, new ItemLore(List.of(
                 Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
                         .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
@@ -63,7 +62,9 @@ public class RodItem extends FishingRodItem implements PolymerItem {
                 Component.empty(),
                 Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY)
         )));
-        out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        boolean glint = tier.getCatchLuckBonus() >= 1.3;
+        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint);
+        out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint);
     }
 
     public RodTiers getTier() {
@@ -82,5 +83,13 @@ public class RodItem extends FishingRodItem implements PolymerItem {
             itemStack.hurtAndBreak(1, player, hand.asEquipmentSlot());
         }
         return InteractionResult.SUCCESS;
+    }
+
+    public boolean canVoidFish() {
+        return getTier().ordinal() >= RodTiers.CELESTIAL.ordinal();
+    }
+
+    public boolean canLavaFish() {
+        return getTier() == RodTiers.NETHERITE || canVoidFish();
     }
 }

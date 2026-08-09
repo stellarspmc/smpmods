@@ -1,6 +1,5 @@
 package fun.spmc.smpmod.fishing;
 
-import fun.spmc.smpmod.fishing.fish.FishItem;
 import fun.spmc.smpmod.registry.PolymerFishes;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;

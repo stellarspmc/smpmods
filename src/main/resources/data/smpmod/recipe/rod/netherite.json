@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WSW"
+  ],
+  "key": {
+    "W": "minecraft:netherite",
+    "F": "smpmod:diamond_fishing_rod",
+    "S": "smpmod:nether_core"
+  },
+  "result": {
+    "id": "smpmod:netherite_fishing_rod",
+    "count": 1
+  }
+}

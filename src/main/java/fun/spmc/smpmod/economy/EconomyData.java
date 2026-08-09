@@ -45,13 +45,8 @@ public class EconomyData extends SavedData {
         this.names = new HashMap<>(names);
     }
 
-    public EconomyData() {
-        this(new HashMap<>(), new HashMap<>());
-    }
-
-    public static EconomyData get() {
-        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
-    }
+    public EconomyData() { this(new HashMap<>(), new HashMap<>()); }
+    public static EconomyData get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
 
     public void registerPlayer(UUID uuid, String name) {
         if (!balances.containsKey(uuid)) {
@@ -61,13 +56,8 @@ public class EconomyData extends SavedData {
         this.setDirty();
     }
 
-    public String resolveName(UUID uuid) {
-        return names.getOrDefault(uuid, uuid.toString().substring(0, 8));
-    }
-
-    public double getBalance(UUID uuid) {
-        return balances.getOrDefault(uuid, 0d);
-    }
+    public String resolveName(UUID uuid) { return names.getOrDefault(uuid, uuid.toString().substring(0, 8)); }
+    public double getBalance(UUID uuid) { return balances.getOrDefault(uuid, 0d); }
 
     public void setBalance(UUID uuid, double money) {
         if (money >= 0 && money < Double.MAX_VALUE) {

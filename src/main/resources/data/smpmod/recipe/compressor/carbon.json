@@ -1,0 +1,12 @@
+{
+  "type": "smpmod:compressing",
+  "ingredient": {
+    "item": "minecraft:charcoal"
+  },
+  "count": 48,
+  "result": {
+    "id": "smpmod:carbon_chunk",
+    "count": 1
+  },
+  "process_time": 50
+}

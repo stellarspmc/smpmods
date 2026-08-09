@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "ASA",
+    "SDS"
+  ],
+  "key": {
+    "A": "minecraft:piston",
+    "D": "minecraft:redstone",
+    "S": "minecraft:sculk_catalyst"
+  },
+  "result": {
+    "id": "smpmod:compressor",
+    "count": 1
+  }
+}

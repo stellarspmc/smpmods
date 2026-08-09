@@ -1,25 +1,24 @@
 package fun.spmc.smpmod.fishing.mechanic;
 
 import fun.spmc.smpmod.fishing.BiomeCategory;
+import fun.spmc.smpmod.fishing.FishTracker;
 import fun.spmc.smpmod.registry.PolymerFishes;
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
-import fun.spmc.smpmod.fishing.fish.FishItem;
-import fun.spmc.smpmod.fishing.rod.RodTiers;
+import fun.spmc.smpmod.fishing.FishItem;
+import fun.spmc.smpmod.fishing.RodTiers;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.biome.Biome;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static fun.spmc.smpmod.SMPMod.messageChannel;
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
@@ -46,6 +45,7 @@ public class FishingLoot {
         player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(caughtFish.getFishName()).withStyle(caughtFish.getRarity().getColor()))
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
+        FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(fishStack.getItem()).getPath());
         if (caughtFish.getRarity() == ItemRarity.CHROMATIC) messageChannel.sendMessage(String.format("%s got a **CHROMATIC** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
         else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
     }
@@ -98,7 +98,7 @@ public class FishingLoot {
         return matchingFish.getFirst();
     }
 
-    private static final double[] BASE_STAR_WEIGHTS = { 1000.0, 600.0, 300.0, 120.0, 35, 6 };
+    private static final double[] BASE_STAR_WEIGHTS = { 1000, 600, 300, 120, 35, 6 };
 
     private static int rollStarQuality(RandomSource random, float luckBonus) {
         double[] adjustedWeights = new double[BASE_STAR_WEIGHTS.length];
