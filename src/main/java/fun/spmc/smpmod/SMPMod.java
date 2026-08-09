@@ -104,7 +104,6 @@ public class SMPMod implements DedicatedServerModInitializer {
             }
         });
 
-        PolymerRegistry.register();
         ShopManager.register();
         ChunkLoaderSavedData.register();
         ServerMobSpawner.registerMobs();

@@ -112,6 +112,15 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
             }
         }
 
+        @Override
+        public void onManualClose() {
+            for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+                ItemStack stack = this.inventory.removeItemNoUpdate(i);
+                if (!stack.isEmpty()) this.player.getInventory().placeItemBackInInventory(stack);
+            }
+            super.onManualClose();
+        }
+
         private boolean canOutput(ItemStack currentOutput, ItemStack recipeResult) {
             if (currentOutput.isEmpty()) return true;
             if (!ItemStack.isSameItemSameComponents(currentOutput, recipeResult)) return false;

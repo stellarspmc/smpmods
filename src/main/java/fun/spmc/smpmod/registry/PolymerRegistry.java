@@ -1,8 +1,12 @@
 package fun.spmc.smpmod.registry;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import fun.spmc.smpmod.industrial.machine.MachineItem;
+import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,6 +20,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -24,8 +30,9 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
 
+
 @SuppressWarnings({"DataFlowIssue", "UnusedReturnValue", "SameParameterValue"})
-public class PolymerRegistry {
+public class PolymerRegistry implements ModInitializer {
     protected static <T extends Item> T createItem(String id, Function<Item.Properties, T> factory) {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id));
         Item.Properties properties = new Item.Properties().setId(key);
@@ -67,7 +74,8 @@ public class PolymerRegistry {
         FabricDefaultAttributeRegistry.register(type, supplier);
     }
 
-    public static void register() {
+    @Override
+    public void onInitialize() {
         PolymerFishes.registerRods();
         PolymerFishes.registerFishes();
         PolymerPlants.register();

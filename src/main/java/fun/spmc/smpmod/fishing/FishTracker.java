@@ -21,6 +21,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.*;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
+import static fun.spmc.smpmod.SMPMod.modLogger;
 
 public class FishTracker extends SavedData {
     private static final Codec<Map<UUID, List<String>>> UNLOCKED_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.list(Codec.STRING));
@@ -54,7 +55,6 @@ public class FishTracker extends SavedData {
 
     public void addFish(UUID id, String fish) {
         List<String> list = fishUnlocked.computeIfAbsent(id, _ -> new ArrayList<>());
-
         if (!list.contains(fish)) {
             list.add(fish);
             this.setDirty();
@@ -93,7 +93,6 @@ public class FishTracker extends SavedData {
                 String fishId = BuiltInRegistries.ITEM.getKey(fishItem).getPath();
 
                 boolean isUnlocked = unlockedList.contains(fishId);
-
                 if (isUnlocked) gui.setSlot(i, new GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))));
                 else gui.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal("Catch this fish to unlock!").withColor(TextColor.fromRgb(0xFF5555))));
             } else gui.setSlot(i, new GuiElementBuilder(Items.AIR));

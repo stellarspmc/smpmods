@@ -113,7 +113,7 @@ public abstract class MixinFishingHook {
         return instance.is(tagKey);
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At("TAIL"))
     private void smpmod$preventHookDestruction(CallbackInfo ci) {
         FishingHook hook = (FishingHook) (Object) this;
         ServerPlayer player = (ServerPlayer) getPlayerOwner();

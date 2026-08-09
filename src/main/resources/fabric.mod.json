@@ -13,6 +13,9 @@
   "entrypoints": {
     "server": [
       "fun.spmc.smpmod.SMPMod"
+    ],
+    "main": [
+      "fun.spmc.smpmod.registry.PolymerRegistry"
     ]
   },
   "mixins": [

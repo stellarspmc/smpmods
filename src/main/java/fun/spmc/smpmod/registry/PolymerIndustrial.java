@@ -94,9 +94,9 @@ public class PolymerIndustrial {
                 Codec.INT.optionalFieldOf("process_time", 200).forGetter(CompressorRecipe::processTime) // Default 10 sec (200 ticks)
         ).apply(instance, CompressorRecipe::new)), StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient,
-                ByteBufCodecs.INT, CompressorRecipe::count,
+                ByteBufCodecs.VAR_INT, CompressorRecipe::count,
                 ItemStack.STREAM_CODEC, CompressorRecipe::result,
-                ByteBufCodecs.INT, CompressorRecipe::processTime,
+                ByteBufCodecs.VAR_INT, CompressorRecipe::processTime,
                 CompressorRecipe::new
         ));
     }

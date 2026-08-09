@@ -11,7 +11,7 @@
     "S": "minecraft:sculk_catalyst"
   },
   "result": {
-    "id": "smpmod:compressor",
+    "id": "smpmod:sculk_compressor",
     "count": 1
   }
 }

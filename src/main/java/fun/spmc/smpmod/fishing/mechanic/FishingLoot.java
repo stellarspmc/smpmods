@@ -45,7 +45,7 @@ public class FishingLoot {
         player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(caughtFish.getFishName()).withStyle(caughtFish.getRarity().getColor()))
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
-        FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(fishStack.getItem()).getPath());
+        FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
         if (caughtFish.getRarity() == ItemRarity.CHROMATIC) messageChannel.sendMessage(String.format("%s got a **CHROMATIC** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
         else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
     }

@@ -1,9 +1,9 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": ["minecraft:charcoal"],
+  "ingredient": ["minecraft:diamond"],
   "count": 48,
   "result": {
-    "id": "smpmod:carbon",
+    "id": "smpmod:cor",
     "count": 1
   },
   "process_time": 50

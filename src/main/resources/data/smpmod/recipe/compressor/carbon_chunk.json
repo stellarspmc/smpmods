@@ -1,8 +1,6 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": {
-    "item": "smpmod:compressed_carbon"
-  },
+  "ingredient": ["smpmod:compressed_carbon"],
   "count": 4,
   "result": {
     "id": "smpmod:carbon_chunk",
