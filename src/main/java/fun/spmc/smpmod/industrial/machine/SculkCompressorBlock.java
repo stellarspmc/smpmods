@@ -99,14 +99,9 @@ public class SculkCompressorBlock extends Block implements PolymerBlock {
 
             if (progressTicks >= recipe.processTime()) {
                 progressTicks = 0;
-
                 inputStack.shrink(recipe.count());
-
-                if (outputStack.isEmpty()) {
-                    this.inventory.setItem(1, recipe.result().create());
-                } else {
-                    outputStack.grow(recipe.result().count());
-                }
+                if (outputStack.isEmpty()) this.inventory.setItem(1, recipe.result().create());
+                else outputStack.grow(recipe.result().count());
 
                 inventory.setChanged();
             }

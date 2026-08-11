@@ -14,21 +14,17 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RodItem extends FishingRodItem implements PolymerItem {
@@ -36,7 +32,7 @@ public class RodItem extends FishingRodItem implements PolymerItem {
     private final Item vanillaItem;
 
     public RodItem(Properties properties, RodTiers tier) {
-        super(properties.stacksTo(1).durability(tier.getDurability()).food(new FoodProperties(0, 0, true), new Consumable(1, ItemUseAnimation.EAT, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SULFUR_CUBE_SMALL_EAT), true, List.of(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.NAUSEA, 120, 3))))));
+        super(properties.stacksTo(1).durability(tier.getDurability()).repairable(tier.getStack()));
         this.vanillaItem = Items.FISHING_ROD;
         this.tier = tier;
     }
@@ -48,14 +44,7 @@ public class RodItem extends FishingRodItem implements PolymerItem {
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)));
-        out.set(DataComponents.LORE, new ItemLore(List.of(
-                Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
-                        .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
-                Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
-                        .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false)),
-                Component.empty(),
-                Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY)
-        )));
+        out.set(DataComponents.LORE, new ItemLore(buildLore()));
         boolean glint = tier.getCatchLuckBonus() >= 1.3;
         stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint);
         out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint);
@@ -79,11 +68,20 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         return InteractionResult.SUCCESS;
     }
 
-    public boolean canVoidFish() {
-        return getTier().ordinal() >= RodTiers.CELESTIAL.ordinal();
-    }
+    public boolean canVoidFish() { return getTier().ordinal() >= RodTiers.CELESTIAL.ordinal() || getTier() == RodTiers.AIR; }
+    public boolean canLavaFish() { return getTier() == RodTiers.NETHERITE || getTier().ordinal() >= RodTiers.CELESTIAL.ordinal(); }
 
-    public boolean canLavaFish() {
-        return getTier() == RodTiers.NETHERITE || canVoidFish();
+    private List<Component> buildLore() {
+        List<Component> list = new ArrayList<>(List.of(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
+                        .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
+                Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
+                        .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false))));
+        if (canLavaFish())
+            list.add(Component.literal("This rod can be used to fish in lava!").withStyle(ChatFormatting.RED).withStyle(style -> style.withItalic(false)));
+        if (canVoidFish())
+            list.add(Component.literal("This rod can be used to fish in the void!").withStyle(ChatFormatting.DARK_GRAY).withStyle(style -> style.withItalic(false)));
+        list.add(Component.empty());
+        list.add(Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY));
+        return list;
     }
 }

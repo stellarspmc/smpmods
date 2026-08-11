@@ -33,9 +33,9 @@ public class CrystalBoss extends Warden implements PolymerEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Warden.createAttributes()
-                .add(Attributes.MAX_HEALTH, 1250.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D)
-                .add(Attributes.ATTACK_DAMAGE, 30.0D);
+                .add(Attributes.MAX_HEALTH, 1250)
+                .add(Attributes.MOVEMENT_SPEED, .3)
+                .add(Attributes.ATTACK_DAMAGE, 30);
     }
 
     @Override
@@ -67,11 +67,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
             }
 
             double angle = (this.tickCount * speed) + (i * (2 * Math.PI / 3));
-            double x = this.getX() + radius * Math.cos(angle);
-            double z = this.getZ() + radius * Math.sin(angle);
-            double y = this.getY() + 2.5 + Math.sin(this.tickCount * 0.1 + i);
-
-            orbitingCrystals[i].teleportTo(x, y, z);
+            orbitingCrystals[i].teleportTo(this.getX() + radius * Math.cos(angle), this.getY() + 2.5 + Math.sin(this.tickCount * 0.1 + i), this.getZ() + radius * Math.sin(angle));
         }
     }
 
@@ -80,12 +76,8 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         if (target == null) return;
 
         for (int i = 0; i < 3; i++) {
-            double offsetX = (this.random.nextDouble() - 0.5) * 6.0;
-            double offsetZ = (this.random.nextDouble() - 0.5) * 6.0;
-            BlockPos targetPos = target.blockPosition().offset((int) offsetX, 0, (int) offsetZ);
-
-            ServerLevel serverLevel = (ServerLevel) this.level();
-            serverLevel.explode(this, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 3.0F, Level.ExplosionInteraction.MOB);
+            BlockPos targetPos = target.blockPosition().offset((int) (this.random.nextDouble() - .5) * 6, 0, (int) (this.random.nextDouble() - .5) * 6);
+            this.level().explode(this, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 3.0F, Level.ExplosionInteraction.MOB);
         }
     }
 
@@ -93,9 +85,8 @@ public class CrystalBoss extends Warden implements PolymerEntity {
     protected void dropCustomDeathLoot(@NonNull ServerLevel level, @NonNull DamageSource damageSource, boolean flag) {
         super.dropCustomDeathLoot(level, damageSource, flag);
 
-        for (EndCrystal crystal : orbitingCrystals) {
-            if (crystal != null) crystal.discard();
-        }
+        for (EndCrystal crystal : orbitingCrystals) if (crystal != null) crystal.discard();
+
 
         this.spawnAtLocation(level, new ItemStack(Items.HEART_OF_THE_SEA, 15));
         this.spawnAtLocation(level, new ItemStack(Items.ECHO_SHARD, 35));
@@ -107,7 +98,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
     }
 
     public static boolean trySpawnBoss(ServerLevel level, BlockPos crystalPos) {
-        BlockPos centerPos = crystalPos.below(); // Obsidian core block
+        BlockPos centerPos = crystalPos.below();
 
         if (!level.getBlockState(centerPos).is(Blocks.OBSIDIAN)) return false;
         if (!level.getBlockState(centerPos.below()).is(Blocks.OBSIDIAN)) return false;

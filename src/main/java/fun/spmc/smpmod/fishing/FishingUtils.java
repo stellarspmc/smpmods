@@ -31,7 +31,7 @@ public class FishingUtils {
             mannequin.setPos(pos.getX(), pos.getY(), pos.getZ());
             level.addFreshEntity(mannequin);
             mannequin.setProfile(NPCData.createCustomProfile("fisher", new int[]{-1116145262, -304197271, -1414701672, -926620516}, "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDM1MWQ3OGNlNDg5MzliYTg5YjllOTFlODk2MjQ2Mjc4NjEwOGUxNTczNzViOWY0MDg2ZjVjNjdkZGE2YzAyOSJ9fX0="));
-            mannequin.setCustomName(Component.literal("Fisher").withStyle(ChatFormatting.AQUA));
+            mannequin.setCustomName(Component.literal("Aquamaray").withStyle(ChatFormatting.AQUA));
             mannequin.setImmovable(true);
             mannequin.setInvulnerable(true);
             mannequin.setHideDescription(true);

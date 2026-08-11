@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import fun.spmc.smpmod.registry.PolymerFishes;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -85,8 +86,8 @@ public class FishTracker extends SavedData {
                 String fishId = BuiltInRegistries.ITEM.getKey(fishItem).getPath();
 
                 boolean isUnlocked = unlockedList.contains(fishId);
-                if (isUnlocked) gui.setSlot(i, new GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))));
-                else gui.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal("Catch this fish to unlock!").withColor(TextColor.fromRgb(0xFF5555))));
+                if (isUnlocked) gui.setSlot(i, new GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))).addLoreLine(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + FishItem.getModifiedPrice(fishItem.getDefaultInstance())).withStyle(ChatFormatting.GREEN)).withStyle(style -> style.withItalic(false))));
+                else gui.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal(String.format("Found in: %s", BiomeCategory.getBiomeFish(fishItem).toString())).withColor(TextColor.fromRgb(0xFF5555))));
             } else gui.setSlot(i, new GuiElementBuilder(Items.AIR));
         }
 

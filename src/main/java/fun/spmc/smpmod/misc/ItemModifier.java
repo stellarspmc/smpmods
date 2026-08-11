@@ -14,6 +14,7 @@ public enum ItemModifier {
     GODLY(TextColor.fromRgb(0xFFD700), 2.4),
     EATEN(TextColor.fromRgb(0x3A3A3A), .3),
     ULTIMATE(TextColor.fromRgb(0x4361EE), 4),
+    STARGAZED(TextColor.fromRgb(0xFEFEFE), 1.99),
     EVIL(TextColor.fromRgb(0x800020), .7),
     SHELDONED(TextColor.fromRgb(0x2EC4B6), .8),
     PUFFERED(TextColor.fromRgb(0xFFB703), 1.1),

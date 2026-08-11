@@ -1,0 +1,10 @@
+{
+  "type": "smpmod:compressing",
+  "ingredient": "minecraft:nether_brick",
+  "count": 32,
+  "result": {
+    "id": "smpmod:compressed_nether_brick",
+    "count": 1
+  },
+  "process_time": 50
+}

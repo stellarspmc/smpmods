@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "ASA",
+    "SDS"
+  ],
+  "key": {
+    "A": "minecraft:nether_star",
+    "D": "minecraft:netherite_block",
+    "S": "smpmod:compressed_nether_brick"
+  },
+  "result": {
+    "id": "smpmod:nether_core",
+    "count": 1
+  }
+}

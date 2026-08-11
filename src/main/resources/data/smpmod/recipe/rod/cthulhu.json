@@ -3,11 +3,12 @@
   "pattern": [
     "SWS",
     "SFS",
-    "SSS"
+    "SLS"
   ],
   "key": {
     "W": "smpmod:sierra",
     "F": "smpmod:elemental_fishing_rod",
+    "L": "smpmod:luna_fishing_rod",
     "S": "smpmod:cthulhu"
   },
   "result": {

@@ -2,7 +2,6 @@ package fun.spmc.smpmod.fishing.mechanic;
 
 import fun.spmc.smpmod.fishing.BiomeCategory;
 import fun.spmc.smpmod.fishing.FishTracker;
-import fun.spmc.smpmod.registry.PolymerFishes;
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.fishing.FishItem;
@@ -38,7 +37,7 @@ public class FishingLoot {
             traitChance *= Math.max(.4, .2 * tier.getCatchLuckBonus() / 1.8);
         }
 
-        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, tier.getCatchLuckBonus()), modMap);
+        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1/tier.getCatchLuckBonus()), modMap);
         if (!player.getInventory().add(fishStack)) player.drop(fishStack, false);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1, 1.2f);
@@ -51,8 +50,7 @@ public class FishingLoot {
     }
 
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
-        List<Item> pool = PolymerFishes.FISH;
-        pool.addAll(BiomeCategory.getCategory(player).getFishArray());
+        List<Item> pool = BiomeCategory.getAvailableFish(player);
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
         double[] weights = tier.getRates();
         double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;

@@ -76,6 +76,7 @@ public class PolymerIndustrial {
         registerKarat("gold_22k", 22, TextColor.fromRgb(0xFFC308));
         registerKarat("gold_24k", 24, TextColor.fromRgb(0xFFB700));
 
+        registerMineral("compressed_nether_brick", Items.BRICK, TextColor.DARK_RED);
         registerHead("carbon", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmNlZTQ2NTQwZjhhOTczMmJmY2Q2MjY1ZGFjNzNiNTA5YmZlNGYwMDk1Zjk1NWQ0ODNmZGEwOTNhZmY3MWQzNSJ9fX0=", TextColor.fromRgb(0x3E424B));
         registerHead("compressed_carbon", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x22252A));
         registerHead("carbon_chunk", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x111317));

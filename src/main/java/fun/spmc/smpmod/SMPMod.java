@@ -60,6 +60,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+
 @Environment(EnvType.SERVER)
 public class SMPMod implements DedicatedServerModInitializer {
     public static final Logger modLogger = LoggerFactory.getLogger("SMPMod");
@@ -112,7 +114,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             ServerPlayer player = handler.getPlayer();
             BedrockSkinFetcher.restoreSkin(server, player);
             EconomyData.get().registerPlayer(player.getUUID(), player.getGameProfile().name());
-            player.awardRecipes(server.getRecipeManager().getRecipes()); // unlock everything, temporary
+            player.awardRecipes(server.getRecipeManager().getRecipes().stream().distinct().filter((a) -> a.id().identifier().getNamespace().equals("smpmod")).toList());
 
             if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
         });
@@ -173,10 +175,7 @@ public class SMPMod implements DedicatedServerModInitializer {
 
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0) {
-                    EconomyData eco = EconomyData.get();
-                    eco.changeBalance(player.getUUID(), 1.2);
-                }
+                if (playTime > 0) EconomyData.get().changeBalance(player.getUUID(), 1.2);
 
                 int totalHours = playTime / 72000;
                 ScoreAccess scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective);

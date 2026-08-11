@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
 
-
 @SuppressWarnings({"DataFlowIssue", "UnusedReturnValue", "SameParameterValue"})
 public class PolymerRegistry implements ModInitializer {
     protected static <T extends Item> T createItem(String id, Function<Item.Properties, T> factory) {

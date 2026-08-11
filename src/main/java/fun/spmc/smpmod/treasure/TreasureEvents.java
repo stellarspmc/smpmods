@@ -46,7 +46,7 @@ public class TreasureEvents {
         ItemRarity rarity = rollTreasureRarity(state, eventPercentage, world.getRandom(), world.dimension());
         if (rarity == null) return;
 
-        String rarityName = rarity.toString();
+        String rarityName = rarity.name();
 
         Identifier tableLocation = rarityName.equals("mythic")
                 ? Identifier.fromNamespaceAndPath("treasure", "mythical/mythical")

@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.registry;
 
+import fun.spmc.smpmod.fishing.BiomeCategory;
 import fun.spmc.smpmod.fishing.FishItem;
 import fun.spmc.smpmod.fishing.RodItem;
 import fun.spmc.smpmod.fishing.RodTiers;
@@ -26,6 +27,7 @@ public class PolymerFishes {
     public static List<Item> getAllFish() {
         return Stream.of(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY)
                 .flatMap(List::stream)
+                .distinct()
                 .toList(); // immutable bruv
     }
 
@@ -73,6 +75,8 @@ public class PolymerFishes {
         registerDeep();
         registerEnd();
         registerSky();
+
+        BiomeCategory.initLookupMap();
     }
     private static void registerDefault() {
         registerFish("cod", Items.COD, 15, ItemRarity.COMMON);
@@ -332,7 +336,7 @@ public class PolymerFishes {
         registerBiomeFish("bahamut", Items.PUFFERFISH, 287500, ItemRarity.CELESTIAL, SNOWY);
     }
     private static void registerLava() {
-        registerBiomeFish("mahi-mahi", Items.SALMON, 14, ItemRarity.COMMON, LAVA);
+        registerBiomeFish("mahi_mahi", Items.SALMON, 14, ItemRarity.COMMON, LAVA);
         registerBiomeFish("flamecrab", Items.COD, 18, ItemRarity.COMMON, LAVA);
         registerBiomeFish("lava_snail", Items.PUFFERFISH, 24, ItemRarity.COMMON, LAVA);
         registerBiomeFish("firefin", Items.PUFFERFISH, 33, ItemRarity.COMMON, LAVA);
