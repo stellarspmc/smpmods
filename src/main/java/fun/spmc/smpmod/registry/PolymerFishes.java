@@ -10,10 +10,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class PolymerFishes {
+    private static final Map<String, Item> FISH_REGISTRY = new HashMap<>();
+
     public static List<Item> FISH = new ArrayList<>();
     public static List<Item> PLAINS = new ArrayList<>();
     public static List<Item> TROPICAL = new ArrayList<>();
@@ -35,11 +39,19 @@ public class PolymerFishes {
     private static void registerFish(String id, Item vanillaModel, double basePrice, ItemRarity rarity) {
         Item item = PolymerRegistry.createItem(id, properties -> new FishItem(properties, vanillaModel, MessageUtils.formatName(id), basePrice, rarity));
         FISH.add(item);
+        FISH_REGISTRY.put(id, item);
     }
 
     private static void registerBiomeFish(String id, Item vanillaModel, double basePrice, ItemRarity rarity, List<Item> listToBeAdded) {
         Item item = PolymerRegistry.createItem(id, properties -> new FishItem(properties, vanillaModel, MessageUtils.formatName(id), basePrice, rarity));
         listToBeAdded.add(item);
+        FISH_REGISTRY.put(id, item);
+    }
+
+    public static Item getFish(String id) {
+        Item item = FISH_REGISTRY.get(id);
+        if (item == null) throw new IllegalArgumentException("Unknown fish ID: " + id);
+        return item;
     }
 
     protected static void registerRods() {

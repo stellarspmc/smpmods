@@ -2,8 +2,9 @@ package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
-import fun.spmc.smpmod.industrial.machine.MachineItem;
+import fun.spmc.smpmod.utils.BaseImplementedItem;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,6 +22,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
@@ -38,14 +41,24 @@ public class PolymerRegistry implements ModInitializer {
         Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
         BlockItemId blockId = BlockItemId.create(identifier, identifier);
         Block block = blockFactory.apply(properties.setId(blockId.block()));
-        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new MachineItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id));
-        return Registry.register(BuiltInRegistries.BLOCK, id, block);
+        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new BaseImplementedItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id));
+        return Registry.register(BuiltInRegistries.BLOCK, identifier, block);
     }
 
-    protected static Block createBlockOnly(String name, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties) {
-        Identifier id = Identifier.fromNamespaceAndPath("smpmod", name);
-        Block block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, id)));
-        return Registry.register(BuiltInRegistries.BLOCK, id, block);
+    protected static Block createBlockOnly(String id, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties) {
+        Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
+        Block block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)));
+        return Registry.register(BuiltInRegistries.BLOCK, identifier, block);
+    }
+
+    protected static <T extends BlockEntity> BlockEntityType<T> createBlockWithItemEntity(String id, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties, FabricBlockEntityTypeBuilder.Factory<? extends T> entityFactory, Item item) {
+        Identifier identifier = Identifier.fromNamespaceAndPath("smpmod", id);
+        BlockItemId blockId = BlockItemId.create(identifier, identifier);
+        Block block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)));
+        Registry.register(BuiltInRegistries.BLOCK, identifier, block);
+        Registry.register(BuiltInRegistries.ITEM, blockId.item(), new BaseImplementedItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id));
+        return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.<T>create(entityFactory, block).build());
+
     }
 
     protected static <T extends Recipe<?>> RecipeType<T> registerRecipeType(String id) {

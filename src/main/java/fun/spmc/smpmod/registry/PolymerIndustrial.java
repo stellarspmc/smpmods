@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.industrial.machine.SculkCompressorBlock;
 import fun.spmc.smpmod.industrial.machine.SmeltryBlock;
+import fun.spmc.smpmod.industrial.machine.entity.SculkCompressorEntity;
 import fun.spmc.smpmod.industrial.mineral.BaseMineralItem;
 import fun.spmc.smpmod.industrial.recipe.CompressorRecipe;
 import fun.spmc.smpmod.utils.MessageUtils;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class PolymerIndustrial {
@@ -26,6 +28,8 @@ public class PolymerIndustrial {
 
     public static RecipeType<CompressorRecipe> COMPRESSOR_TYPE;
     public static RecipeSerializer<CompressorRecipe> COMPRESSOR_SERIALIZER;
+
+    public static BlockEntityType<SculkCompressorEntity> SCULK_ENTITY;
 
     protected static void registerMinerals() {
         registerMineral("sifted_dust", Items.GUNPOWDER, TextColor.fromRgb(0x706E6B));
@@ -83,8 +87,8 @@ public class PolymerIndustrial {
         registerHead("nether_core", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyNDEyMjhhZWY4NGUzNTY3MWNjMzEwMTE2ZDExYjhkMGYwODc2MjIwNTM1NTNjMGRjNGU0YTVkYWMzYzQwNSJ9fX0=", TextColor.DARK_RED);
     }
     public static void registerBlocks() {
-        PolymerRegistry.createBlockWithItem("sculk_compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), Items.SCULK_CATALYST);
-        PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
+        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), SculkCompressorEntity::new, Items.SCULK_CATALYST);
+        //PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");

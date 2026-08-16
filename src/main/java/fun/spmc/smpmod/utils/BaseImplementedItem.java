@@ -1,7 +1,5 @@
-package fun.spmc.smpmod.industrial.machine;
+package fun.spmc.smpmod.utils;
 
-import fun.spmc.smpmod.utils.BasePolymerBlockItem;
-import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -10,10 +8,10 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.List;
 
-public class MachineItem extends BasePolymerBlockItem {
+public class BaseImplementedItem extends BasePolymerBlockItem {
     private final String id;
 
-    public MachineItem(Block block, Properties properties, Item vanillaItem, String id) {
+    public BaseImplementedItem(Block block, Properties properties, Item vanillaItem, String id) {
         super(block, properties, vanillaItem);
         this.id = id;
     }

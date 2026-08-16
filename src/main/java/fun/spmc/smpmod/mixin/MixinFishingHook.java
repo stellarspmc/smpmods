@@ -56,7 +56,7 @@ public abstract class MixinFishingHook {
     private int smpmod$swapParticleTypes(ServerLevel instance, ParticleOptions particle, double x, double y, double z, int count, double xDist, double yDist, double zDist, double speed, Operation<Integer> original) {
         FishingHook hook = (FishingHook) (Object) this;
         if (hook.isInLava()) particle = ParticleTypes.FLAME;
-        else if (hook.getY() < 0) particle = ParticleTypes.PORTAL;
+        else if (hook.getY() < 0 && hook.level().dimension() == ServerLevel.END) particle = ParticleTypes.PORTAL;
         return original.call(instance, particle, x, y, z, count, xDist, yDist, zDist, speed);
     }
 
