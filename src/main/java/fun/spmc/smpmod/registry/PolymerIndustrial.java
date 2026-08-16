@@ -3,10 +3,10 @@ package fun.spmc.smpmod.registry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.industrial.machine.SculkCompressorBlock;
-import fun.spmc.smpmod.industrial.machine.SmeltryBlock;
 import fun.spmc.smpmod.industrial.machine.entity.SculkCompressorEntity;
 import fun.spmc.smpmod.industrial.mineral.BaseMineralItem;
 import fun.spmc.smpmod.industrial.recipe.CompressorRecipe;
+import fun.spmc.smpmod.industrial.recipe.SmelterRecipe;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,6 +14,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
@@ -28,6 +29,9 @@ public class PolymerIndustrial {
 
     public static RecipeType<CompressorRecipe> COMPRESSOR_TYPE;
     public static RecipeSerializer<CompressorRecipe> COMPRESSOR_SERIALIZER;
+
+    public static RecipeType<SmelterRecipe> SMELTERY_TYPE;
+    public static RecipeSerializer<SmelterRecipe> SMELTERY_SERIALIZER;
 
     public static BlockEntityType<SculkCompressorEntity> SCULK_ENTITY;
 
@@ -88,11 +92,11 @@ public class PolymerIndustrial {
     }
     public static void registerBlocks() {
         SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), SculkCompressorEntity::new, Items.SCULK_CATALYST);
-        //PolymerRegistry.createBlockWithItem("smeltry", SmeltryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
+        //PolymerRegistry.createBlockWithItem("smeltry", SmelteryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");
-        COMPRESSOR_SERIALIZER = PolymerRegistry.registerSingleInputSerializer("compressing", RecordCodecBuilder.mapCodec(instance -> instance.group(
+        COMPRESSOR_SERIALIZER = PolymerRegistry.registerRecipeSerializer("compressing", RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count),
                 ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
@@ -101,8 +105,20 @@ public class PolymerIndustrial {
                 Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient,
                 ByteBufCodecs.VAR_INT, CompressorRecipe::count,
                 ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result,
-                ByteBufCodecs.VAR_INT, CompressorRecipe::processTime,
-                CompressorRecipe::new
+                ByteBufCodecs.VAR_INT, CompressorRecipe::processTime, CompressorRecipe::new
+        ));
+
+        SMELTERY_TYPE = PolymerRegistry.registerRecipeType("smeltery");
+        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smeltery", RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients),
+                Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count),
+                ItemStack.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),
+                Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)
+        ).apply(instance, SmelterRecipe::new)), StreamCodec.composite(
+                Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients,
+                ByteBufCodecs.VAR_INT, SmelterRecipe::count,
+                ItemStack.STREAM_CODEC, SmelterRecipe::result,
+                ByteBufCodecs.VAR_INT, SmelterRecipe::processTime, SmelterRecipe::new
         ));
     }
 }

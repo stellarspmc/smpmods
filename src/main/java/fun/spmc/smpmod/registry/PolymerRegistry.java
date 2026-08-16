@@ -1,6 +1,7 @@
 package fun.spmc.smpmod.registry;
 
 import com.mojang.serialization.MapCodec;
+import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import fun.spmc.smpmod.utils.BaseImplementedItem;
 import net.fabricmc.api.ModInitializer;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.Function;
 
-@SuppressWarnings({"DataFlowIssue", "UnusedReturnValue", "SameParameterValue"})
+@SuppressWarnings({"DataFlowIssue", "UnusedReturnValue", "SameParameterValue", "unused"})
 public class PolymerRegistry implements ModInitializer {
     protected static <T extends Item> T createItem(String id, Function<Item.Properties, T> factory) {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id));
@@ -57,8 +58,9 @@ public class PolymerRegistry implements ModInitializer {
         Block block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)));
         Registry.register(BuiltInRegistries.BLOCK, identifier, block);
         Registry.register(BuiltInRegistries.ITEM, blockId.item(), new BaseImplementedItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id));
-        return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.<T>create(entityFactory, block).build());
-
+        BlockEntityType<T> type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.<T>create(entityFactory, block).build());
+        PolymerBlockUtils.registerBlockEntity(type);
+        return type;
     }
 
     protected static <T extends Recipe<?>> RecipeType<T> registerRecipeType(String id) {
@@ -66,8 +68,8 @@ public class PolymerRegistry implements ModInitializer {
         return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, new RecipeType<T>() {@Override public String toString() { return identifier.toString(); }});
     }
 
-    // 1 input recipe serializer
-    protected static <T extends Recipe<?>> RecipeSerializer<T> registerSingleInputSerializer(String id, MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
+    // recipe serializer
+    protected static <T extends Recipe<?>> RecipeSerializer<T> registerRecipeSerializer(String id, MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
         return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), new RecipeSerializer<>(codec, streamCodec));
     }
 

@@ -11,14 +11,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.BiConsumer;
 
 public abstract class BaseMachineBlock extends BaseEntityBlock implements PolymerBlock {
-
-    protected <T extends BaseMachineEntity> BaseMachineBlock(Properties properties) { super(properties); }
+    protected BaseMachineBlock(Properties properties) { super(properties); }
     @Override protected @NonNull RenderShape getRenderShape(@NonNull BlockState state) { return RenderShape.MODEL; }
     @Override protected void affectNeighborsAfterRemoval(@NonNull BlockState state, @NonNull ServerLevel level, @NonNull BlockPos pos, boolean movedByPiston) { Containers.updateNeighboursAfterDestroy(state, level, pos); }
 

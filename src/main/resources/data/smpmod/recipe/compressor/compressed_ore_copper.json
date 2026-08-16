@@ -1,0 +1,10 @@
+{
+  "type": "smpmod:compressing",
+  "ingredient": "minecraft:raw_copper",
+  "count": 3,
+  "result": {
+    "id": "smpmod:compressed_ore",
+    "count": 1
+  },
+  "process_time": 35
+}
