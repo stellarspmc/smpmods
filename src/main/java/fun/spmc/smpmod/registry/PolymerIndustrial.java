@@ -97,7 +97,7 @@ public class PolymerIndustrial {
     }
     public static void registerBlocks() {
         SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), SculkCompressorEntity::new, Items.SCULK_CATALYST);
-        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltry", SmelteryBlock::new, BlockBehaviour.Properties.of(), SmelteryEntity::new, Items.SMOKER);
+        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", SmelteryBlock::new, BlockBehaviour.Properties.of(), SmelteryEntity::new, Items.SMOKER);
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");

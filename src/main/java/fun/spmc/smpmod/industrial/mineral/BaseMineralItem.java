@@ -1,5 +1,6 @@
 package fun.spmc.smpmod.industrial.mineral;
 
+import eu.pb4.polymer.core.api.item.PolymerHeadBlockItem;
 import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.utils.BasePolymerItem;
 import net.minecraft.core.component.DataComponents;
