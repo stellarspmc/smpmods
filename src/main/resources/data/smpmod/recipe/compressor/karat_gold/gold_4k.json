@@ -1,0 +1,10 @@
+{
+  "type": "smpmod:compressing",
+  "ingredient": "smpmod:gold_dust",
+  "count": 16,
+  "result": {
+    "id": "smpmod:gold_4k",
+    "count": 1
+  },
+  "process_time": 80
+}

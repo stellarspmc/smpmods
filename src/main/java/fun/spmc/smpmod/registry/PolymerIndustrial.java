@@ -54,6 +54,8 @@ public class PolymerIndustrial {
         registerMineral("zinc_ingot", Items.IRON_INGOT, TextColor.fromRgb(0xC5D3DC));
         registerMineral("magnesium_ingot", Items.IRON_INGOT, TextColor.fromRgb(0xF2F4F5));
 
+        registerMineral("silicon", Items.CLAY_BALL, TextColor.fromRgb(0x8B969B));
+
         registerMineral("steel_ingot", Items.IRON_INGOT, TextColor.fromRgb(0x7B8C9E));
         registerMineral("bronze_ingot", Items.BRICK, TextColor.fromRgb(0xCD7F32));
         registerMineral("duralumin_ingot", Items.IRON_INGOT, TextColor.fromRgb(0xB8C3D0));
@@ -108,8 +110,8 @@ public class PolymerIndustrial {
                 ByteBufCodecs.VAR_INT, CompressorRecipe::processTime, CompressorRecipe::new
         ));
 
-        SMELTERY_TYPE = PolymerRegistry.registerRecipeType("smeltery");
-        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smeltery", RecordCodecBuilder.mapCodec(instance -> instance.group(
+        SMELTERY_TYPE = PolymerRegistry.registerRecipeType("smelting");
+        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting", RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count),
                 ItemStack.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),

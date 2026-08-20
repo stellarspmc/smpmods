@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Interaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
@@ -66,47 +67,43 @@ public class ShopManager extends SavedData {
     }
 
     public static void createCreativeShop(BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
-        createShop(new UUID(0L, 0L), pos, price, sellItem, level, true);
+        createShop(null, pos, price, sellItem, level, true);
     }
 
-    public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
+    public static void createShop(ServerPlayer owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
         createShop(owner, pos, price, sellItem, level, false);
     }
 
-    public static void createShop(UUID owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level, boolean isCreative) {
+    public static void createShop(ServerPlayer owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level, boolean isCreative) {
         double x = pos.getX() + .5;
         double y = pos.getY() + 1;
         double z = pos.getZ() + .5;
-
         Display.ItemDisplay itemDisplay = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.TRIGGERED);
-        if (itemDisplay != null) {
-            itemDisplay.setPos(x, y + 0.35, z);
-            itemDisplay.setItemStack(sellItem.copy());
-            itemDisplay.setTransformation(new Transformation(new Vector3f(0f), null, new Vector3f(0.5f), null));
-            level.addFreshEntity(itemDisplay);
-        }
-
         Display.TextDisplay textDisplay = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED);
-        if (textDisplay != null) {
-            textDisplay.setPos(x, y + 0.85, z);
-            String stockLabel = isCreative ? "∞" : "0";
-            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", sellItem.getCount(), sellItem.getHoverName().getString(), price, stockLabel);
-            textDisplay.setText(Component.literal(label));
-            textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
-            level.addFreshEntity(textDisplay);
-        }
-
         Interaction interaction = EntityTypes.INTERACTION.create(level, EntitySpawnReason.TRIGGERED);
-        if (interaction != null) {
-            interaction.setPos(x, y, z);
-            interaction.setHeight(1.0f);
-            interaction.setWidth(1.0f);
-            level.addFreshEntity(interaction);
+        if (interaction == null || itemDisplay == null || textDisplay == null) {
+            if (interaction != null) interaction.discard();
+            if (itemDisplay != null) itemDisplay.discard();
+            if (textDisplay != null) textDisplay.discard();
+            return;
         }
 
-        if (itemDisplay == null || textDisplay == null || interaction == null) return;
+        itemDisplay.setPos(x, y + .35, z);
+        itemDisplay.setItemStack(sellItem.copy());
+        itemDisplay.setTransformation(new Transformation(new Vector3f(0f), new Quaternionf().rotationY((float) Math.toRadians(-(Math.round(owner != null ? owner.getYRot() : 0 / 90f) * 90f))), new Vector3f(0.5f), null));
+        textDisplay.setPos(x, y + .85, z);
+        String stockLabel = isCreative ? "∞" : "0";
+        String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", sellItem.getCount(), sellItem.getHoverName().getString(), price, stockLabel);
+        textDisplay.setText(Component.literal(label));
+        textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
+        interaction.setPos(x, y, z);
+        interaction.setHeight(1);
+        interaction.setWidth(1);
+        level.addFreshEntity(itemDisplay);
+        level.addFreshEntity(textDisplay);
+        level.addFreshEntity(interaction);
 
-        ShopData data = new ShopData(UUID.randomUUID(), owner, pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(),
+        ShopData data = new ShopData(UUID.randomUUID(), owner != null ? owner.getUUID() : new UUID(0, 0), pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(),
                 sellItem.copyWithCount(1), sellItem.getCount(), price, isCreative);
 
         ShopManager manager = get(level);
@@ -130,7 +127,7 @@ public class ShopManager extends SavedData {
     }
 
     public static void register() {
-        UseEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
+        AttackEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {
@@ -146,7 +143,7 @@ public class ShopManager extends SavedData {
             return InteractionResult.PASS;
         });
 
-        AttackEntityCallback.EVENT.register((player, world, _, entity, _) -> {
+        UseEntityCallback.EVENT.register((player, world, _, entity, _) -> {
             if (world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Interaction interaction) {

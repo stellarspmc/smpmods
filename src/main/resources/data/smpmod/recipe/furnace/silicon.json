@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": "minecraft:quartz",
+  "result": {
+    "id": "smpmod:silicon",
+    "count": 1
+  },
+  "experience": 0.01,
+  "cookingtime": 350
+}

@@ -1,0 +1,10 @@
+{
+  "type": "smpmod:compressing",
+  "ingredient": "smpmod:gold_16k",
+  "count": 2,
+  "result": {
+    "id": "smpmod:gold_18k",
+    "count": 1
+  },
+  "process_time": 80
+}

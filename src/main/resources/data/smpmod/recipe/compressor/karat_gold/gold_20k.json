@@ -1,9 +1,9 @@
 {
   "type": "smpmod:compressing",
-  "ingredient": "smpmod:compressed_carbon",
+  "ingredient": "smpmod:gold_18k",
   "count": 4,
   "result": {
-    "id": "smpmod:carbon_chunk",
+    "id": "smpmod:gold_20k",
     "count": 1
   },
   "process_time": 80

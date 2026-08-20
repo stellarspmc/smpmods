@@ -1,0 +1,13 @@
+{
+  "type": "smpmod:smelting",
+  "ingredients": [
+    "minecraft:iron_ingot",
+    "smpmod:silicon"
+  ],
+  "count": 1,
+  "result": {
+    "id": "smpmod:ferrosilicon",
+    "count": 1
+  },
+  "process_time": 160
+}
