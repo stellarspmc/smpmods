@@ -23,6 +23,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.NonNull;
 
+import static fun.spmc.smpmod.SMPMod.modLogger;
+
 public class CrystalBoss extends Warden implements PolymerEntity {
     private final EndCrystal[] orbitingCrystals = new EndCrystal[3];
     private int roarAbilityCooldown = 0;
@@ -87,7 +89,6 @@ public class CrystalBoss extends Warden implements PolymerEntity {
 
         for (EndCrystal crystal : orbitingCrystals) if (crystal != null) crystal.discard();
 
-
         this.spawnAtLocation(level, new ItemStack(Items.HEART_OF_THE_SEA, 15));
         this.spawnAtLocation(level, new ItemStack(Items.ECHO_SHARD, 35));
     }
@@ -99,6 +100,15 @@ public class CrystalBoss extends Warden implements PolymerEntity {
 
     public static boolean trySpawnBoss(ServerLevel level, BlockPos crystalPos) {
         BlockPos centerPos = crystalPos.below();
+
+        modLogger.info("{} {} {} {}",
+                level.getBlockState(centerPos).is(Blocks.OBSIDIAN),
+                level.getBlockState(centerPos.below()).is(Blocks.OBSIDIAN),
+                level.getBlockState(centerPos.east()).is(Blocks.END_STONE) ||
+                        level.getBlockState(centerPos.west()).is(Blocks.END_STONE),
+                level.getBlockState(centerPos.north()).is(Blocks.END_STONE) ||
+                        level.getBlockState(centerPos.south()).is(Blocks.END_STONE)
+                );
 
         if (!level.getBlockState(centerPos).is(Blocks.OBSIDIAN)) return false;
         if (!level.getBlockState(centerPos.below()).is(Blocks.OBSIDIAN)) return false;

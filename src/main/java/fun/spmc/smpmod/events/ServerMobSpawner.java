@@ -1,8 +1,8 @@
 package fun.spmc.smpmod.events;
 
-import fun.spmc.smpmod.mobs.EyeBoss;
+import fun.spmc.smpmod.mobs.EyeZombie;
 import fun.spmc.smpmod.mobs.Minotaur;
-import fun.spmc.smpmod.mobs.NickBoss;
+import fun.spmc.smpmod.mobs.NickZombie;
 import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -23,8 +23,8 @@ public class ServerMobSpawner {
     }
 
     public static void registerMobs() {
-        mobList.add(new EyeBoss());
-        mobList.add(new NickBoss());
+        mobList.add(new EyeZombie());
+        mobList.add(new NickZombie());
         mobList.add(new Minotaur());
     }
 }

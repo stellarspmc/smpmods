@@ -20,7 +20,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import java.util.Objects;
 import java.util.UUID;
 
-public class EyeBoss implements ServerMob {
+public class EyeZombie implements ServerMob {
     @Override public EntityType<? extends LivingEntity> getEntityType() { return EntityTypes.ZOMBIE; }
     @Override public double entitySpawnRate() { return .9978; }
     @Override public Component getEntityName() { return Component.literal("eyelol").withStyle(ChatFormatting.RED, ChatFormatting.BOLD); }

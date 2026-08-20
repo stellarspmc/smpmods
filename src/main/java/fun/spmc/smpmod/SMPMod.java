@@ -2,7 +2,6 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.fishing.FishTracker;
 import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
@@ -12,7 +11,8 @@ import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.mobs.boss.CrystalBoss;
 import fun.spmc.smpmod.plant.PlantUtils;
-import fun.spmc.smpmod.registry.PolymerRegistry;
+import fun.spmc.smpmod.quest.QuestManager;
+import fun.spmc.smpmod.registry.QuestRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
@@ -59,8 +59,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.stream.Collectors;
 
 @Environment(EnvType.SERVER)
 public class SMPMod implements DedicatedServerModInitializer {
@@ -109,6 +107,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ShopManager.register();
         ChunkLoaderSavedData.register();
         ServerMobSpawner.registerMobs();
+        QuestRegistry.init();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();
@@ -180,6 +179,8 @@ public class SMPMod implements DedicatedServerModInitializer {
                 int totalHours = playTime / 72000;
                 ScoreAccess scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective);
                 scoreAccess.set(totalHours);
+
+                QuestManager.get().checkAndResetRotations(player);
             }
         });
 

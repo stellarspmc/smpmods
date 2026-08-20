@@ -33,7 +33,7 @@ public class SmelteryEntity extends BaseMachineEntity<SmelterRecipe.TripleRecipe
         return new SmelterRecipe.TripleRecipeInput(in1, in2, in3);
     }
 
-    @Override protected ItemStack getRecipeResult(SmelterRecipe recipe, ServerLevel level) { return recipe.result().copy(); }
+    @Override protected ItemStack getRecipeResult(SmelterRecipe recipe, ServerLevel level) { return recipe.result().create(); }
     @Override protected int getRecipeProcessTime(SmelterRecipe recipe) { return recipe.processTime(); }
     @Override protected void consumeIngredients(SmelterRecipe recipe, SmelterRecipe.TripleRecipeInput recipeInput) { Arrays.stream(input).forEach((i) -> getItem(i).shrink(recipe.count())); }
 }

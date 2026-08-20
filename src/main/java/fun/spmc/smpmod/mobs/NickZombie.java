@@ -17,7 +17,7 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-public class NickBoss implements ServerMob {
+public class NickZombie implements ServerMob {
     @Override public EntityType<? extends LivingEntity> getEntityType() { return EntityTypes.ZOMBIE; }
     @Override public double entitySpawnRate() { return .991; }
     @Override public Component getEntityName() { return Component.literal("Nickwong0910").withStyle(ChatFormatting.GREEN); }

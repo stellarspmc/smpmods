@@ -22,5 +22,6 @@ public class CommandRegistry {
         dispatcher.register(VaultCommand.buildVault());
         dispatcher.register(MapArtCommand.buildCommand());
         dispatcher.register(FishingCommand.buildCommand());
+        dispatcher.register(QuestCommand.buildQuest());
     }
 }

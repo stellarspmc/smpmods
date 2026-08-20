@@ -35,7 +35,7 @@ public class PlantUtils {
     }
 
     public static void register() {
-        UseEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
+        AttackEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Mannequin mannequin) {
@@ -48,7 +48,7 @@ public class PlantUtils {
             return InteractionResult.PASS;
         });
 
-        AttackEntityCallback.EVENT.register((player, world, _, entity, _) -> {
+        UseEntityCallback.EVENT.register((player, world, _, entity, _) -> {
             if (world.isClientSide()) return InteractionResult.PASS;
 
             if (entity instanceof Mannequin mannequin) {

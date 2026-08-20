@@ -2,6 +2,7 @@ package fun.spmc.smpmod.industrial.recipe;
 
 import fun.spmc.smpmod.registry.PolymerIndustrial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.NonNull;
@@ -10,8 +11,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record SmelterRecipe(List<Ingredient> ingredients, int count, ItemStack result, int processTime) implements Recipe<SmelterRecipe.TripleRecipeInput> {
-    @Override public @NonNull ItemStack assemble(SmelterRecipe.@NonNull TripleRecipeInput input) { return this.result.copy(); }
+public record SmelterRecipe(List<Ingredient> ingredients, int count, ItemStackTemplate result, int processTime) implements Recipe<SmelterRecipe.TripleRecipeInput> {
+    @Override public @NonNull ItemStack assemble(SmelterRecipe.@NonNull TripleRecipeInput input) { return this.result.create(); }
     @Override public boolean showNotification() { return false; }
     @Override public @NonNull String group() { return ""; }
     @Override public @NonNull RecipeSerializer<? extends Recipe<TripleRecipeInput>> getSerializer() { return PolymerIndustrial.SMELTERY_SERIALIZER; }

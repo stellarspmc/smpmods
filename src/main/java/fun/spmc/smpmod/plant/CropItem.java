@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.plant.crop;
+package fun.spmc.smpmod.plant;
 
 import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -32,15 +33,18 @@ public class CropItem extends BasePolymerItem {
     @Override
     public Component buildName(ItemStack stack) {
         int quality = getQuality(getCropTag(stack));
-        String stars = "★".repeat(Math.max(0, quality));
-        String prefix = stars.isEmpty() ? "" : stars + " ";
-        return Component.literal(prefix + cropName).withStyle(rarity.getColor());
+        Set<ItemModifier> traits = getModifiers(getCropTag(stack)).keySet();
+        MutableComponent title = Component.empty();
+        for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.getColor()));
+        title.append(Component.literal(this.cropName).withStyle(rarity.getColor()));
+        if (quality != 0) title.append(Component.literal(" " + (quality > 0 ? "★".repeat(quality) : "\uD83D\uDC80".repeat(-quality))).withStyle(ChatFormatting.YELLOW));
+        return title.withStyle(style -> style.withItalic(false));
     }
 
     @Override
     public List<Component> buildLore(ItemStack stack) {
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.literal("Value: $" + getModifiedPrice(stack)).withStyle(ChatFormatting.GOLD));
+        lore.add(Component.literal("Value: $" + getModifiedPrice(stack)).withStyle(ChatFormatting.GOLD).withStyle(style -> style.withItalic(false)));
         return lore;
     }
 
@@ -48,9 +52,7 @@ public class CropItem extends BasePolymerItem {
     public void modifyItem(ItemStack out, ItemStack stackData) {
         CompoundTag tag = getCropTag(stackData);
         int quality = getQuality(tag);
-        if (quality >= 4) {
-            out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
-        }
+        if (quality >= 4 || quality <= 0) out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
     public ItemStack createCropInstance(int quality, Map<ItemModifier, Integer> mods) {
@@ -76,6 +78,15 @@ public class CropItem extends BasePolymerItem {
 
     public static int getQuality(CompoundTag cropTag) {
         return cropTag.getIntOr("quality", 1);
+    }
+
+    private static Map<ItemModifier, Integer> getModifiers(CompoundTag tag) {
+        Map<ItemModifier, Integer> map = new HashMap<>();
+        if (tag.getCompound("modifier").isPresent()) {
+            CompoundTag modTag = tag.getCompound("modifier").get();
+            modTag.forEach((id, level) -> ItemModifier.fromId(id).ifPresent(mod -> level.asInt().ifPresent(lvl -> map.put(mod, lvl))));
+        }
+        return map;
     }
 
     public double getModifiedPrice(ItemStack stack) {

@@ -1,13 +1,12 @@
 package fun.spmc.smpmod.registry;
 
 import fun.spmc.smpmod.misc.ItemRarity;
-import fun.spmc.smpmod.plant.crop.CropItem;
-import fun.spmc.smpmod.plant.seed.SeedBlock;
-import fun.spmc.smpmod.plant.seed.SeedItem;
+import fun.spmc.smpmod.plant.CropItem;
+import fun.spmc.smpmod.plant.SeedBlock;
+import fun.spmc.smpmod.plant.SeedItem;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;

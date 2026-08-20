@@ -6,6 +6,9 @@ import fun.spmc.smpmod.misc.ItemModifier;
 import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.fishing.FishItem;
 import fun.spmc.smpmod.fishing.RodTiers;
+import fun.spmc.smpmod.quest.QuestManager;
+import fun.spmc.smpmod.quest.data.PlayerQuestData;
+import fun.spmc.smpmod.quest.data.Quest;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -47,6 +50,10 @@ public class FishingLoot {
         FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
         if (caughtFish.getRarity() == ItemRarity.CHROMATIC) messageChannel.sendMessage(String.format("%s got a **CHROMATIC** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
         else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
+
+        QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> {
+            if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1);
+        });
     }
 
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {

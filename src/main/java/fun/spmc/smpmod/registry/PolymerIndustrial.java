@@ -117,12 +117,12 @@ public class PolymerIndustrial {
         SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting", RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients),
                 Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count),
-                ItemStack.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),
                 Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)
         ).apply(instance, SmelterRecipe::new)), StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients,
                 ByteBufCodecs.VAR_INT, SmelterRecipe::count,
-                ItemStack.STREAM_CODEC, SmelterRecipe::result,
+                ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result,
                 ByteBufCodecs.VAR_INT, SmelterRecipe::processTime, SmelterRecipe::new
         ));
     }

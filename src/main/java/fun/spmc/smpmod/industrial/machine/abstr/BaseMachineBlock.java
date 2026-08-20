@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
@@ -22,7 +23,7 @@ public abstract class BaseMachineBlock<E extends BaseMachineEntity> extends Base
     private final BlockEntityType.BlockEntitySupplier<E> blockEntityFactory;
 
     protected BaseMachineBlock(Properties properties, Supplier<BlockEntityType<E>> blockEntityTypeSupplier, BlockEntityType.BlockEntitySupplier<E> blockEntityFactory) {
-        super(properties);
+        super(properties.requiresCorrectToolForDrops().strength(3.5f).mapColor(MapColor.STONE));
         this.blockEntityTypeSupplier = blockEntityTypeSupplier;
         this.blockEntityFactory = blockEntityFactory;
     }
