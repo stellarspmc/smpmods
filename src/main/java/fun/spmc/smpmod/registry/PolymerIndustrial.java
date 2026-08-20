@@ -3,7 +3,9 @@ package fun.spmc.smpmod.registry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.industrial.machine.SculkCompressorBlock;
+import fun.spmc.smpmod.industrial.machine.SmelteryBlock;
 import fun.spmc.smpmod.industrial.machine.entity.SculkCompressorEntity;
+import fun.spmc.smpmod.industrial.machine.entity.SmelteryEntity;
 import fun.spmc.smpmod.industrial.mineral.BaseMineralItem;
 import fun.spmc.smpmod.industrial.recipe.CompressorRecipe;
 import fun.spmc.smpmod.industrial.recipe.SmelterRecipe;
@@ -34,9 +36,10 @@ public class PolymerIndustrial {
     public static RecipeSerializer<SmelterRecipe> SMELTERY_SERIALIZER;
 
     public static BlockEntityType<SculkCompressorEntity> SCULK_ENTITY;
+    public static BlockEntityType<SmelteryEntity> SMELTERY_ENTITY;
 
     protected static void registerMinerals() {
-        registerMineral("sifted_dust", Items.GUNPOWDER, TextColor.fromRgb(0x706E6B));
+        registerMineral("compressed_ore", Items.IRON_ORE, TextColor.fromRgb(0x706E6B));
         registerMineral("iron_dust", Items.GUNPOWDER, TextColor.fromRgb(0xD8AF93));
         registerMineral("gold_dust", Items.GLOWSTONE_DUST, TextColor.fromRgb(0xFDF55F));
         registerMineral("tin_dust", Items.SUGAR, TextColor.fromRgb(0xD0D7DC));
@@ -94,7 +97,7 @@ public class PolymerIndustrial {
     }
     public static void registerBlocks() {
         SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", SculkCompressorBlock::new, BlockBehaviour.Properties.of(), SculkCompressorEntity::new, Items.SCULK_CATALYST);
-        //PolymerRegistry.createBlockWithItem("smeltry", SmelteryBlock::new, BlockBehaviour.Properties.of(), Items.SMOKER);
+        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltry", SmelteryBlock::new, BlockBehaviour.Properties.of(), SmelteryEntity::new, Items.SMOKER);
     }
     public static void registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing");

@@ -8,6 +8,7 @@ import fun.spmc.smpmod.industrial.machine.abstr.BaseMachineBlock;
 import fun.spmc.smpmod.industrial.machine.entity.SculkCompressorEntity;
 import fun.spmc.smpmod.registry.PolymerIndustrial;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
@@ -21,24 +22,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public class SculkCompressorBlock extends BaseMachineBlock {
+public class SculkCompressorBlock extends BaseMachineBlock<SculkCompressorEntity> {
     public static final MapCodec<SculkCompressorBlock> CODEC = simpleCodec(SculkCompressorBlock::new);
 
-    public SculkCompressorBlock(Properties properties) { super(properties); }
-    @Override protected @NonNull MapCodec<? extends BaseMachineBlock> codec() { return CODEC; }
+    public SculkCompressorBlock(Properties properties) { super(properties, () -> PolymerIndustrial.SCULK_ENTITY, SculkCompressorEntity::new); }
+    @Override protected @NonNull MapCodec<? extends SculkCompressorBlock> codec() { return CODEC; }
     @Override public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) { return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BlockStateProperties.BLOOM, true); }
-    @Nullable @Override public BlockEntity newBlockEntity(@NonNull BlockPos pos, @NonNull BlockState state) { return new SculkCompressorEntity(pos, state); }
-    @Nullable @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NonNull Level level, @NonNull BlockState state, @NonNull BlockEntityType<T> type) { return createMachineTicker(level, type, PolymerIndustrial.SCULK_ENTITY, SculkCompressorEntity::tick); }
-
 
     @Override
     protected @NonNull InteractionResult useWithoutItem(@NonNull BlockState state, Level level, @NonNull BlockPos pos, @NonNull Player player, @NonNull BlockHitResult hitResult) {
@@ -73,10 +68,32 @@ public class SculkCompressorBlock extends BaseMachineBlock {
         @Override
         public void onTick() {
             int max = Math.max(1, blockEntity.getMaxProgressTicks());
-            int progress = (int) (((float) blockEntity.getProgressTicks() / max) * 100);
+            int progress = blockEntity.getProgressTicks();
+            int percent = (int) (((float) progress / max) * 100);
 
-            this.setSlot(PROCESS_SLOT, new GuiElementBuilder(Items.POLISHED_BLACKSTONE_BUTTON)
-                    .setName(Component.literal("Compressing: " + progress + "%").withColor(TextColor.fromRgb(0x55FFFF))));
+            if (progress > 0) {
+                int filledBars = percent / 10;
+                Component progressBar = Component.empty()
+                        .append(Component.literal("█".repeat(filledBars)).withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal("▒".repeat(10 - filledBars)).withStyle(ChatFormatting.GRAY));
+
+                Component progressText = Component.literal("Progress: ")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(percent + "%").withStyle(ChatFormatting.YELLOW));
+
+                this.setSlot(PROCESS_SLOT, new GuiElementBuilder(Items.ECHO_SHARD)
+                        .setName(Component.literal("Compressing...")
+                                .withColor(TextColor.fromRgb(0x00AAAA))
+                                .withStyle(ChatFormatting.BOLD))
+                        .addLoreLine(progressBar)
+                        .addLoreLine(progressText)
+                        .setCount(Math.max(1, (percent * 64) / 100))
+                        .glow());
+            } else {
+                this.setSlot(PROCESS_SLOT, new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray())
+                        .setName(Component.literal("Waiting for Input...")
+                                .withStyle(ChatFormatting.GRAY)));
+            }
         }
     }
 }

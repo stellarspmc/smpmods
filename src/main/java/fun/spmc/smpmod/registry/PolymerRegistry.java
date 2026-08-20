@@ -85,8 +85,8 @@ public class PolymerRegistry implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        PolymerFishes.registerRods();
         PolymerFishes.registerFishes();
+        PolymerFishes.registerRods();
         PolymerPlants.register();
         PolymerIndustrial.registerMinerals();
         PolymerIndustrial.registerBlocks();

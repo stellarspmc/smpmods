@@ -11,17 +11,29 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
-import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
-public abstract class BaseMachineBlock extends BaseEntityBlock implements PolymerBlock {
-    protected BaseMachineBlock(Properties properties) { super(properties); }
-    @Override protected @NonNull RenderShape getRenderShape(@NonNull BlockState state) { return RenderShape.MODEL; }
-    @Override protected void affectNeighborsAfterRemoval(@NonNull BlockState state, @NonNull ServerLevel level, @NonNull BlockPos pos, boolean movedByPiston) { Containers.updateNeighboursAfterDestroy(state, level, pos); }
+@SuppressWarnings("rawtypes")
+public abstract class BaseMachineBlock<E extends BaseMachineEntity> extends BaseEntityBlock implements PolymerBlock {
+    private final Supplier<BlockEntityType<E>> blockEntityTypeSupplier;
+    private final BlockEntityType.BlockEntitySupplier<E> blockEntityFactory;
 
-    protected static <T extends BlockEntity, E extends BaseMachineEntity> BlockEntityTicker<T> createMachineTicker(Level level, BlockEntityType<T> actualType, BlockEntityType<E> expectedType, BiConsumer<ServerLevel, E> tickConsumer) {
-        if (level instanceof ServerLevel serverLevel) return createTickerHelper(actualType, expectedType, (_, _, _, entity) -> tickConsumer.accept(serverLevel, entity));
+    protected BaseMachineBlock(Properties properties, Supplier<BlockEntityType<E>> blockEntityTypeSupplier, BlockEntityType.BlockEntitySupplier<E> blockEntityFactory) {
+        super(properties);
+        this.blockEntityTypeSupplier = blockEntityTypeSupplier;
+        this.blockEntityFactory = blockEntityFactory;
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NonNull Level level, @NonNull BlockState state, @NonNull BlockEntityType<T> type) {
+        if (level instanceof ServerLevel serverLevel) return createTickerHelper(type, this.blockEntityTypeSupplier.get(), (_, _, _, entity) -> entity.serverTick(serverLevel));
         return null;
     }
+
+    @Override public @Nullable BlockEntity newBlockEntity(@NonNull BlockPos pos, @NonNull BlockState state) { return this.blockEntityFactory.create(pos, state); }
+    @Override protected @NonNull RenderShape getRenderShape(@NonNull BlockState state) { return RenderShape.MODEL; }
+    @Override protected void affectNeighborsAfterRemoval(@NonNull BlockState state, @NonNull ServerLevel level, @NonNull BlockPos pos, boolean movedByPiston) { Containers.updateNeighboursAfterDestroy(state, level, pos); }
 }
