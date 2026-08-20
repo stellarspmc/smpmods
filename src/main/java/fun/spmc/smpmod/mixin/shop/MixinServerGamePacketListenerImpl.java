@@ -62,7 +62,7 @@ public class MixinServerGamePacketListenerImpl {
             return;
         }
 
-        ShopManager.createShop(player.getUUID(), barrelPos, price, heldItem, level);
+        ShopManager.createShop(player, barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
         MessageUtils.sendSuccessMessage(player, "Shop created successfully!");
     }
