@@ -30,7 +30,7 @@ public class FishingLoot {
         RandomSource random = minecraftServer.overworld().getRandom();
 
         if (streak > 3) {
-
+            // TODO: fish mob to kill (like the new game)
         }
 
         FishItem caughtFish = getRandomFishForTier(player, tier);
