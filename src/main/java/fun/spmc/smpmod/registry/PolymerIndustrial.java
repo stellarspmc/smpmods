@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 public class PolymerIndustrial {
     private static void registerMineral(String id, Item vanillaModel, TextColor textColor) { PolymerRegistry.createItem(id, properties -> new BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor))); }
     private static void registerMineral(String id, Item vanillaModel, Component name) { PolymerRegistry.createItem(id, properties -> new BaseMineralItem(properties, vanillaModel, name)); }
-    private static void registerKarat(String id, int karat, TextColor goldColor) { PolymerRegistry.createItem(id, properties -> new BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("(" + karat + " - Carat)").withColor(TextColor.fromRgb(0xAAAAAA))))); }
+    private static void registerKarat(String id, int karat, TextColor goldColor) { PolymerRegistry.createItem(id, properties -> new BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("(" + karat + " Carat)").withColor(TextColor.fromRgb(0xAAAAAA))))); }
     private static void registerHead(String id, String texture, TextColor textColor) { PolymerRegistry.createItem(id, properties -> new BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor))); }
 
     public static RecipeType<CompressorRecipe> COMPRESSOR_TYPE;

@@ -37,7 +37,7 @@ public class CropItem extends BasePolymerItem {
         MutableComponent title = Component.empty();
         for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.getColor()));
         title.append(Component.literal(this.cropName).withStyle(rarity.getColor()));
-        if (quality != 0) title.append(Component.literal(" " + (quality > 0 ? "★".repeat(quality) : "\uD83D\uDC80".repeat(-quality))).withStyle(ChatFormatting.YELLOW));
+        if (quality != 0) title.append(Component.literal(" " + (quality > 0 ? "★".repeat(quality) : "\uD83D\uDC80".repeat(-quality))).withStyle(quality > 0 ? ChatFormatting.YELLOW: ChatFormatting.DARK_RED));
         return title.withStyle(style -> style.withItalic(false));
     }
 

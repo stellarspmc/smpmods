@@ -61,7 +61,7 @@ public class FishingUtils {
 
             if (entity instanceof Mannequin mannequin) {
                 if (mannequin.getUUID().equals(NPCData.get().getUuid("fish_seller"))) {
-                    NPCData.talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you."), (ServerPlayer) player);
+                    NPCData.talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you.. yet."), (ServerPlayer) player);
                     return InteractionResult.SUCCESS;
                 }
             }

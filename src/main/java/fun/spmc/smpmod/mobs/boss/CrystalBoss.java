@@ -45,7 +45,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         super.tick();
 
         if (!this.level().isClientSide()) {
-            updateOrbitingCrystals();
+            //if (tickCount % 10 == 0) updateOrbitingCrystals();
 
             if (this.roarAbilityCooldown > 0) this.roarAbilityCooldown--;
             if (this.roarAnimationState.isStarted() && this.roarAbilityCooldown <= 0) {
@@ -69,7 +69,8 @@ public class CrystalBoss extends Warden implements PolymerEntity {
             }
 
             double angle = (this.tickCount * speed) + (i * (2 * Math.PI / 3));
-            orbitingCrystals[i].teleportTo(this.getX() + radius * Math.cos(angle), this.getY() + 2.5 + Math.sin(this.tickCount * 0.1 + i), this.getZ() + radius * Math.sin(angle));
+            orbitingCrystals[i].teleportTo(this.getX() + radius * Math.cos(angle), this.getY() + 2.5 + Math.sin(this.tickCount * .1 + i), this.getZ() + radius * Math.sin(angle));
+            modLogger.info("update: {} to ({}, {}, {})", i, this.getX() + radius * Math.cos(angle), this.getY() + 2.5 + Math.sin(this.tickCount * .1 + i), this.getZ() + radius * Math.sin(angle));
         }
     }
 
@@ -77,17 +78,19 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         LivingEntity target = this.getTarget();
         if (target == null) return;
 
-        for (int i = 0; i < 3; i++) {
-            BlockPos targetPos = target.blockPosition().offset((int) (this.random.nextDouble() - .5) * 6, 0, (int) (this.random.nextDouble() - .5) * 6);
-            this.level().explode(this, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 3.0F, Level.ExplosionInteraction.MOB);
-        }
+        BlockPos targetPos = target.blockPosition().offset((int) (this.random.nextDouble() - .5) * 6, 0, (int) (this.random.nextDouble() - .5) * 6);
+        this.level().explode(this, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 2, Level.ExplosionInteraction.MOB);
+        this.level().explode(this, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 2.5f, Level.ExplosionInteraction.MOB);
     }
 
     @Override
     protected void dropCustomDeathLoot(@NonNull ServerLevel level, @NonNull DamageSource damageSource, boolean flag) {
         super.dropCustomDeathLoot(level, damageSource, flag);
 
-        for (EndCrystal crystal : orbitingCrystals) if (crystal != null) crystal.discard();
+        for (EndCrystal crystal : orbitingCrystals) if (crystal != null) {
+            crystal.remove(RemovalReason.DISCARDED);
+            crystal.discard();
+        }
 
         this.spawnAtLocation(level, new ItemStack(Items.HEART_OF_THE_SEA, 15));
         this.spawnAtLocation(level, new ItemStack(Items.ECHO_SHARD, 35));
@@ -99,33 +102,24 @@ public class CrystalBoss extends Warden implements PolymerEntity {
     }
 
     public static boolean trySpawnBoss(ServerLevel level, BlockPos crystalPos) {
-        BlockPos centerPos = crystalPos.below();
-
-        modLogger.info("{} {} {} {}",
-                level.getBlockState(centerPos).is(Blocks.OBSIDIAN),
-                level.getBlockState(centerPos.below()).is(Blocks.OBSIDIAN),
-                level.getBlockState(centerPos.east()).is(Blocks.END_STONE) ||
-                        level.getBlockState(centerPos.west()).is(Blocks.END_STONE),
-                level.getBlockState(centerPos.north()).is(Blocks.END_STONE) ||
-                        level.getBlockState(centerPos.south()).is(Blocks.END_STONE)
-                );
-
-        if (!level.getBlockState(centerPos).is(Blocks.OBSIDIAN)) return false;
-        if (!level.getBlockState(centerPos.below()).is(Blocks.OBSIDIAN)) return false;
-        if (!level.getBlockState(centerPos.east()).is(Blocks.END_STONE) ||
-                !level.getBlockState(centerPos.west()).is(Blocks.END_STONE)) {
-            if (!level.getBlockState(centerPos.north()).is(Blocks.END_STONE) ||
-                    !level.getBlockState(centerPos.south()).is(Blocks.END_STONE)) return false;
+        if (!level.getBlockState(crystalPos).is(Blocks.OBSIDIAN)) return false;
+        if (!level.getBlockState(crystalPos.below()).is(Blocks.OBSIDIAN)) return false;
+        if (!level.getBlockState(crystalPos.east()).is(Blocks.END_STONE) ||
+                !level.getBlockState(crystalPos.west()).is(Blocks.END_STONE)) {
+            if (!level.getBlockState(crystalPos.north()).is(Blocks.END_STONE) ||
+                    !level.getBlockState(crystalPos.south()).is(Blocks.END_STONE)) return false;
         }
 
-        level.destroyBlock(centerPos, false);
-        level.destroyBlock(centerPos.below(), false);
-        level.destroyBlock(centerPos.east(), false);
-        level.destroyBlock(centerPos.west(), false);
+        level.destroyBlock(crystalPos, false);
+        level.destroyBlock(crystalPos.below(), false);
+        level.destroyBlock(crystalPos.east(), false);
+        level.destroyBlock(crystalPos.west(), false);
+        level.destroyBlock(crystalPos.north(), false);
+        level.destroyBlock(crystalPos.south(), false);
 
         CrystalBoss boss = new CrystalBoss(EntityTypes.WARDEN, level);
-        boss.teleportTo(centerPos.getX() + 0.5, centerPos.getY(), centerPos.getZ() + 0.5);
-        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(centerPos), EntitySpawnReason.TRIGGERED, null);
+        boss.teleportTo(crystalPos.getX() + .5, crystalPos.getY(), crystalPos.getZ() + .5);
+        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(crystalPos), EntitySpawnReason.TRIGGERED, null);
 
         level.addFreshEntity(boss);
         return true;

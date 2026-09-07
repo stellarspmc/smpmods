@@ -28,6 +28,11 @@ import static fun.spmc.smpmod.SMPMod.minecraftServer;
 public class FishingLoot {
     public static void rewardFish(ServerPlayer player, RodTiers tier, int streak) {
         RandomSource random = minecraftServer.overworld().getRandom();
+
+        if (streak > 3) {
+
+        }
+
         FishItem caughtFish = getRandomFishForTier(player, tier);
         Map<ItemModifier, Integer> modMap = new HashMap<>();
         double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.getCatchLuckBonus());
@@ -50,10 +55,7 @@ public class FishingLoot {
         FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
         if (caughtFish.getRarity() == ItemRarity.CHROMATIC) messageChannel.sendMessage(String.format("%s got a **CHROMATIC** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
         else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
-
-        QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> {
-            if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1);
-        });
+        QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
     }
 
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {

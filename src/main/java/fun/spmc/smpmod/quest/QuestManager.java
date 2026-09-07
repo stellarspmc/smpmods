@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import fun.spmc.smpmod.quest.data.PlayerQuestData;
 import fun.spmc.smpmod.quest.data.Quest;
 import fun.spmc.smpmod.registry.QuestRegistry;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -18,10 +19,7 @@ import static fun.spmc.smpmod.SMPMod.minecraftServer;
 public class QuestManager extends SavedData {
     private final Map<UUID, PlayerQuestData> playerQuests;
 
-    public static final Codec<QuestManager> CODEC = Codec.unboundedMap(
-            Codec.STRING.xmap(UUID::fromString, UUID::toString),
-            PlayerQuestData.CODEC
-    ).xmap(QuestManager::new, manager -> manager.playerQuests);
+    public static final Codec<QuestManager> CODEC = Codec.unboundedMap(UUIDUtil.CODEC, PlayerQuestData.CODEC).xmap(QuestManager::new, manager -> manager.playerQuests);
 
     public static final SavedDataType<QuestManager> TYPE = new SavedDataType<>(
             Identifier.fromNamespaceAndPath("smpmod", "questing"),
@@ -31,37 +29,24 @@ public class QuestManager extends SavedData {
     );
 
     public QuestManager(Map<UUID, PlayerQuestData> questData) { this.playerQuests = questData; }
-
     public QuestManager() { this(new HashMap<>()); }
-
-    public static QuestManager get() {
-        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
-    }
-
-    public static PlayerQuestData getQuests(ServerPlayer player) {
-        return get().playerQuests.getOrDefault(player.getUUID(), new PlayerQuestData());
-    }
+    public static QuestManager get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
+    public static PlayerQuestData getQuests(ServerPlayer player) { return get().playerQuests.getOrDefault(player.getUUID(), new PlayerQuestData()); }
 
     public void checkAndResetRotations(ServerPlayer player) {
         PlayerQuestData data = getQuests(player);
-
         long currentDay = LocalDate.now().toEpochDay();
         long currentWeek = currentDay / 7;
 
-        boolean updated = false;
         if (data.getLastDailyResetDay() < currentDay) {
             refreshQuestsForCategory(data, player, Quest.QuestCategory.DAILY, QuestRegistry.getAllForDaily());
             data.setLastDailyResetDay(currentDay);
-            updated = true;
-        }
-
-        if (data.getLastWeeklyResetWeek() < currentWeek) {
+            setDirty();
+        } if (data.getLastWeeklyResetWeek() < currentWeek) {
             refreshQuestsForCategory(data, player, Quest.QuestCategory.WEEKLY, QuestRegistry.getAllForWeekly());
             data.setLastWeeklyResetWeek(currentWeek);
-            updated = true;
+            setDirty();
         }
-
-        if (updated) setDirty();
     }
 
     public List<Quest> getAvailableNpcQuests(ServerPlayer player, String npcId) {
@@ -88,18 +73,11 @@ public class QuestManager extends SavedData {
     }
 
     private void refreshQuestsForCategory(PlayerQuestData data, ServerPlayer player, Quest.QuestCategory category, List<Quest> availablePool) {
-        data.getActiveQuests().removeIf(q -> {
-            Quest quest = q.getQuest();
-            return quest != null && quest.questType() == category;
-        });
-
+        data.getActiveQuests().removeIf(q -> q.getQuest() != null && q.getQuest().questType() == category);
         if (availablePool.isEmpty()) return;
 
         List<Quest> pool = new ArrayList<>(availablePool);
-        Collections.shuffle(pool, new java.util.Random(player.getRandom().nextLong()));
-
-        int countToAssign = Math.min(3, pool.size());
-
-        for (int i = 0; i < countToAssign; i++) data.addQuest(pool.get(i).id());
+        Collections.shuffle(pool, new Random(player.getRandom().nextLong()));
+        for (int i = 0; i < Math.min(3, pool.size()); i++) data.addQuest(pool.get(i).id());
     }
 }

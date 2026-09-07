@@ -7,7 +7,5 @@ public record DiscordConfig(String webhook, String token, String messageChannelI
         if (messageChannelId == null) messageChannelId = "";
     }
 
-    public DiscordConfig() {
-        this("", "", "");
-    }
+    public DiscordConfig() { this(null, null, null); }
 }

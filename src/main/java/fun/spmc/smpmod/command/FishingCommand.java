@@ -34,7 +34,6 @@ public class FishingCommand {
                 MessageUtils.sendSuccessMessage(ctx.getSource().getPlayerOrException(), "Fishing mannequin killed!");
                 return 1;
             }
-
         }
         MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Fishing mannequin isn't alive!");
         return 0;
