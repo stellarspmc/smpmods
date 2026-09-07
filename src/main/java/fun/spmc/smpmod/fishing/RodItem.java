@@ -72,14 +72,9 @@ public class RodItem extends FishingRodItem implements PolymerItem {
     public boolean canLavaFish() { return getTier() == RodTiers.NETHERITE || getTier().ordinal() >= RodTiers.CELESTIAL.ordinal(); }
 
     private List<Component> buildLore() {
-        List<Component> list = new ArrayList<>(List.of(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100))
-                        .withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)),
-                Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100))
-                        .withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false))));
-        if (canLavaFish())
-            list.add(Component.literal("This rod can be used to fish in lava!").withStyle(ChatFormatting.RED).withStyle(style -> style.withItalic(false)));
-        if (canVoidFish())
-            list.add(Component.literal("This rod can be used to fish in the void!").withStyle(ChatFormatting.DARK_GRAY).withStyle(style -> style.withItalic(false)));
+        List<Component> list = new ArrayList<>(List.of(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100)).withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)), Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100)).withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false))));
+        if (canLavaFish()) list.add(Component.literal("This rod can be used to fish in lava!").withStyle(ChatFormatting.RED).withStyle(style -> style.withItalic(false)));
+        if (canVoidFish()) list.add(Component.literal("This rod can be used to fish in the void!").withStyle(ChatFormatting.DARK_GRAY).withStyle(style -> style.withItalic(false)));
         list.add(Component.empty());
         list.add(Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY));
         return list;

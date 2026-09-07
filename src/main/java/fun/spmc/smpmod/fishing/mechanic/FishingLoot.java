@@ -7,7 +7,6 @@ import fun.spmc.smpmod.misc.ItemRarity;
 import fun.spmc.smpmod.fishing.FishItem;
 import fun.spmc.smpmod.fishing.RodTiers;
 import fun.spmc.smpmod.quest.QuestManager;
-import fun.spmc.smpmod.quest.data.PlayerQuestData;
 import fun.spmc.smpmod.quest.data.Quest;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.ChatFormatting;

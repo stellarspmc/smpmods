@@ -19,22 +19,14 @@ public class FishingManager {
         FishingUtils.register();
     }
 
-    public static boolean isFishing(UUID playerUuid) {
-        return ACTIVE_SESSIONS.containsKey(playerUuid);
-    }
-
     public static void startMinigame(ServerPlayer player, FishingHook hook) {
         if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return;
 
         RodTiers tier = RodTiers.NORMAL;
-        if (player.getMainHandItem().getItem() instanceof RodItem customRod) {
-            tier = customRod.getTier();
-        }
-
+        if (player.getMainHandItem().getItem() instanceof RodItem customRod) tier = customRod.getTier();
         ACTIVE_SESSIONS.put(player.getUUID(), new FishingSession(player, hook, tier));
     }
 
-    public static void cancelMinigame(UUID playerUuid) {
-        ACTIVE_SESSIONS.remove(playerUuid);
-    }
+    public static boolean isFishing(UUID playerUuid) { return ACTIVE_SESSIONS.containsKey(playerUuid); }
+    public static void cancelMinigame(UUID playerUuid) { ACTIVE_SESSIONS.remove(playerUuid); }
 }
