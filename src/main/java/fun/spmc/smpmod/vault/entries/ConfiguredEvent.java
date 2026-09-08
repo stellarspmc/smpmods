@@ -3,9 +3,9 @@ package fun.spmc.smpmod.vault.entries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
-import fun.spmc.smpmod.misc.NPCData;
+import fun.spmc.smpmod.npc.NPCData;
 import fun.spmc.smpmod.treasure.TreasureEvents;
-import fun.spmc.smpmod.vault.VaultUtils;
+import fun.spmc.smpmod.vault.VaultData;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -114,7 +114,7 @@ public class ConfiguredEvent implements VaultEntry {
         RESISTANCE_BUFF("resistance_buff", 720 * 20 * 60, (amplifier, level) -> level.getServer().getPlayerList().getPlayers().forEach((player -> applyEffects(player, MobEffects.RESISTANCE, amplifier.intValue())))),
         BLOCK_TREASURE_RATE("block_treasure_rate", 120 * 20 * 60, (rateBonus, _) -> TreasureEvents.eventPercentage = 1 + rateBonus, (_) -> TreasureEvents.eventPercentage = 1),
         TREASURE_ALWAYS_RARE("treasure_always_rare", 15 * 20 * 60, (_, _) -> TreasureEvents.rigTreasures = true, (_) -> TreasureEvents.rigTreasures = false),
-        EXTENDED_EFFECT_DURATION("extended_effect_duration", 120 * 20 * 60, (amplifier, _) -> VaultUtils.buffValue = amplifier.floatValue(), (_) -> VaultUtils.buffValue = 0),
+        EXTENDED_EFFECT_DURATION("extended_effect_duration", 120 * 20 * 60, (amplifier, _) -> VaultData.buffValue = amplifier.floatValue(), (_) -> VaultData.buffValue = 0),
         LUCK_EFFECT("luck_effect", 120 * 20 * 60, (amplifier, level) -> level.getServer().getPlayerList().getPlayers().forEach((player -> applyEffects(player, MobEffects.LUCK, amplifier.intValue())))),
         RPG_MOB_DROP_LUCK("rpg_mob_drop_luck", 180 * 20 * 60, (multiplier, level) -> {
             // TODO: finish when rpg mobs are here

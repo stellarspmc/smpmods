@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.mobs;
 
-import fun.spmc.smpmod.misc.NPCData;
+import fun.spmc.smpmod.npc.NPCData;
 import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;

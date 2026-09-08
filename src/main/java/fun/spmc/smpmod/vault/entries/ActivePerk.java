@@ -2,7 +2,7 @@ package fun.spmc.smpmod.vault.entries;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.misc.NPCData;
+import fun.spmc.smpmod.npc.NPCData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

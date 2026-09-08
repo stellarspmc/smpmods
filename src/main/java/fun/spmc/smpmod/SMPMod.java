@@ -8,10 +8,10 @@ import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
 import fun.spmc.smpmod.mobs.ServerMobSpawner;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
-import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.mobs.boss.CrystalBoss;
-import fun.spmc.smpmod.plant.PlantUtils;
+import fun.spmc.smpmod.npc.NPCManager;
 import fun.spmc.smpmod.quest.QuestManager;
+import fun.spmc.smpmod.registry.NPCRegistry;
 import fun.spmc.smpmod.registry.QuestRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
@@ -95,9 +95,7 @@ public class SMPMod implements DedicatedServerModInitializer {
                 FishingManager.register();
                 MarketState.register();
                 VaultData.register();
-                NPCData.register();
-                VaultUtils.register();
-                PlantUtils.register();
+                NPCManager.register();
             } catch (Exception e) {
                 modLogger.error("Config not initialized, please finish the config.");
                 throw new RuntimeException(e);
@@ -108,6 +106,7 @@ public class SMPMod implements DedicatedServerModInitializer {
         ChunkLoaderSavedData.register();
         ServerMobSpawner.registerMobs();
         QuestRegistry.init();
+        NPCRegistry.init();
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayer player = handler.getPlayer();

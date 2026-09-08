@@ -50,70 +50,60 @@ public class EconomyCommands {
 
     private static int balanceCommand(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target, @Nullable NameAndId id) {
         EconomyData eco = EconomyData.get();
-        String name = (target != null) ? "You" : Objects.requireNonNull(id).name();
-        double bal = (target != null) ? eco.getBalance(target.getUUID()) : eco.getBalance(Objects.requireNonNull(id).id());
-        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(name + " have ").withStyle(ChatFormatting.GOLD))
-                .append(Component.literal(String.format("$%.2f", bal)).withStyle(ChatFormatting.RED))
-                .append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
+        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN).append(Component.literal((target != null) ? "You" : Objects.requireNonNull(id).name() + " have ").withStyle(ChatFormatting.GOLD)).append(Component.literal(String.format("$%.2f", (target != null) ? eco.getBalance(target.getUUID()) : eco.getBalance(Objects.requireNonNull(id).id()))).withStyle(ChatFormatting.RED)).append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
         return 1;
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildDeposit() {
         return Commands.literal("deposit")
-                .executes(EconomyCommands::depositHand)
-                .then(Commands.literal("all").executes(EconomyCommands::depositAll));
-    }
+                .executes(ctx -> {
+                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                    ItemStack hand = player.getInventory().getSelectedItem();
 
-    private static int depositHand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        ItemStack hand = player.getInventory().getSelectedItem();
+                    if (hand.isEmpty()) {
+                        MessageUtils.sendErrorMessage(player, "Hold a valid market item or use /deposit all.");
+                        return -1;
+                    }
 
-        if (hand.isEmpty()) {
-            MessageUtils.sendErrorMessage(player, "Hold a valid market item or use /deposit all.");
-            return -1;
-        }
+                    double payout = processItemDeposit(player, hand);
+                    if (payout <= 0) {
+                        MessageUtils.sendErrorMessage(player, "This item cannot be deposited into the market.");
+                        return -1;
+                    }
 
-        double payout = processItemDeposit(player, hand);
-        if (payout <= 0) {
-            MessageUtils.sendErrorMessage(player, "This item cannot be deposited into the market.");
-            return -1;
-        }
+                    hand.setCount(0);
+                    MessageUtils.sendSuccessMessage(player, String.format("Deposited items for $%.2f to your account.", payout));
+                    return 1;
+                })
+        .then(Commands.literal("all")
+                .executes(ctx -> {
+                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                    double totalPayout = 0;
 
-        hand.setCount(0);
-        MessageUtils.sendSuccessMessage(player, String.format("Deposited items for $%.2f to your account.", payout));
-        return 1;
-    }
+                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                        ItemStack stack = player.getInventory().getItem(i);
+                        if (stack.isEmpty()) continue;
 
-    private static int depositAll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        double totalPayout = 0;
+                        double payout = processItemDeposit(player, stack);
+                        if (payout > 0) {
+                            totalPayout += payout;
+                            player.getInventory().removeItem(i, stack.getCount());
+                        }
+                    }
 
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            if (stack.isEmpty()) continue;
+                    if (totalPayout > 0) {
+                        MessageUtils.sendSuccessMessage(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout));
+                        return 1;
+                    }
 
-            double payout = processItemDeposit(player, stack);
-            if (payout > 0) {
-                totalPayout += payout;
-                player.getInventory().removeItem(i, stack.getCount());
-            }
-        }
-
-        if (totalPayout > 0) {
-            MessageUtils.sendSuccessMessage(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout));
-            return 1;
-        }
-
-        MessageUtils.sendErrorMessage(player, "No valid market currency items found in inventory.");
-        return -1;
+                    MessageUtils.sendErrorMessage(player, "No valid market currency items found in inventory.");
+                    return -1;
+                }));
     }
 
     public static double processItemDeposit(ServerPlayer player, ItemStack stack) {
         Item baseItem = unwrapBlockToItem(stack.getItem());
-        int totalUnits = stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1);
-        double blockTax = (baseItem != stack.getItem()) ? .93 : 1;
-        return MarketState.sellMineral(player, baseItem, totalUnits, blockTax);
+        return MarketState.sellMineral(player, baseItem, stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1), (baseItem != stack.getItem()) ? .93 : 1);
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildWithdraw(CommandBuildContext buildContext) {

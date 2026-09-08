@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.quest;
 
-import fun.spmc.smpmod.misc.NPCData;
+import fun.spmc.smpmod.npc.NPCData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
