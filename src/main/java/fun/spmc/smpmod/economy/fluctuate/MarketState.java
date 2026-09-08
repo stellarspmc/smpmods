@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
@@ -39,14 +41,9 @@ public class MarketState extends SavedData {
     );
 
     public MarketState() {}
-
-    public FluctuationData get(Item item) {
-        return marketMap.get(item);
-    }
-
-    public Map<Item, FluctuationData> getAll() {
-        return marketMap;
-    }
+    public FluctuationData get(Item item) { return marketMap.get(item); }
+    public Map<Item, FluctuationData> getAll() { return marketMap; }
+    public static MarketState getState() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
 
     public void registerMineral(Item item, double defaultPrice, double fluctuation) {
         FluctuationData data = marketMap.computeIfAbsent(item, _ -> new FluctuationData(item, defaultPrice, fluctuation));
@@ -56,12 +53,8 @@ public class MarketState extends SavedData {
         setDirty();
     }
 
-    public static MarketState getState() {
-        return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE);
-    }
-
     public static double buyMineral(ServerPlayer player, Item item, int amount) {
-        MarketState market = MarketState.getState();
+        MarketState market = getState();
         FluctuationData data = market.get(item);
         if (data == null || amount <= 0) return -2;
 
@@ -75,7 +68,7 @@ public class MarketState extends SavedData {
     }
 
     public static double sellMineral(ServerPlayer player, Item item, int amount, double multiplier) {
-        MarketState market = MarketState.getState();
+        MarketState market = getState();
         FluctuationData data = market.get(item);
         EconomyData eco = EconomyData.get();
 
@@ -95,7 +88,7 @@ public class MarketState extends SavedData {
     }
 
     public static void register() {
-        MarketState market = MarketState.getState();
+        MarketState market = getState();
 
         market.registerMineral(Items.HEART_OF_THE_SEA, 2000, 6);
         market.registerMineral(Items.NETHER_STAR, 1250, 3);
@@ -112,9 +105,24 @@ public class MarketState extends SavedData {
     }
 
     public static void serverTickLoop(MinecraftServer server) {
-        MarketState market = MarketState.getState();
+        MarketState market = getState();
         boolean updated = false;
         for (FluctuationData data : market.marketMap.values()) if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
         if (updated) market.setDirty();
+    }
+
+    public static double processItemDeposit(ServerPlayer player, ItemStack stack) {
+        Item baseItem = switch (stack.getItem().getDescriptionId()) {
+            case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
+            case "block.minecraft.diamond_block" -> Items.DIAMOND;
+            case "block.minecraft.gold_block" -> Items.GOLD_INGOT;
+            case "block.minecraft.emerald_block" -> Items.EMERALD;
+            case "block.minecraft.lapis_block" -> Items.LAPIS_LAZULI;
+            case "block.minecraft.iron_block" -> Items.IRON_INGOT;
+            case "block.minecraft.copper_block" -> Items.COPPER_INGOT;
+            case "block.minecraft.redstone_block" -> Items.REDSTONE;
+            default -> stack.getItem();
+        };
+        return sellMineral(player, baseItem, stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1), (baseItem != stack.getItem()) ? .93 : 1);
     }
 }

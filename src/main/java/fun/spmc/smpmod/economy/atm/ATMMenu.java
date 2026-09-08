@@ -3,6 +3,7 @@ package fun.spmc.smpmod.economy.atm;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import fun.spmc.smpmod.economy.EconomyData;
+import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -13,8 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.floodgate.api.FloodgateApi;
-
-import static fun.spmc.smpmod.command.EconomyCommands.processItemDeposit;
 
 public class ATMMenu {
     public static void open(ServerPlayer player) {
@@ -111,7 +110,7 @@ public class ATMMenu {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.isEmpty()) continue;
 
-            double payout = processItemDeposit(player, stack);
+            double payout = MarketState.processItemDeposit(player, stack);
             if (payout > 0) {
                 totalPayout += payout;
                 player.getInventory().removeItem(i, stack.getCount());

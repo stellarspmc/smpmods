@@ -1,10 +1,12 @@
 package fun.spmc.smpmod.economy.fluctuate;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class RotationItems {
     public static final List<FluctationExpiry> temporaryItems = new ArrayList<>();
@@ -36,4 +38,6 @@ public class RotationItems {
     }
 
     public record FluctationExpiry(FluctuationData data, int expiryTick) {}
+    public static Stream<Item> getTotalItemStream() { return Stream.concat(RotationItems.temporaryItems.stream().map((a) -> a.data().getMineral()), MarketState.getState().getAll().keySet().stream()); }
+    public static Stream<Item> withDiamondStream() { return Stream.concat(getTotalItemStream(), Stream.of(Items.DIAMOND)); }
 }

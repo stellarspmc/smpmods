@@ -16,7 +16,7 @@ import fun.spmc.smpmod.registry.NPCRegistry;
 import fun.spmc.smpmod.registry.PolymerPlants;
 import fun.spmc.smpmod.registry.QuestRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
-import fun.spmc.smpmod.command.CommandRegistry;
+import fun.spmc.smpmod.registry.CommandRegistry;
 import fun.spmc.smpmod.discord.config.ConfigLoader;
 import fun.spmc.smpmod.misc.BedrockSkinFetcher;
 

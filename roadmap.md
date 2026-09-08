@@ -21,6 +21,11 @@
 * Quick-trade NPC interaction system
 * In-world market management UI
 
+### Planting Rework
+* **Core Idea:** wip
+* **Technical Requirements:**
+* wip
+
 ## v7.3-pre5
 
 ### Fishing Re-Rework
