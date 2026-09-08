@@ -409,7 +409,7 @@ public class ShopData { // no records
         }
     }
 
-    record ShopReceipt(UUID buyerUuid, String buyerName, int stack, double price, long timestamp) {
+    public record ShopReceipt(UUID buyerUuid, String buyerName, int stack, double price, long timestamp) {
         public static final Codec<ShopReceipt> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid),
                 Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName),

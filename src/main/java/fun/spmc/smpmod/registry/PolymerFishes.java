@@ -18,15 +18,15 @@ import java.util.stream.Stream;
 public class PolymerFishes {
     private static final Map<String, Item> FISH_REGISTRY = new HashMap<>();
 
-    public static List<Item> FISH = new ArrayList<>();
-    public static List<Item> PLAINS = new ArrayList<>();
-    public static List<Item> TROPICAL = new ArrayList<>();
-    public static List<Item> DESERT = new ArrayList<>();
-    public static List<Item> SNOWY = new ArrayList<>();
-    public static List<Item> LAVA = new ArrayList<>();
-    public static List<Item> DEEP = new ArrayList<>();
-    public static List<Item> END = new ArrayList<>();
-    public static List<Item> SKY = new ArrayList<>();
+    public final static List<Item> FISH = new ArrayList<>();
+    public final static List<Item> PLAINS = new ArrayList<>();
+    public final static List<Item> TROPICAL = new ArrayList<>();
+    public final static List<Item> DESERT = new ArrayList<>();
+    public final static List<Item> SNOWY = new ArrayList<>();
+    public final static List<Item> LAVA = new ArrayList<>();
+    public final static List<Item> DEEP = new ArrayList<>();
+    public final static List<Item> END = new ArrayList<>();
+    public final static List<Item> SKY = new ArrayList<>();
 
     public static List<Item> getAllFish() {
         return Stream.of(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY)

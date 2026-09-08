@@ -60,3 +60,24 @@
 * **Core Idea:** Cosmetics, wip
 * **Technical Requirements:**
   * wip
+
+### 10. Home Re-write
+* **Target Release:** v7.3-pre5
+* **Core Idea:** The /home provided by essentialcommands is too prone to break with mixins, implementing my own command is better
+* **Technical Requirements:**
+  * /home (port old homes to new home system)
+  * /back 
+  * /spawn
+  * /rtp (cost money, maybe $300 - $3000?)
+
+### 11. Combat Logging
+* **Target Release:** v7.3-pre6
+* **Core Idea:** not elaborating
+* **Technical Requirements:**
+  * probably find a mod to do
+
+### 12. 26.3 Port
+* **Target Release:** when 26.3 drops
+* **Core Idea:** not elaborating
+* **Technical Requirements:**
+  * wait for mods to catch up / port
