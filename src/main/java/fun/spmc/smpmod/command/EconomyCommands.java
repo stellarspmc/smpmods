@@ -9,6 +9,7 @@ import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.atm.ATMMenu;
 import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
+import fun.spmc.smpmod.economy.fluctuate.RotationItems;
 import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
@@ -27,82 +28,26 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
-public class EconomyCommands {
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildBalance() {
-        return Commands.literal("bal")
-                .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                        .executes(ctx -> balanceCommand(ctx, null, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next())))
-                .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException(), null));
-    }
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildBalanceAlias() {
-        return Commands.literal("balance")
-                .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                        .executes(ctx -> balanceCommand(ctx, null, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next())))
-                .executes(ctx -> balanceCommand(ctx, ctx.getSource().getPlayerOrException(), null));
-    }
-
-    private static int balanceCommand(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target, @Nullable NameAndId id) {
-        EconomyData eco = EconomyData.get();
-        ctx.getSource().sendSuccess(() -> Component.literal("💰: ").withStyle(ChatFormatting.GREEN).append(Component.literal((target != null) ? "You" : Objects.requireNonNull(id).name() + " have ").withStyle(ChatFormatting.GOLD)).append(Component.literal(String.format("$%.2f", (target != null) ? eco.getBalance(target.getUUID()) : eco.getBalance(Objects.requireNonNull(id).id()))).withStyle(ChatFormatting.RED)).append(Component.literal(".").withStyle(ChatFormatting.GOLD)), false);
-        return 1;
-    }
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildDeposit() {
-        return Commands.literal("deposit")
-                .executes(ctx -> {
-                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                    ItemStack hand = player.getInventory().getSelectedItem();
-
-                    if (hand.isEmpty()) {
-                        MessageUtils.sendErrorMessage(player, "Hold a valid market item or use /deposit all.");
-                        return -1;
-                    }
-
-                    double payout = processItemDeposit(player, hand);
-                    if (payout <= 0) {
-                        MessageUtils.sendErrorMessage(player, "This item cannot be deposited into the market.");
-                        return -1;
-                    }
-
-                    hand.setCount(0);
-                    MessageUtils.sendSuccessMessage(player, String.format("Deposited items for $%.2f to your account.", payout));
-                    return 1;
-                })
-        .then(Commands.literal("all")
-                .executes(ctx -> {
-                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                    double totalPayout = 0;
-
-                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                        ItemStack stack = player.getInventory().getItem(i);
-                        if (stack.isEmpty()) continue;
-
-                        double payout = processItemDeposit(player, stack);
-                        if (payout > 0) {
-                            totalPayout += payout;
-                            player.getInventory().removeItem(i, stack.getCount());
-                        }
-                    }
-
-                    if (totalPayout > 0) {
-                        MessageUtils.sendSuccessMessage(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout));
-                        return 1;
-                    }
-
-                    MessageUtils.sendErrorMessage(player, "No valid market currency items found in inventory.");
-                    return -1;
-                }));
-    }
+public class EconomyCommands {// TODO: move
 
     public static double processItemDeposit(ServerPlayer player, ItemStack stack) {
-        Item baseItem = unwrapBlockToItem(stack.getItem());
+        Item baseItem = switch (stack.getItem().getDescriptionId()) {
+            case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
+            case "block.minecraft.diamond_block" -> Items.DIAMOND;
+            case "block.minecraft.gold_block" -> Items.GOLD_INGOT;
+            case "block.minecraft.emerald_block" -> Items.EMERALD;
+            case "block.minecraft.lapis_block" -> Items.LAPIS_LAZULI;
+            case "block.minecraft.iron_block" -> Items.IRON_INGOT;
+            case "block.minecraft.copper_block" -> Items.COPPER_INGOT;
+            case "block.minecraft.redstone_block" -> Items.REDSTONE;
+            default -> stack.getItem();
+        };
         return MarketState.sellMineral(player, baseItem, stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1), (baseItem != stack.getItem()) ? .93 : 1);
     }
 
@@ -149,60 +94,7 @@ public class EconomyCommands {
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildSend() {
-        return Commands.literal("send")
-                .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                .then(Commands.argument("amount", DoubleArgumentType.doubleArg(.1))
-                .executes((ctx -> {
-                    NameAndId target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next();
-                    ServerPlayer sender = ctx.getSource().getPlayerOrException();
-                    double amount = Math.round(DoubleArgumentType.getDouble(ctx, "amount") * 100f) / 100f;
-
-                    if (sender.getUUID().equals(target.id())) {
-                        MessageUtils.sendErrorMessage(sender, "You cannot send money to yourself.");
-                        return -1;
-                    }
-
-                    EconomyData eco = EconomyData.get();
-                    if (eco.changeBalance(sender.getUUID(), -amount)) {
-                        eco.changeBalance(target.id(), amount);
-
-                        if (minecraftServer.getPlayerList().getPlayer(target.id()) != null)
-                            Objects.requireNonNull(minecraftServer.getPlayerList().getPlayer(target.id())).sendSystemMessage(Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
-                                .append(Component.literal("You received ").withStyle(ChatFormatting.GOLD))
-                                .append(Component.literal(String.format("$%.2f", amount)).withStyle(ChatFormatting.RED))
-                                .append(Component.literal(" from ").withStyle(ChatFormatting.GOLD))
-                                .append(Component.literal(sender.getName().getString()).withStyle(ChatFormatting.RED)));
-
-                        MessageUtils.sendSuccessMessage(sender, String.format("Sent $%.2f to %s.", amount, target.name()));
-                        return 1;
-                    }
-
-                    MessageUtils.sendErrorMessage(sender, "Insufficient funds.");
-                    return -1;
-        }))));
-    }
-
-
-    public static LiteralArgumentBuilder<CommandSourceStack> buildATM() {
-        return Commands.literal("atm")
-                .executes(ctx -> {
-                    ATMMenu.open(ctx.getSource().getPlayerOrException());
-                    return 1;
-                });
-    }
-
-    private static Item unwrapBlockToItem(Item item) {
-        return switch (item.getDescriptionId()) {
-            case "block.minecraft.netherite_block" -> Items.NETHERITE_INGOT;
-            case "block.minecraft.diamond_block" -> Items.DIAMOND;
-            case "block.minecraft.gold_block" -> Items.GOLD_INGOT;
-            case "block.minecraft.emerald_block" -> Items.EMERALD;
-            case "block.minecraft.lapis_block" -> Items.LAPIS_LAZULI;
-            case "block.minecraft.iron_block" -> Items.IRON_INGOT;
-            case "block.minecraft.copper_block" -> Items.COPPER_INGOT;
-            case "block.minecraft.redstone_block" -> Items.REDSTONE;
-            default -> item;
-        };
+        return
     }
 
     private static void giveExactItems(ServerPlayer player, Item item, int totalCount) {
@@ -220,53 +112,53 @@ public class EconomyCommands {
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildMarket(CommandBuildContext buildContext) {
         return Commands.literal("market")
-                .executes(EconomyCommands::listMarketPrices)
+                .executes(ctx -> {
+                    MarketState market = MarketState.getState();
+                    ctx.getSource().sendSuccess(() -> Component.literal("Market Prices").withStyle(ChatFormatting.GOLD), false);
+                    Stream.concat(RotationItems.temporaryItems.stream().map((a) -> Map.entry(a.data().getMineral(), a.data())), market.getAll().entrySet().stream())
+                            .sorted((e1, e2) -> Double.compare(e2.getValue().getDefaultPrice(), e1.getValue().getDefaultPrice()))
+                            .forEach((entry) -> {
+                                Item item = entry.getKey();
+                                FluctuationData data = entry.getValue();
+
+                                double buyUnit = data.getBulkBuyCost(1);
+                                double sellUnit = data.getBulkSellPayout(1);
+                                double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
+
+                                String trend = ratio > 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
+                                ChatFormatting trendColor = ratio >= 0 ? ((ratio == 0) ? ChatFormatting.GRAY : ChatFormatting.RED) : ChatFormatting.GREEN;
+
+                                Component message = Component.literal("• ").withStyle(ChatFormatting.GRAY)
+                                        .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                                        .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
+                                        .append(Component.literal(trend).withStyle(trendColor));
+
+                                ctx.getSource().sendSuccess(() -> message, false);
+                            });
+
+                    return 1;
+                })
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
-                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey), builder))
-                        .executes(ctx -> showItemPrice(ctx, ItemArgument.getItem(ctx, "item").item().value())));
-    }
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(Stream.concat(RotationItems.temporaryItems.stream().map((a) -> a.data().getMineral()), MarketState.getState().getAll().keySet().stream()).map(BuiltInRegistries.ITEM::getKey), builder))
+                        .executes(ctx -> {
+                            Item targetItem = ItemArgument.getItem(ctx, "item").item().value();
+                            MarketState market = MarketState.getState();
 
-    private static int listMarketPrices(CommandContext<CommandSourceStack> ctx) {
-        MarketState market = MarketState.getState();
-        ctx.getSource().sendSuccess(() -> Component.literal("Market Prices").withStyle(ChatFormatting.GOLD), false);
-        market.getAll().entrySet().stream()
-                .sorted((e1, e2) -> Double.compare(e2.getValue().getDefaultPrice(), e1.getValue().getDefaultPrice()))
-                .forEach((entry) -> {
-                    Item item = entry.getKey();
-                    FluctuationData data = entry.getValue();
+                            FluctuationData data = market.get(targetItem);
+                            if (data == null) data = RotationItems.temporaryItems.stream().map(RotationItems.FluctationExpiry::data).filter(d -> d.getMineral() == targetItem).findFirst().orElse(null);
+                            if (data == null) {
+                                ctx.getSource().sendFailure(Component.literal("This item is not tracked by the market."));
+                                return -1;
+                            }
 
-                    double buyUnit = data.getBulkBuyCost(1);
-                    double sellUnit = data.getBulkSellPayout(1);
-                    double ratio = (data.getCurrentPrice() / data.getDefaultPrice() - 1) * 100.0;
+                            FluctuationData finalData = data;
+                            ctx.getSource().sendSuccess(() -> Component.literal(String.format(" Base Price: $%.2f", finalData.getDefaultPrice())).withStyle(ChatFormatting.GRAY), false);
+                            ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", finalData.getBulkBuyCost(1), finalData.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE), false);
+                            ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", finalData.getBulkBuyCost(64), finalData.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE), false);
 
-                    String trend = ratio > 0 ? String.format(" (+%.1f%%)", ratio) : String.format(" (%.1f%%)", ratio);
-                    ChatFormatting trendColor = ratio >= 0 ? ((ratio == 0) ? ChatFormatting.GRAY : ChatFormatting.RED) : ChatFormatting.GREEN;
-
-                    Component message = Component.literal("• ").withStyle(ChatFormatting.GRAY)
-                            .append(Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
-                            .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
-                            .append(Component.literal(trend).withStyle(trendColor));
-
-                    ctx.getSource().sendSuccess(() -> message, false);
-        });
-
-        return 1;
-    }
-
-    private static int showItemPrice(CommandContext<CommandSourceStack> ctx, Item item) {
-        MarketState market = MarketState.getState();
-        FluctuationData data = market.get(item);
-
-        if (data == null) {
-            ctx.getSource().sendFailure(Component.literal("This item is not tracked by the market."));
-            return -1;
-        }
-
-        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" Base Price: $%.2f", data.getDefaultPrice())).withStyle(ChatFormatting.GRAY), false);
-        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE), false);
-        ctx.getSource().sendSuccess(() -> Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE), false);
-
-        return 1;
+                            return 1;
+                        })
+                );
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> buildTop() {

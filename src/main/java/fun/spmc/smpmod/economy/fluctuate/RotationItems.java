@@ -1,6 +1,5 @@
 package fun.spmc.smpmod.economy.fluctuate;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
 
@@ -8,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RotationItems {
-    protected static final List<FluctuationData> temporaryItems = new ArrayList<>();
-    private static int tickCounter = 0;
+    public static final List<FluctationExpiry> temporaryItems = new ArrayList<>();
     protected static final List<FluctuationData> chosenItems = List.of(
             new FluctuationData(Items.ENCHANTED_GOLDEN_APPLE, 1500, 4.5),
             new FluctuationData(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, 750, 2.5),
@@ -18,15 +16,24 @@ public class RotationItems {
     );
 
     public static void addTemporaryItem(MinecraftServer server) {
-        FluctuationData data = chosenItems.get(server.overworld().getRandom().nextInt(chosenItems.size() + 1));
-        temporaryItems.add(data);
+        if (chosenItems.isEmpty()) return;
+        FluctuationData template = chosenItems.get(server.overworld().getRandom().nextInt(chosenItems.size()));
+        FluctationExpiry item = new FluctationExpiry(new FluctuationData(template.getMineral(), template.defaultPrice, template.fluctuation), server.getTickCount() + server.overworld().getRandom().nextInt(144000) + 144000);
+        temporaryItems.add(item);
     }
 
-    public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            tickCounter++;
-            if (tickCounter % 1200 == 0) temporaryItems.forEach(data -> data.applyMarketDecay(server.overworld().getRandom()));
-            if (tickCounter % 72000 == 0) addTemporaryItem(server);
-        });
+    static int rotationTick = 144000;
+    public static void serverTickLoop(MinecraftServer server) {
+        int ticks = server.getTickCount();
+        if (ticks == 0) return;
+        if (ticks % 1200 == 0 && !temporaryItems.isEmpty()) temporaryItems.forEach(data -> data.data().applyMarketDecay(server.overworld().getRandom()));
+        temporaryItems.removeIf(data -> ticks >= data.expiryTick());
+
+        if (ticks % rotationTick == 0) {
+            addTemporaryItem(server);
+            rotationTick = server.overworld().getRandom().nextInt(144000) + 144000;
+        }
     }
+
+    public record FluctationExpiry(FluctuationData data, int expiryTick) {}
 }

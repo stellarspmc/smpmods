@@ -2,8 +2,10 @@ package fun.spmc.smpmod.economy.fluctuate;
 
 import com.mojang.serialization.Codec;
 import fun.spmc.smpmod.economy.EconomyData;
+import fun.spmc.smpmod.economy.shop.ShopData;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.item.Item;
@@ -47,12 +49,9 @@ public class MarketState extends SavedData {
     }
 
     public void registerMineral(Item item, double defaultPrice, double fluctuation) {
-        FluctuationData data = marketMap.get(item);
-        if (data == null) marketMap.put(item, new FluctuationData(item, defaultPrice, fluctuation));
-        else {
-            data.defaultPrice = defaultPrice;
-            data.fluctuation = fluctuation;
-        }
+        FluctuationData data = marketMap.computeIfAbsent(item, _ -> new FluctuationData(item, defaultPrice, fluctuation));
+        data.defaultPrice = defaultPrice;
+        data.fluctuation = fluctuation;
 
         setDirty();
     }
@@ -95,8 +94,6 @@ public class MarketState extends SavedData {
         return 0;
     }
 
-    private static int tickCounter = 0;
-
     public static void register() {
         MarketState market = MarketState.getState();
 
@@ -112,23 +109,12 @@ public class MarketState extends SavedData {
         market.registerMineral(Items.COPPER_INGOT, .2, .75);
         market.registerMineral(Items.COAL, .1, 1.95);
         market.registerMineral(Items.AMETHYST_SHARD, .05, 2.15);
+    }
 
-        ServerTickEvents.END_SERVER_TICK.register((server) -> {
-            int playerCount = server.getPlayerList().getPlayerCount();
-            if (playerCount == 0) return;
-            int targetInterval = 900 + (playerCount - 1) * 125;
-            tickCounter++;
-
-            if (tickCounter >= targetInterval) {
-                tickCounter = 0;
-
-                boolean updated = false;
-                for (FluctuationData data : market.marketMap.values()) {
-                    if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
-                }
-
-                if (updated) market.setDirty();
-            }
-        });
+    public static void serverTickLoop(MinecraftServer server) {
+        MarketState market = MarketState.getState();
+        boolean updated = false;
+        for (FluctuationData data : market.marketMap.values()) if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
+        if (updated) market.setDirty();
     }
 }

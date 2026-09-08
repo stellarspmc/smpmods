@@ -1,10 +1,13 @@
 package fun.spmc.smpmod.npc;
 
+import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
+import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -80,20 +83,17 @@ public class NPCManager {
             }
             return InteractionResult.PASS;
         });
+    }
 
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            ServerLevel level = server.overworld();
-            if (server.getTickCount() % 5 == 0) {
-                NPCData npcData = NPCData.get();
-                for (UUID uuid : npcData.getNpcMap().values()) {
-                    CustomNPC def = DEFINITIONS.get(npcData.getNpcId(uuid));
-                    Entity entity = level.getEntity(uuid);
-                    if (entity instanceof Mannequin mannequin && mannequin.isAlive() && def != null && def.lookAtPlayer()) {
-                        Player nearestPlayer = level.getNearestPlayer(mannequin, 12.0);
-                        if (nearestPlayer != null) mannequin.lookAt(EntityAnchorArgument.Anchor.EYES, nearestPlayer.getEyePosition());
-                    }
-                }
+    public static void serverTickLoop(MinecraftServer server) {
+        NPCData npcData = NPCData.get();
+        for (UUID uuid : npcData.getNpcMap().values()) {
+            CustomNPC def = DEFINITIONS.get(npcData.getNpcId(uuid));
+            Entity entity = server.overworld().getEntity(uuid); // TODO: account of different dimensions
+            if (entity instanceof Mannequin mannequin && mannequin.isAlive() && def != null && def.lookAtPlayer()) {
+                Player nearestPlayer = mannequin.level().getNearestPlayer(mannequin, 12.0);
+                if (nearestPlayer != null) mannequin.lookAt(EntityAnchorArgument.Anchor.EYES, nearestPlayer.getEyePosition());
             }
-        });
+        }
     }
 }

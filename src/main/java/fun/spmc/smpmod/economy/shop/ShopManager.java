@@ -113,7 +113,6 @@ public class ShopManager extends SavedData {
         manager.setDirty();
     }
 
-    private static int tickCounter = 0;
     public static void register() {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
@@ -170,10 +169,7 @@ public class ShopManager extends SavedData {
             }
             return true;
         });
-
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            tickCounter++;
-            if (tickCounter % 300 == 0) getAllShops(server).forEach(ShopData::updateHologram);
-        });
     }
+
+    public static void serverTickLoop(MinecraftServer server) { getAllShops(server).forEach(ShopData::updateHologram); }
 }

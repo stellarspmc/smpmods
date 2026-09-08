@@ -2,6 +2,7 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
+import fun.spmc.smpmod.economy.fluctuate.RotationItems;
 import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
@@ -69,7 +70,6 @@ public class SMPMod implements DedicatedServerModInitializer {
     public static JDA bot;
     public static TextChannel messageChannel;
     public static MinecraftServer minecraftServer;
-    private int tickCounter = 0;
 
     @Override
     public void onInitializeServer() {
@@ -157,11 +157,14 @@ public class SMPMod implements DedicatedServerModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getPlayerList().getPlayers().isEmpty()) return;
-            tickCounter++;
 
-            if (tickCounter % 1200 != 0) return;
+            if (server.getTickCount() % 900 + (server.getPlayerList().getPlayerCount() - 1) * 125 == 0) MarketState.serverTickLoop(server);
+            if (server.getTickCount() % 360 == 0) ShopManager.serverTickLoop(server);
+            if (server.getTickCount() % 15 == 0) NPCManager.serverTickLoop(server);
+            if (server.getTickCount() % 1200 != 0) return;
+            RotationItems.serverTickLoop(server);
+
             Scoreboard scoreboard = server.getScoreboard();
-
             Objective objective = scoreboard.getObjective("play_time");
             if (objective == null) {
                 objective = scoreboard.addObjective(
@@ -196,14 +199,12 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerEntityEvents.ENTITY_LOAD.register(ServerMobSpawner::onEntityJoin);
         UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss);
 
-        // dont ask why twice
-        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+        // proof of concept, TODO: make it better
+        PlayerBlockBreakEvents.AFTER.register((world, _, pos, state, _) -> {
             if (world.isClientSide()) return;
 
             if (state.is(Blocks.SHORT_GRASS) || state.is(Blocks.TALL_GRASS)) {
-                if (world.getRandom().nextFloat() < 0.08f) { // 8% chance
-                    Block.popResource(world, pos, new ItemStack(PolymerPlants.SEEDS.get("wheat")));
-                }
+                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, new ItemStack(PolymerPlants.SEEDS.get("wheat")));
             }
         });
     }
