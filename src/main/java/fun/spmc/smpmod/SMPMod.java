@@ -20,7 +20,6 @@ import fun.spmc.smpmod.misc.BedrockSkinFetcher;
 
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.VaultData;
-import fun.spmc.smpmod.vault.VaultUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;

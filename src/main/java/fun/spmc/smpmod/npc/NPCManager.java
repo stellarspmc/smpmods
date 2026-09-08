@@ -16,15 +16,14 @@ import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class NPCManager {
     private static final Map<String, CustomNPC> DEFINITIONS = new HashMap<>();
     public static void register(CustomNPC npc) { DEFINITIONS.put(npc.getId(), npc); }
     public static @Nullable CustomNPC getDefinition(String id) { return DEFINITIONS.get(id); }
     public static boolean isRegistered(String id) { return DEFINITIONS.containsKey(id); }
+    public static ArrayList<String> getAllIds() { return new ArrayList<>(DEFINITIONS.keySet()); }
 
     public static @Nullable Mannequin spawn(String id, ServerLevel level, BlockPos pos) {
         CustomNPC def = DEFINITIONS.get(id);

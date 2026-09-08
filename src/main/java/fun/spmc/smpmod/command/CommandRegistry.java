@@ -42,6 +42,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
+@SuppressWarnings("UnstableApiUsage")
 public class CommandRegistry {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, Commands.CommandSelection ignoredCommandSelection) {
         dispatcher.register(EconomyCommands.buildDeposit()); // TODO: move
@@ -57,7 +58,7 @@ public class CommandRegistry {
         dispatcher.register(Commands.literal("npc")
                 .then(Commands.literal("setup").then(Commands.argument("id", StringArgumentType.greedyString())
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCData.get().getNpcMap().keySet(), builder))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCManager.getAllIds(), builder))
                         .executes(ctx -> {
                                 ServerLevel level = ctx.getSource().getLevel();
                                 String id = StringArgumentType.getString(ctx, "id");
@@ -74,9 +75,9 @@ public class CommandRegistry {
                                 MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Mannequin isn't alive!");
                                 return 0;
                         }))
-                .then(Commands.literal("kill").then(Commands.argument("id", StringArgumentType.greedyString())
+                ).then(Commands.literal("kill").then(Commands.argument("id", StringArgumentType.greedyString())
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
-                        .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCData.get().getNpcMap().keySet(), builder))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCManager.getAllIds(), builder))
                         .executes(ctx -> {
                             ServerLevel level = ctx.getSource().getLevel();
                             Vec3 pos = ctx.getSource().getPosition();
@@ -92,7 +93,7 @@ public class CommandRegistry {
                             MessageUtils.sendSuccessMessage(ctx.getSource().getPlayerOrException(), "Mannequin created successfully!");
                             return 1;
                         }))
-                ))
+                )
         );
 
         dispatcher.register(Commands.literal("fishing").executes(ctx -> FishTracker.openFishIndexMenu(ctx.getSource().getPlayerOrException())));
