@@ -3,7 +3,6 @@ package fun.spmc.smpmod.economy.shop;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import fun.spmc.smpmod.utils.MessageUtils;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -151,10 +150,7 @@ public class ShopManager extends SavedData {
             BlockPos pos = hitResult.getBlockPos();
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
             if (shop != null && player instanceof ServerPlayer serverPlayer) {
-                if (!shop.isOwner(serverPlayer)) {
-                    MessageUtils.sendErrorMessage(serverPlayer, "You cannot open someone else's shop barrel!");
-                    return InteractionResult.FAIL;
-                }
+                if (!shop.isOwner(serverPlayer)) return MessageUtils.sendError(serverPlayer, "You cannot open someone else's shop barrel!", InteractionResult.FAIL);
             }
             return InteractionResult.PASS;
         });
@@ -163,10 +159,7 @@ public class ShopManager extends SavedData {
             if (world.isClientSide()) return true;
 
             ShopData shop = ShopManager.getByPos((ServerLevel) world, pos);
-            if (shop != null && player instanceof ServerPlayer serverPlayer) {
-                MessageUtils.sendErrorMessage(serverPlayer, "You cannot break a shop!");
-                return false;
-            }
+            if (shop != null && player instanceof ServerPlayer serverPlayer) return MessageUtils.sendError(serverPlayer, "You cannot break a shop!", false);
             return true;
         });
     }

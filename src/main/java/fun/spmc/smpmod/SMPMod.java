@@ -2,7 +2,6 @@ package fun.spmc.smpmod;
 
 import fun.spmc.smpmod.discord.DiscordWebhook;
 import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.economy.fluctuate.RotationItems;
 import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
@@ -142,13 +141,13 @@ public class SMPMod implements DedicatedServerModInitializer {
 
                     if (totalLost > 0) {
                         eco.changeBalance(player.getUUID(), -totalLost);
-                        MessageUtils.sendErrorMessage(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100));
+                        MessageUtils.sendError(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100), 0);
 
                         if (damageSource.getEntity() instanceof ServerPlayer killer && !killer.getUUID().equals(player.getUUID())) {
                             double bountyReward = Math.round((totalLost * .7) * 100.0) / 100.0;
 
                             eco.changeBalance(killer.getUUID(), bountyReward);
-                            MessageUtils.sendSuccessMessage(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.getScoreboardName(), bountyReward));
+                            MessageUtils.sendSuccess(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.getScoreboardName(), bountyReward), 1);
                         }
                     }
                 }
@@ -158,11 +157,10 @@ public class SMPMod implements DedicatedServerModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getPlayerList().getPlayers().isEmpty()) return;
 
-            if (server.getTickCount() % 900 + (server.getPlayerList().getPlayerCount() - 1) * 125 == 0) MarketState.serverTickLoop(server);
             if (server.getTickCount() % 360 == 0) ShopManager.serverTickLoop(server);
             if (server.getTickCount() % 15 == 0) NPCManager.serverTickLoop(server);
             if (server.getTickCount() % 1200 != 0) return;
-            RotationItems.serverTickLoop(server);
+            MarketState.serverTickLoop(server);
 
             Scoreboard scoreboard = server.getScoreboard();
             Objective objective = scoreboard.getObjective("play_time");

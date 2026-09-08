@@ -3,6 +3,7 @@ package fun.spmc.smpmod.utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageUtils {
-    public static void sendErrorMessage(ServerPlayer player, String message) {
+    public static <T> T sendError(ServerPlayer player, String message, T returnValue) {
         player.sendSystemMessage(Component.literal("✖: " + message).withStyle(ChatFormatting.RED));
+        return returnValue;
     }
 
-    public static void sendSuccessMessage(ServerPlayer player, String message) {
+    public static <T> T sendSuccess(ServerPlayer player, String message, T returnValue) {
         player.sendSystemMessage(Component.literal("✔: " + message).withStyle(ChatFormatting.GREEN));
+        return returnValue;
     }
 
     public static String parseMarkdown(String message) {

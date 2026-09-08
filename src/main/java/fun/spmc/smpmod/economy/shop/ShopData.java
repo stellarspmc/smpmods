@@ -34,7 +34,7 @@ import java.util.UUID;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
-public class ShopData { // no records
+public class ShopData {
     public static final Codec<ShopData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::getShopId),
             UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::getOwnerUuid),
@@ -138,18 +138,12 @@ public class ShopData { // no records
                 .append(Component.literal(creative ? "∞" : getAvailableStock() + " batches").withStyle(ChatFormatting.GREEN));
     }
 
-    public void processPurchase(ServerPlayer buyer) {
+    public int processPurchase(ServerPlayer buyer) {
         int availableBatches = getAvailableStock();
-        if (availableBatches < 1) {
-            MessageUtils.sendErrorMessage(buyer, "This shop is out of stock!");
-            return;
-        }
+        if (availableBatches < 1) return MessageUtils.sendError(buyer, "This shop is out of stock!", 0);
 
         EconomyData eco = EconomyData.get();
-        if (eco.getBalance(buyer.getUUID()) < price) {
-            MessageUtils.sendErrorMessage(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price));
-            return;
-        }
+        if (eco.getBalance(buyer.getUUID()) < price) return MessageUtils.sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0);
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
             if (!creative) {
@@ -169,6 +163,7 @@ public class ShopData { // no records
 
             updateHologram();
         }
+        return 1;
     }
 
     private void removeStockFromBarrel(int amountToRemove) {

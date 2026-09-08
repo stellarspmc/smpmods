@@ -2,8 +2,6 @@ package fun.spmc.smpmod.economy.fluctuate;
 
 import com.mojang.serialization.Codec;
 import fun.spmc.smpmod.economy.EconomyData;
-import fun.spmc.smpmod.economy.shop.ShopData;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,20 +15,19 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class MarketState extends SavedData {
-    private final Map<Item, FluctuationData> marketMap = new HashMap<>();
-
+    private static final Map<Item, FluctuationData> permanentMarketMap = new HashMap<>();
+    private static final Map<Item, FluctuationExpiry> temporaryMarketMap = new HashMap<>();
+    private static int rotationTick = 144000;
     public static final Codec<MarketState> CODEC = FluctuationData.CODEC.listOf().xmap(
             datum -> {
                 MarketState market = new MarketState();
                 for (FluctuationData data : datum) market.registerMineral(data.getMineral(), data.getDefaultPrice(), data.getFluctuation());
                 return market;
-            },
-            market -> List.copyOf(market.marketMap.values())
+            }, _ -> List.copyOf(permanentMarketMap.values())
     );
 
     public static final SavedDataType<MarketState> TYPE = new SavedDataType<>(
@@ -41,26 +38,33 @@ public class MarketState extends SavedData {
     );
 
     public MarketState() {}
-    public FluctuationData get(Item item) { return marketMap.get(item); }
-    public Map<Item, FluctuationData> getAll() { return marketMap; }
+    public FluctuationData get(Item item) { return getAll().get(item); }
     public static MarketState getState() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
+    public Map<Item, FluctuationData> getAll() {
+        Map<Item, FluctuationData> combined = new HashMap<>(permanentMarketMap);
+        temporaryMarketMap.forEach((item, expiry) -> combined.put(item, expiry.data()));
+        return combined;
+    }
 
     public void registerMineral(Item item, double defaultPrice, double fluctuation) {
-        FluctuationData data = marketMap.computeIfAbsent(item, _ -> new FluctuationData(item, defaultPrice, fluctuation));
+        FluctuationData data = permanentMarketMap.computeIfAbsent(item, _ -> new FluctuationData(item, defaultPrice, fluctuation));
         data.defaultPrice = defaultPrice;
         data.fluctuation = fluctuation;
-
         setDirty();
     }
 
     public static double buyMineral(ServerPlayer player, Item item, int amount) {
         MarketState market = getState();
         FluctuationData data = market.get(item);
-        if (data == null || amount <= 0) return -2;
+        if (amount <= 0) return -2;
+
+        EconomyData eco = EconomyData.get();
+        if (item.equals(Items.DIAMOND)) {
+            if (!eco.changeBalance(player.getUUID(), -amount * 100)) return -1;
+            return amount * 100;
+        } else if (data == null) return -2;
 
         double totalCost = Math.round(data.getBulkBuyCost(amount) * 100.0) / 100.0;
-        EconomyData eco = EconomyData.get();
-
         if (!eco.changeBalance(player.getUUID(), -totalCost)) return -1;
         data.withdraw(amount);
         market.setDirty();
@@ -104,11 +108,35 @@ public class MarketState extends SavedData {
         market.registerMineral(Items.AMETHYST_SHARD, .05, 2.15);
     }
 
+    protected static final List<FluctuationData> chosenItems = List.of(
+            new FluctuationData(Items.ENCHANTED_GOLDEN_APPLE, 1500, 4.5),
+            new FluctuationData(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, 750, 2.5),
+            new FluctuationData(Items.TOTEM_OF_UNDYING, 350, 1.5),
+            new FluctuationData(Items.SHULKER_SHELL, 1200, 4)
+    );
+
+    public static void addTemporaryItem(MinecraftServer server) {
+        if (chosenItems.isEmpty()) return;
+        FluctuationData template = chosenItems.get(server.overworld().getRandom().nextInt(chosenItems.size()));
+        temporaryMarketMap.put(template.getMineral(), new FluctuationExpiry(new FluctuationData(template.getMineral(), template.defaultPrice, template.fluctuation), server.getTickCount() + server.overworld().getRandom().nextInt(144000) + 144000));
+    }
+
+
     public static void serverTickLoop(MinecraftServer server) {
-        MarketState market = getState();
-        boolean updated = false;
-        for (FluctuationData data : market.marketMap.values()) if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
-        if (updated) market.setDirty();
+        int ticks = server.getTickCount();
+        if (ticks % 900 + (server.getPlayerList().getPlayerCount() - 1) * 125 == 0) {
+            MarketState market = getState();
+            boolean updated = false;
+            for (FluctuationData data : permanentMarketMap.values()) if (data.applyMarketDecay(server.overworld().getRandom())) updated = true;
+            if (!temporaryMarketMap.isEmpty()) temporaryMarketMap.values().forEach(data -> data.data().applyMarketDecay(server.overworld().getRandom()));
+            if (updated) market.setDirty();
+        }
+
+        if (ticks % 1200 == 0 && !temporaryMarketMap.isEmpty()) temporaryMarketMap.values().removeIf(data -> ticks >= data.expiryTick());
+        else if (ticks % rotationTick == 0) {
+            addTemporaryItem(server);
+            rotationTick = server.overworld().getRandom().nextInt(144000) + 144000;
+        }
     }
 
     public static double processItemDeposit(ServerPlayer player, ItemStack stack) {
@@ -125,4 +153,6 @@ public class MarketState extends SavedData {
         };
         return sellMineral(player, baseItem, stack.getCount() * ((baseItem != stack.getItem()) ? 9 : 1), (baseItem != stack.getItem()) ? .93 : 1);
     }
+
+    public record FluctuationExpiry(FluctuationData data, int expiryTick) {}
 }
