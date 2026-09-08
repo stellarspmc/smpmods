@@ -1,8 +1,6 @@
 package fun.spmc.smpmod.quest;
 
 import com.mojang.serialization.Codec;
-import fun.spmc.smpmod.quest.data.PlayerQuestData;
-import fun.spmc.smpmod.quest.data.Quest;
 import fun.spmc.smpmod.registry.QuestRegistry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
@@ -28,10 +26,10 @@ public class QuestManager extends SavedData {
             DataFixTypes.LEVEL
     );
 
-    public QuestManager(Map<UUID, PlayerQuestData> questData) { this.playerQuests = questData; }
+    public QuestManager(Map<UUID, PlayerQuestData> questData) { this.playerQuests = new HashMap<>(questData); }
     public QuestManager() { this(new HashMap<>()); }
     public static QuestManager get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
-    public static PlayerQuestData getQuests(ServerPlayer player) { return get().playerQuests.getOrDefault(player.getUUID(), new PlayerQuestData()); }
+    public static PlayerQuestData getQuests(ServerPlayer player) { return get().playerQuests.computeIfAbsent(player.getUUID(), _ -> new PlayerQuestData()); }
 
     public void checkAndResetRotations(ServerPlayer player) {
         PlayerQuestData data = getQuests(player);
@@ -47,6 +45,8 @@ public class QuestManager extends SavedData {
             data.setLastWeeklyResetWeek(currentWeek);
             setDirty();
         }
+
+        data.getActiveQuests().stream().filter(a -> a.getQuest().questType().equals(Quest.QuestCategory.DAILY) | a.getQuest().questType().equals(Quest.QuestCategory.WEEKLY)).forEach(a -> completeAndClaim(player, a));
     }
 
     public List<Quest> getAvailableNpcQuests(ServerPlayer player, String npcId) {
@@ -65,7 +65,6 @@ public class QuestManager extends SavedData {
         PlayerQuestData data = getQuests(player);
         quest.questReward().grant(player);
         activeQuest.setClaimed(true);
-
         data.getCompletedQuestIds().add(quest.id());
 
         if (quest.isNpcQuest()) data.getActiveQuests().remove(activeQuest);
@@ -73,7 +72,7 @@ public class QuestManager extends SavedData {
     }
 
     private void refreshQuestsForCategory(PlayerQuestData data, ServerPlayer player, Quest.QuestCategory category, List<Quest> availablePool) {
-        data.getActiveQuests().removeIf(q -> q.getQuest() != null && q.getQuest().questType() == category);
+        data.getActiveQuests().removeIf(q -> QuestRegistry.get(q.getQuestId()) != null && QuestRegistry.get(q.getQuestId()).questType() == category);
         if (availablePool.isEmpty()) return;
 
         List<Quest> pool = new ArrayList<>(availablePool);

@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.registry;
 
 import fun.spmc.smpmod.quest.QuestManager;
-import fun.spmc.smpmod.quest.data.Quest;
+import fun.spmc.smpmod.quest.Quest;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -114,11 +114,11 @@ public class QuestRegistry {
     }
 
     private static void initWeekly() {
-        register(new Quest(
-                "daily_fish_3", "Fishing Master", "Fish 75 Times",
-                Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY,
+        /*register(new Quest(
+                "weekly_fish_1", "Fishing Master", "Fish 125 Times",
+                Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 125, Quest.QuestCategory.WEEKLY,
                 new Quest.QuestReward(5900, 85, List.of()), Optional.empty(), Optional.empty()
-        ));
+        ));*/
     }
 
     private static void register(Quest quest) { QUESTS.put(quest.id(), quest); }

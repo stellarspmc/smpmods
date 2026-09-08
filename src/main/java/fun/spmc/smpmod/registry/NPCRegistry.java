@@ -59,7 +59,7 @@ public class NPCRegistry {
 
         NPCManager.register(new CustomNPC.Builder("vault_guardian", true)
                 .displayName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-                .skin("vault_guardian", new int[]{-2090072119,-764915421,-1802191614,-271883842}, "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmZkODNhY2NhOWFmM3JiYWQ3MDVmNzE0MzU1ZDk0MTA3NDEyY2E0ZWJiZDRjZTkzOTE2MGMxYmUxMGNjZDFhMiJ9fX0=")
+                .skin("vault_guardian", new int[]{-1964164316,1320767568,-2005365226,1352775866}, "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjBmNGI2NzRjZmMyZWJmMDEwZWEwYTAwNzM5NzY3YzA4YjNkNmE5N2EwNGVmNmZlM2QxYWY1NTljYzU0YzBjZiJ9fX0=")
                 .onAttack((player, _) -> new VaultData.DonateAnvilGui(player).open())
                 .onUse((player, _) -> VaultData.sendVaultMessage(player))
                 .build());
@@ -71,6 +71,11 @@ public class NPCRegistry {
                 .onUse((player, mannequin) -> NPCData.talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you."), player))
                 .build());
 
-
+        NPCManager.register(new CustomNPC.Builder("dw_rewarder", true)
+                .displayName(Component.literal("Rewarder").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+                .skin("dw_rewarder", new int[]{-1913824437,1951356145,-1425084227,-1019769070}, "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2IzZTgwMTkyOTIyOTMyOTNjNmUyYWI3N2VlZGZiZTE1YjQxMjZjNmM2NTI0N2UzNGQ3OTgzNzIyM2FhZjExNSJ9fX0=")
+                .onAttack((player, mannequin) -> NPCData.talkAsMannequin(mannequin, Component.literal("stub: say smt"), player))
+                .onUse((player, mannequin) -> NPCData.talkAsMannequin(mannequin, Component.literal("stub: do something"), player)) // TODO: write dialogue
+                .build());
     }
 }

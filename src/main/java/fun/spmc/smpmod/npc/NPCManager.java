@@ -65,8 +65,8 @@ public class NPCManager {
             return InteractionResult.PASS;
         });
 
-        UseEntityCallback.EVENT.register((player, world, _, entity, _) -> {
-            if (world.isClientSide()) return InteractionResult.PASS;
+        UseEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
+            if (world.isClientSide() || hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
             if (entity instanceof Mannequin mannequin) {
                 String npcId = NPCData.get().getNpcId(mannequin.getUUID());

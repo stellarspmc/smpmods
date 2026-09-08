@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.mixin;
 
 import fun.spmc.smpmod.quest.QuestManager;
-import fun.spmc.smpmod.quest.data.Quest;
+import fun.spmc.smpmod.quest.Quest;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

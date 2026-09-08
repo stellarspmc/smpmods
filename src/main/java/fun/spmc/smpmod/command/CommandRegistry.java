@@ -7,8 +7,8 @@ import fun.spmc.smpmod.fishing.FishTracker;
 import fun.spmc.smpmod.npc.NPCData;
 import fun.spmc.smpmod.npc.NPCManager;
 import fun.spmc.smpmod.quest.QuestManager;
-import fun.spmc.smpmod.quest.data.PlayerQuestData;
-import fun.spmc.smpmod.quest.data.Quest;
+import fun.spmc.smpmod.quest.PlayerQuestData;
+import fun.spmc.smpmod.quest.Quest;
 import fun.spmc.smpmod.utils.MessageUtils;
 import fun.spmc.smpmod.vault.VaultData;
 import net.minecraft.ChatFormatting;
@@ -56,7 +56,7 @@ public class CommandRegistry {
         dispatcher.register(EconomyCommands.buildBalanceAlias());
 
         dispatcher.register(Commands.literal("npc")
-                .then(Commands.literal("setup").then(Commands.argument("id", StringArgumentType.greedyString())
+                .then(Commands.literal("kill").then(Commands.argument("id", StringArgumentType.greedyString())
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
                         .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCManager.getAllIds(), builder))
                         .executes(ctx -> {
@@ -75,7 +75,7 @@ public class CommandRegistry {
                                 MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Mannequin isn't alive!");
                                 return 0;
                         }))
-                ).then(Commands.literal("kill").then(Commands.argument("id", StringArgumentType.greedyString())
+                ).then(Commands.literal("setup").then(Commands.argument("id", StringArgumentType.greedyString())
                         .requires(source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS))
                         .suggests((_, builder) -> SharedSuggestionProvider.suggest(NPCManager.getAllIds(), builder))
                         .executes(ctx -> {
@@ -87,7 +87,7 @@ public class CommandRegistry {
                                 MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Mannequin already exists!");
                                 return 0;
                             } if (NPCManager.spawn(id, level, BlockPos.containing(pos)) == null) {
-                                MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Mannequin already exists!");
+                                MessageUtils.sendErrorMessage(ctx.getSource().getPlayerOrException(), "Mannequin already exists / id doesn't exist!");
                                 return 0;
                             }
                             MessageUtils.sendSuccessMessage(ctx.getSource().getPlayerOrException(), "Mannequin created successfully!");

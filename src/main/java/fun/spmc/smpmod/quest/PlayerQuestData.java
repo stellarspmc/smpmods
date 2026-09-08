@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.quest.data;
+package fun.spmc.smpmod.quest;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
