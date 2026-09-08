@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RotationItems {
     protected static final List<FluctuationData> temporaryItems = new ArrayList<>();
-
+    private static int tickCounter = 0;
     protected static final List<FluctuationData> chosenItems = List.of(
             new FluctuationData(Items.ENCHANTED_GOLDEN_APPLE, 1500, 4.5),
             new FluctuationData(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, 750, 2.5),
@@ -24,8 +24,9 @@ public class RotationItems {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            temporaryItems.forEach(data -> data.applyMarketDecay(server.overworld().getRandom()));
-            addTemporaryItem(server);
+            tickCounter++;
+            if (tickCounter % 1200 == 0) temporaryItems.forEach(data -> data.applyMarketDecay(server.overworld().getRandom()));
+            if (tickCounter % 72000 == 0) addTemporaryItem(server);
         });
     }
 }

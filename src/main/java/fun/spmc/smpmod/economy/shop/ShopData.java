@@ -10,8 +10,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionLevel;
@@ -21,19 +23,22 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+
+import static fun.spmc.smpmod.SMPMod.minecraftServer;
 
 public class ShopData { // no records
     public static final Codec<ShopData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::getShopId),
             UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::getOwnerUuid),
+            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(ShopData::getDimension),
             BlockPos.CODEC.fieldOf("barrel_pos").forGetter(ShopData::getBarrelPos),
             UUIDUtil.CODEC.fieldOf("interaction_id").forGetter(ShopData::getInteractionEntityUuid),
             UUIDUtil.CODEC.fieldOf("item_display_id").forGetter(ShopData::getItemDisplayUuid),
@@ -52,6 +57,7 @@ public class ShopData { // no records
     private final UUID interactionEntityUuid;
     private final UUID itemDisplayUuid;
     private final UUID textDisplayUuid;
+    private final ResourceKey<Level> dimension;
 
     private ItemStack itemSold;
     private int stack;
@@ -59,10 +65,11 @@ public class ShopData { // no records
     private final List<ShopReceipt> receipts;
     private final boolean creative;
 
-    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
+    public ShopData(UUID shopId, UUID ownerUuid, ResourceKey<Level> dimension, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
                     ItemStack itemSold, int stack, double price, List<ShopReceipt> receipts, boolean creative) {
         this.shopId = shopId;
         this.ownerUuid = ownerUuid;
+        this.dimension = dimension;
         this.barrelPos = barrelPos;
         this.interactionEntityUuid = interaction;
         this.itemDisplayUuid = item;
@@ -74,9 +81,9 @@ public class ShopData { // no records
         this.creative = creative;
     }
 
-    public ShopData(UUID shopId, UUID ownerUuid, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
+    public ShopData(UUID shopId, UUID ownerUuid, ResourceKey<Level> dimension, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
                     ItemStack itemSold, int stack, double price, boolean creative) {
-        this(shopId, ownerUuid, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>(), creative);
+        this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>(), creative);
     }
 
     public UUID getShopId() { return shopId; }
@@ -90,11 +97,14 @@ public class ShopData { // no records
     public double getPrice() { return price; }
     public List<ShopReceipt> getReceipts() { return receipts; }
     public boolean isCreative() { return creative; }
+    public ResourceKey<Level> getDimension() { return dimension; }
+    public ServerLevel getLevel() { return minecraftServer.getLevel(dimension); }
 
-    public void recordReceipt(ShopReceipt receipt, ServerLevel level) {
+    public void recordReceipt(ShopReceipt receipt) {
+        if (getLevel() == null) return;
         this.receipts.addFirst(receipt);
         while (this.receipts.size() > 27) this.receipts.removeLast();
-        ShopManager.get(level).setDirty();
+        ShopManager.get(getLevel()).setDirty();
     }
 
     public boolean isOwner(ServerPlayer player) {
@@ -102,9 +112,10 @@ public class ShopData { // no records
         return player.getUUID().equals(ownerUuid);
     }
 
-    public int getAvailableStock(ServerLevel level) {
+    public int getAvailableStock() {
         if (creative) return Integer.MAX_VALUE;
-        if (!(level.getBlockEntity(barrelPos) instanceof Container container)) return 0;
+        if (getLevel() == null) return 0;
+        if (!(getLevel().getBlockEntity(barrelPos) instanceof Container container)) return 0;
 
         int totalItems = 0;
         for (int i = 0; i < container.getContainerSize(); i++) {
@@ -124,12 +135,11 @@ public class ShopData { // no records
                 .append(Component.literal("\nPrice: ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(String.format("$%.2f", price)).withStyle(ChatFormatting.GOLD))
                 .append(Component.literal("\nStock: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(creative ? "∞" : getAvailableStock(level) + " batches").withStyle(ChatFormatting.GREEN));
+                .append(Component.literal(creative ? "∞" : getAvailableStock() + " batches").withStyle(ChatFormatting.GREEN));
     }
 
     public void processPurchase(ServerPlayer buyer) {
-        ServerLevel level = buyer.level();
-        int availableBatches = getAvailableStock(level);
+        int availableBatches = getAvailableStock();
         if (availableBatches < 1) {
             MessageUtils.sendErrorMessage(buyer, "This shop is out of stock!");
             return;
@@ -144,10 +154,10 @@ public class ShopData { // no records
         if (eco.changeBalance(buyer.getUUID(), -price)) {
             if (!creative) {
                 eco.changeBalance(ownerUuid, price);
-                removeStockFromBarrel(level, stack);
+                removeStockFromBarrel(stack);
             }
 
-            recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()), level);
+            recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()));
 
             ItemStack itemsToGive = itemSold.copyWithCount(stack);
             if (!buyer.getInventory().add(itemsToGive)) buyer.drop(itemsToGive, false);
@@ -157,12 +167,13 @@ public class ShopData { // no records
                     .append(Component.literal(stack + "x " + itemSold.getHoverName().getString()).withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(String.format(" for $%.2f!", price)).withStyle(ChatFormatting.GOLD)));
 
-            updateHologram(level);
+            updateHologram();
         }
     }
 
-    private void removeStockFromBarrel(ServerLevel level, int amountToRemove) {
-        if (!(level.getBlockEntity(barrelPos) instanceof Container container)) return;
+    private void removeStockFromBarrel(int amountToRemove) {
+        if (getLevel() == null) return;
+        if (!(getLevel().getBlockEntity(barrelPos) instanceof Container container)) return;
 
         for (int i = 0; i < container.getContainerSize(); i++) {
             if (amountToRemove <= 0) break;
@@ -179,54 +190,57 @@ public class ShopData { // no records
         container.setChanged();
     }
 
-    public void setPrice(double price, ServerLevel level) {
+    public void setPrice(double price) {
+        if (getLevel() == null) return;
         this.price = Math.round(Math.max(0.0, price) * 100.0) / 100.0;
-        updateHologram(level);
-        ShopManager.get(level).setDirty();
+        updateHologram();
+        ShopManager.get(getLevel()).setDirty();
     }
 
-    public void setStack(int stack, ServerLevel level) {
+    public void setStack(int stack) {
+        if (getLevel() == null) return;
         this.stack = Math.max(1, stack);
-        updateHologram(level);
-        ShopManager.get(level).setDirty();
+        updateHologram();
+        ShopManager.get(getLevel()).setDirty();
     }
 
-    public void setItemSold(ItemStack newItem, ServerLevel level) {
+    public void setItemSold(ItemStack newItem) {
         this.itemSold = newItem.copyWithCount(1);
-        updateItemDisplay(level);
-        updateHologram(level);
-        ShopManager.get(level).setDirty();
+        updateItemDisplay();
+        updateHologram();
+        ShopManager.get(getLevel()).setDirty();
     }
 
-    public void updateItemDisplay(ServerLevel level) {
-        Entity entity = level.getEntity(itemDisplayUuid);
+    public void updateItemDisplay() {
+        if (getLevel() == null) return;
+        Entity entity = getLevel().getEntity(itemDisplayUuid);
         if (entity instanceof Display.ItemDisplay itemDisplay) {
             itemDisplay.setItemStack(itemSold.copy());
         }
     }
 
-    public void updateHologram(ServerLevel level) {
-        Entity entity = level.getEntity(textDisplayUuid);
+    public void updateHologram() {
+        if (getLevel() == null) return;
+        Entity entity = getLevel().getEntity(textDisplayUuid);
         if (entity instanceof Display.TextDisplay textDisplay) {
-            String stockLabel = creative ? "∞" : String.valueOf(getAvailableStock(level));
+            String stockLabel = creative ? "∞" : String.valueOf(getAvailableStock());
             String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", stack, itemSold.getHoverName().getString(), price, stockLabel);
             textDisplay.setText(Component.literal(label));
         }
     }
 
-    public void openOwnerMenu(ServerPlayer owner) {
-        ShopOwnerMenu.open(owner, this);
+    public void openOwnerMenu(ServerPlayer owner) { ShopOwnerMenu.open(owner, this); }
+
+    public void destroyShop() {
+        safelyRemoveEntity(interactionEntityUuid);
+        safelyRemoveEntity(itemDisplayUuid);
+        safelyRemoveEntity(textDisplayUuid);
     }
 
-    public void destroyShop(ServerLevel level) {
-        safelyRemoveEntity(level, interactionEntityUuid);
-        safelyRemoveEntity(level, itemDisplayUuid);
-        safelyRemoveEntity(level, textDisplayUuid);
-    }
-
-    private void safelyRemoveEntity(ServerLevel level, UUID entityUuid) {
+    private void safelyRemoveEntity(UUID entityUuid) {
+        if (getLevel() == null) return;
         if (entityUuid == null) return;
-        Entity entity = level.getEntity(entityUuid);
+        Entity entity = getLevel().getEntity(entityUuid);
         if (entity != null) entity.discard();
     }
 
@@ -257,7 +271,7 @@ public class ShopData { // no records
                             .append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
                     .setCallback((type) -> {
                         double step = type.isRight ? 0.1 : 1.0;
-                        shopData.setPrice(Math.max(0, shopData.getPrice() - step), player.level());
+                        shopData.setPrice(Math.max(0, shopData.getPrice() - step));
                         refreshGui(gui, player, shopData);
                     }));
             gui.setSlot(11, new GuiElementBuilder(Items.GOLD_INGOT)
@@ -267,7 +281,7 @@ public class ShopData { // no records
                             .append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)))
                     .setCallback((type) -> {
                         double step = type.isRight ? 0.1 : 1.0;
-                        shopData.setPrice(shopData.getPrice() + step, player.level());
+                        shopData.setPrice(shopData.getPrice() + step);
                         refreshGui(gui, player, shopData);
                     }));
 
@@ -279,7 +293,7 @@ public class ShopData { // no records
                     .setCallback((_) -> {
                         ItemStack carried = gui.getPlayer().containerMenu.getCarried();
                         if (!carried.isEmpty()) {
-                            shopData.setItemSold(carried.copy(), player.level());
+                            shopData.setItemSold(carried.copy());
                             refreshGui(gui, player, shopData);
                         }
                     }));
@@ -288,7 +302,7 @@ public class ShopData { // no records
                             .append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)))
                     .setCallback((type) -> {
                         int step = type.isRight ? 5 : 1;
-                        shopData.setStack(Math.max(1, shopData.getStack() - step), player.level());
+                        shopData.setStack(Math.max(1, shopData.getStack() - step));
                         refreshGui(gui, player, shopData);
                     }));
             gui.setSlot(15, new GuiElementBuilder(Items.BARREL)
@@ -298,7 +312,7 @@ public class ShopData { // no records
                             .append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)))
                     .setCallback((type) -> {
                         int step = type.isRight ? 5 : 1;
-                        shopData.setStack(shopData.getStack() + step, player.level());
+                        shopData.setStack(shopData.getStack() + step);
                         refreshGui(gui, player, shopData);
                     }));
             gui.setSlot(22, new GuiElementBuilder(Items.PAPER)
@@ -322,11 +336,11 @@ public class ShopData { // no records
                             assert stackStr != null;
                             int stack = Math.max(1, Integer.parseInt(stackStr));
 
-                            shopData.setPrice(price, player.level());
-                            shopData.setStack(stack, player.level());
+                            shopData.setPrice(price);
+                            shopData.setStack(stack);
 
                             ItemStack heldItem = player.getMainHandItem();
-                            if (!heldItem.isEmpty()) shopData.setItemSold(heldItem.copy(), player.level());
+                            if (!heldItem.isEmpty()) shopData.setItemSold(heldItem.copy());
                         } catch (NumberFormatException ignored) {}
                     })
                     .build();

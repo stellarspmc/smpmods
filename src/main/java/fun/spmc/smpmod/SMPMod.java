@@ -6,7 +6,7 @@ import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
 import fun.spmc.smpmod.economy.EconomyData;
 import fun.spmc.smpmod.economy.fluctuate.MarketState;
 import fun.spmc.smpmod.economy.shop.ShopManager;
-import fun.spmc.smpmod.events.ServerMobSpawner;
+import fun.spmc.smpmod.mobs.ServerMobSpawner;
 import fun.spmc.smpmod.fishing.mechanic.FishingManager;
 import fun.spmc.smpmod.misc.NPCData;
 import fun.spmc.smpmod.mobs.boss.CrystalBoss;

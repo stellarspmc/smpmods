@@ -1,8 +1,5 @@
-package fun.spmc.smpmod.events;
+package fun.spmc.smpmod.mobs;
 
-import fun.spmc.smpmod.mobs.EyeZombie;
-import fun.spmc.smpmod.mobs.Minotaur;
-import fun.spmc.smpmod.mobs.NickZombie;
 import fun.spmc.smpmod.utils.ServerMob;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;

@@ -77,6 +77,8 @@ public class PolymerIndustrial {
         registerMineral("hardened_metal_ingot", Items.IRON_INGOT, Component.literal("Hardened Metal").withColor(TextColor.fromRgb(0x2E3440)).withStyle(ChatFormatting.BOLD));
         registerMineral("reinforced_alloy_ingot", Items.IRON_INGOT, Component.literal("Reinforced Alloy Ingot").withColor(TextColor.fromRgb(0x434C5E)).withStyle(ChatFormatting.BOLD));
 
+        registerMineral("compressed_nether_star", Items.NETHER_STAR, TextColor.GREEN);
+
         registerKarat("gold_4k",  4,  TextColor.fromRgb(0xD8CC9B));
         registerKarat("gold_6k",  6,  TextColor.fromRgb(0xDFD28D));
         registerKarat("gold_8k",  8,  TextColor.fromRgb(0xE7D87E));

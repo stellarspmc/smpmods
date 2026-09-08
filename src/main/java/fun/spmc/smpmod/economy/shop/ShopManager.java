@@ -3,6 +3,7 @@ package fun.spmc.smpmod.economy.shop;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import fun.spmc.smpmod.utils.MessageUtils;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -25,10 +27,9 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class ShopManager extends SavedData {
     private final Map<UUID, ShopData> shopsByInteractionUuid = new HashMap<>();
@@ -50,29 +51,19 @@ public class ShopManager extends SavedData {
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE
     );
 
-    public ShopManager() {}
-
     private void registerShop(ShopData data) {
         shopsById.put(data.getShopId(), data);
         shopsByInteractionUuid.put(data.getInteractionEntityUuid(), data);
         shopsByBarrelPos.put(data.getBarrelPos(), data);
     }
 
-    public static ShopData getByInteraction(ServerLevel level, UUID entityUuid) {
-        return get(level).shopsByInteractionUuid.get(entityUuid);
-    }
-
-    public static ShopData getByPos(ServerLevel level, BlockPos pos) {
-        return get(level).shopsByBarrelPos.get(pos);
-    }
-
-    public static void createCreativeShop(BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
-        createShop(null, pos, price, sellItem, level, true);
-    }
-
-    public static void createShop(ServerPlayer owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) {
-        createShop(owner, pos, price, sellItem, level, false);
-    }
+    public ShopManager() {}
+    public static ShopData getByInteraction(ServerLevel level, UUID entityUuid) { return get(level).shopsByInteractionUuid.get(entityUuid); }
+    public static ShopData getByPos(ServerLevel level, BlockPos pos) { return get(level).shopsByBarrelPos.get(pos); }
+    public static void createCreativeShop(BlockPos pos, double price, ItemStack sellItem, ServerLevel level) { createShop(null, pos, price, sellItem, level, true); }
+    public static void createShop(ServerPlayer owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level) { createShop(owner, pos, price, sellItem, level, false); }
+    public static ShopManager get(ServerLevel level) { return level.getDataStorage().computeIfAbsent(TYPE); }
+    public static ArrayList<ShopData> getAllShops(MinecraftServer server) { return StreamSupport.stream(server.getAllLevels().spliterator(), false).flatMap((a) -> get(a).shopsById.values().stream()).collect(Collectors.toCollection(ArrayList::new)); }
 
     public static void createShop(ServerPlayer owner, BlockPos pos, double price, ItemStack sellItem, ServerLevel level, boolean isCreative) {
         double x = pos.getX() + .5;
@@ -103,7 +94,7 @@ public class ShopManager extends SavedData {
         level.addFreshEntity(textDisplay);
         level.addFreshEntity(interaction);
 
-        ShopData data = new ShopData(UUID.randomUUID(), owner != null ? owner.getUUID() : new UUID(0, 0), pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(),
+        ShopData data = new ShopData(UUID.randomUUID(), owner != null ? owner.getUUID() : new UUID(0, 0), level.dimension(), pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(),
                 sellItem.copyWithCount(1), sellItem.getCount(), price, isCreative);
 
         ShopManager manager = get(level);
@@ -113,7 +104,7 @@ public class ShopManager extends SavedData {
 
     public static void removeShop(ShopData shop, ServerLevel level) {
         if (shop == null) return;
-        shop.destroyShop(level);
+        shop.destroyShop();
 
         ShopManager manager = get(level);
         manager.shopsByInteractionUuid.remove(shop.getInteractionEntityUuid());
@@ -122,10 +113,7 @@ public class ShopManager extends SavedData {
         manager.setDirty();
     }
 
-    public static ShopManager get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
-    }
-
+    private static int tickCounter = 0;
     public static void register() {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
@@ -181,6 +169,11 @@ public class ShopManager extends SavedData {
                 return false;
             }
             return true;
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter++;
+            if (tickCounter % 300 == 0) getAllShops(server).forEach(ShopData::updateHologram);
         });
     }
 }
