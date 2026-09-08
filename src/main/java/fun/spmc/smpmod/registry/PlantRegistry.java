@@ -10,11 +10,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
-public class PolymerPlants {
+public class PlantRegistry {
     public final static HashMap<String, SeedItem> SEEDS = new HashMap<>();
 
     private static Item getBaseSeed(Item baseCrop) {

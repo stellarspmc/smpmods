@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import fun.spmc.smpmod.registry.PolymerFishes;
+import fun.spmc.smpmod.registry.FishingRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -61,7 +61,7 @@ public class FishTracker extends SavedData {
     }
 
     public static void openFishIndexMenu(ServerPlayer player, int page) {
-        List<Item> allFish = PolymerFishes.getAllFish();
+        List<Item> allFish = FishingRegistry.getAllFish();
         int maxPages = Math.max(1, (int) Math.ceil((double) allFish.size() / 45));
         int currentPage = Math.clamp(page, 0, maxPages - 1);
 
@@ -73,7 +73,7 @@ public class FishTracker extends SavedData {
     }
 
     private static void refreshGui(SimpleGui gui, ServerPlayer player, int page, int maxPages) {
-        List<Item> allFish = PolymerFishes.getAllFish();
+        List<Item> allFish = FishingRegistry.getAllFish();
         List<String> unlockedList = FishTracker.get().getUnlockedFish(player.getUUID());
 
         int startIndex = page * 45;

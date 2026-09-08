@@ -25,7 +25,6 @@ public class TreasureSpawner {
     public static void spawnTreasureContainer(ServerLevel world, BlockPos pos, String rarity, ResourceKey<LootTable> lootTable, ServerPlayer player) {
         world.destroyBlock(pos, true);
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3);
-
         if (world.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
             barrel.setLootTable(lootTable, world.getRandom().nextLong());
             barrel.setChanged();

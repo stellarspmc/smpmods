@@ -2,12 +2,6 @@
 
 ## v7.3-pre4
 
-### Rotating Market Pool (Priority)
-* **Core Idea:** Secondary rotation pool for `/market` containing consumable and high-value utility items (Totems, Golden Apples, Shulker Boxes, Netherite Templates) that refresh on a schedule.
-* **Technical Requirements:**
-* Automated rotation task scheduler (2–4 hour intervals)
-* Dedicated rotation pool commands and pool management logic
-
 ### Treasure System Rework (Priority)
 * **Core Idea:** Align the Treasure Module with the Fishing update, featuring 8 rarity tiers, a custom pickaxe progression tree, vanilla tool integration, and a reworked chunk-based exhaustion system.
 * **Technical Requirements:**
@@ -25,6 +19,11 @@
 * **Core Idea:** wip
 * **Technical Requirements:**
 * wip
+
+### Shop Rework
+* **Core Idea:** Adding NPCs as a shop alternative would make the shops more engaging than barrels.
+* **Technical Requirements:**
+* Hooking up shop system with NPCs
 
 ## v7.3-pre5
 
@@ -70,4 +69,14 @@
 * Particle effect renderer & visibility toggles
 
 # SpaceMC Future Proposals
-wip
+### Pets
+* **Core Idea:** Unlockable player cosmetics, custom particle trails, and visual cosmetic wearables.
+* **Technical Requirements:**
+* Cosmetic wardrobe GUI & unlock state storage
+* Particle effect renderer & visibility toggles
+
+### Pets
+* **Core Idea:** Unlockable pets with 4 main features: Index, Inventory system, RNG mechanic and buffs.
+* https://discord.com/channels/964789575669137470/1536957411708108923/1536957411708108923
+* **Technical Requirements:**
+* wip

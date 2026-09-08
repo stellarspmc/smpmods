@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.fishing;
 
-import fun.spmc.smpmod.registry.PolymerFishes;
+import fun.spmc.smpmod.registry.FishingRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -14,15 +14,15 @@ import net.minecraft.world.level.biome.Biome;
 import java.util.*;
 
 public enum BiomeCategory {
-    LAVA(PolymerFishes.LAVA),
-    VOID(PolymerFishes.END),
-    DEEP(PolymerFishes.DEEP),
-    SNOWY(PolymerFishes.SNOWY),
-    DESERT(PolymerFishes.DESERT),
-    TROPICAL(PolymerFishes.TROPICAL),
-    PLAINS(PolymerFishes.PLAINS),
-    SKY(PolymerFishes.SKY),
-    DEFAULT(PolymerFishes.FISH);
+    LAVA(FishingRegistry.LAVA),
+    VOID(FishingRegistry.END),
+    DEEP(FishingRegistry.DEEP),
+    SNOWY(FishingRegistry.SNOWY),
+    DESERT(FishingRegistry.DESERT),
+    TROPICAL(FishingRegistry.TROPICAL),
+    PLAINS(FishingRegistry.PLAINS),
+    SKY(FishingRegistry.SKY),
+    DEFAULT(FishingRegistry.FISH);
 
     private final List<Item> fishArray;
     private static final Map<Item, BiomeCategory> FISH_TO_CATEGORY = new IdentityHashMap<>();

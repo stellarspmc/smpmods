@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.fishing;
 
 import fun.spmc.smpmod.misc.ItemModifier;
-import fun.spmc.smpmod.registry.PolymerFishes;
+import fun.spmc.smpmod.registry.FishingRegistry;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -18,15 +18,15 @@ public enum RodTiers {
     LUNA(TextColor.fromRgb(0x9B59B6), 152, 1.65f, .35f, new double[]{28, 42, 21, 8, .8, .19, .0075, .0025}, 6, new ItemModifier[]{}, () -> Items.STRING),
     DIAMOND(TextColor.fromRgb(0x3498DB), 533, 1.45f, .33f, new double[]{25, 32, 25, 12.5, 4.2, .95, .3, .05}, 5, new ItemModifier[]{ItemModifier.CRYSTALLIZED}, () -> Items.DIAMOND_BLOCK),
     NETHERITE(TextColor.fromRgb(0x4A3B4E), 1007, 1.8f, .35f, new double[]{18, 28, 31, 15, 5, 2, .8, .2}, 6, new ItemModifier[]{}, () -> Items.NETHERITE_BLOCK),
-    TOXIC(TextColor.fromRgb(0x39FF14), 850, 1.75f, .32f, new double[]{20, 28, 30, 14, 5.3, 2, .5, .2}, 6, new ItemModifier[]{ItemModifier.NUCLEAR}, () -> PolymerFishes.getFish("poisonquill")),
-    DEATH(TextColor.fromRgb(0x800020), 666, 1.9f, .28f, new double[]{15, 25, 32, 16, 8, 2.8, 1.0, .2}, 7, new ItemModifier[]{ItemModifier.EVIL}, () -> PolymerFishes.getFish("reaper")),
-    AIR(TextColor.fromRgb(0xA0E7E5), 751, 1.7f, .3f, new double[]{22, 30, 28, 12, 5, 2.1, .7, .2}, 10, new ItemModifier[]{ItemModifier.SPEEDY}, () -> PolymerFishes.getFish("aerie")),
-    SEA(TextColor.fromRgb(0x0077B6), 717, 1.85f, .36f, new double[]{16, 26, 32, 15.5, 6, 2.5, 1.2, .2}, 7, new ItemModifier[]{ItemModifier.BRUCED}, () -> PolymerFishes.getFish("poseidon")),
-    FLICKERING(TextColor.fromRgb(0xFFD166), 549, 2f, .3f, new double[]{14, 24, 30, 18, 8, 3.5, 2.0, .5}, 8, new ItemModifier[]{ItemModifier.GOLDEN}, () -> PolymerFishes.getFish("prismite")),
-    CELESTIAL(TextColor.fromRgb(0x9D4EDD), 1211, 2.2f, .37f, new double[]{10, 20, 32, 20, 11, 4.5, 2.0, .5}, 9, new ItemModifier[]{}, () -> PolymerFishes.getFish("cor")),
-    ELEMENTAL(TextColor.fromRgb(0xFF5722), 1496, 2.6f, .48f, new double[]{6, 14, 30, 24, 15, 7, 3.2, .8}, 12, new ItemModifier[]{ItemModifier.GODLY}, () -> PolymerFishes.getFish("hades")),
-    CTHULHU(TextColor.fromRgb(0x00F5D4), 1574, 2.7f, .48f, new double[]{5, 13, 28, 25, 16, 8, 4, 1}, 14, new ItemModifier[]{ItemModifier.SPEEDY}, () -> PolymerFishes.getFish("cthulhu")),
-    EVERYTHING(TextColor.fromRgb(0xE056FD), 1689, 3.2f, .4f, new double[]{2, 8.9, 21.8, 28, 22, 12, 4.2, 1.1}, 16, new ItemModifier[]{ItemModifier.GODLY, ItemModifier.ULTIMATE}, () -> PolymerFishes.getFish("fish_de_ckc"));
+    TOXIC(TextColor.fromRgb(0x39FF14), 850, 1.75f, .32f, new double[]{20, 28, 30, 14, 5.3, 2, .5, .2}, 6, new ItemModifier[]{ItemModifier.NUCLEAR}, () -> FishingRegistry.getFish("poisonquill")),
+    DEATH(TextColor.fromRgb(0x800020), 666, 1.9f, .28f, new double[]{15, 25, 32, 16, 8, 2.8, 1.0, .2}, 7, new ItemModifier[]{ItemModifier.EVIL}, () -> FishingRegistry.getFish("reaper")),
+    AIR(TextColor.fromRgb(0xA0E7E5), 751, 1.7f, .3f, new double[]{22, 30, 28, 12, 5, 2.1, .7, .2}, 10, new ItemModifier[]{ItemModifier.SPEEDY}, () -> FishingRegistry.getFish("aerie")),
+    SEA(TextColor.fromRgb(0x0077B6), 717, 1.85f, .36f, new double[]{16, 26, 32, 15.5, 6, 2.5, 1.2, .2}, 7, new ItemModifier[]{ItemModifier.BRUCED}, () -> FishingRegistry.getFish("poseidon")),
+    FLICKERING(TextColor.fromRgb(0xFFD166), 549, 2f, .3f, new double[]{14, 24, 30, 18, 8, 3.5, 2.0, .5}, 8, new ItemModifier[]{ItemModifier.GOLDEN}, () -> FishingRegistry.getFish("prismite")),
+    CELESTIAL(TextColor.fromRgb(0x9D4EDD), 1211, 2.2f, .37f, new double[]{10, 20, 32, 20, 11, 4.5, 2.0, .5}, 9, new ItemModifier[]{}, () -> FishingRegistry.getFish("cor")),
+    ELEMENTAL(TextColor.fromRgb(0xFF5722), 1496, 2.6f, .48f, new double[]{6, 14, 30, 24, 15, 7, 3.2, .8}, 12, new ItemModifier[]{ItemModifier.GODLY}, () -> FishingRegistry.getFish("hades")),
+    CTHULHU(TextColor.fromRgb(0x00F5D4), 1574, 2.7f, .48f, new double[]{5, 13, 28, 25, 16, 8, 4, 1}, 14, new ItemModifier[]{ItemModifier.SPEEDY}, () -> FishingRegistry.getFish("cthulhu")),
+    EVERYTHING(TextColor.fromRgb(0xE056FD), 1689, 3.2f, .4f, new double[]{2, 8.9, 21.8, 28, 22, 12, 4.2, 1.1}, 16, new ItemModifier[]{ItemModifier.GODLY, ItemModifier.ULTIMATE}, () -> FishingRegistry.getFish("fish_de_ckc"));
 
     private final TextColor color;
     private final float catchLuckBonus;

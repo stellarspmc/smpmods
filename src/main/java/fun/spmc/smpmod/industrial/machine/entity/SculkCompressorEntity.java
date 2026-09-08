@@ -2,7 +2,7 @@ package fun.spmc.smpmod.industrial.machine.entity;
 
 import fun.spmc.smpmod.industrial.machine.abstr.BaseMachineEntity;
 import fun.spmc.smpmod.industrial.recipe.CompressorRecipe;
-import fun.spmc.smpmod.registry.PolymerIndustrial;
+import fun.spmc.smpmod.registry.IndustrialRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class SculkCompressorEntity extends BaseMachineEntity<SingleRecipeInput, CompressorRecipe> {
     public SculkCompressorEntity(BlockPos pos, BlockState state) {
-        super(PolymerIndustrial.SCULK_ENTITY, pos, state, 2, PolymerIndustrial.COMPRESSOR_TYPE, new int[]{0}, new int[]{1}); // 0: input, 1: output
+        super(IndustrialRegistry.SCULK_ENTITY, pos, state, 2, IndustrialRegistry.COMPRESSOR_TYPE, new int[]{0}, new int[]{1}); // 0: input, 1: output
     }
 
     @Override

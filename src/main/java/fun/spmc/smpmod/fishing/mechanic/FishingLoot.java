@@ -52,8 +52,7 @@ public class FishingLoot {
                 .append(Component.literal(caughtFish.getFishName()).withStyle(caughtFish.getRarity().getColor()))
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
         FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
-        if (caughtFish.getRarity() == ItemRarity.CHROMATIC) messageChannel.sendMessage(String.format("%s got a **CHROMATIC** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
-        else if (caughtFish.getRarity() == ItemRarity.CELESTIAL) messageChannel.sendMessage(String.format("%s got a **CELESTIAL** %s.", MarkdownSanitizer.escape(player.getScoreboardName()), caughtFish.getFishName())).queue();
+        if (caughtFish.getRarity().shouldAnnounce()) announceLoot(caughtFish.getRarity().toString().toUpperCase(), caughtFish.getFishName(), caughtFish.getRarity().getColor(), player);
         QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
     }
 
@@ -125,5 +124,17 @@ public class FishingLoot {
         }
 
         return 0;
+    }
+
+    private static void announceLoot(String rarityName, String fishName, ChatFormatting color, ServerPlayer player) {
+        Component chatAnnouncement = Component.literal("★ ").withStyle(color, ChatFormatting.BOLD)
+                .append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
+                .append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(rarityName).withStyle(color, ChatFormatting.BOLD))
+                .append(Component.literal(fishName)).withStyle(color)
+                .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD));
+
+        minecraftServer.getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
+        messageChannel.sendMessage("**" + MarkdownSanitizer.escape(player.getScoreboardName()) + "** just reeled up a **" + rarityName + "** " + fishName +"!").queue();
     }
 }

@@ -12,7 +12,7 @@ import fun.spmc.smpmod.mobs.boss.CrystalBoss;
 import fun.spmc.smpmod.npc.NPCManager;
 import fun.spmc.smpmod.quest.QuestManager;
 import fun.spmc.smpmod.registry.NPCRegistry;
-import fun.spmc.smpmod.registry.PolymerPlants;
+import fun.spmc.smpmod.registry.PlantRegistry;
 import fun.spmc.smpmod.registry.QuestRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.registry.CommandRegistry;
@@ -202,7 +202,7 @@ public class SMPMod implements DedicatedServerModInitializer {
             if (world.isClientSide()) return;
 
             if (state.is(Blocks.SHORT_GRASS) || state.is(Blocks.TALL_GRASS)) {
-                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, new ItemStack(PolymerPlants.SEEDS.get("wheat")));
+                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, new ItemStack(PlantRegistry.SEEDS.get("wheat")));
             }
         });
     }

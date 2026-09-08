@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class PolymerFishes {
+public class FishingRegistry {
     private static final Map<String, Item> FISH_REGISTRY = new HashMap<>();
 
     public final static List<Item> FISH = new ArrayList<>();
@@ -71,7 +71,6 @@ public class PolymerFishes {
 
     protected static void registerFishes() {
         PolymerRegistry.createItem("corgravian", properties -> new FishItem(properties, Items.SALMON, "Corgravian", 1000000, ItemRarity.CELESTIAL));
-
         registerDefault();
         registerPlains();
         registerTropical();
@@ -81,7 +80,6 @@ public class PolymerFishes {
         registerDeep();
         registerEnd();
         registerSky();
-
         BiomeCategory.initLookupMap();
     }
     private static void registerDefault() {

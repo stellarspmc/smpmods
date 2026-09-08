@@ -29,19 +29,19 @@ import java.util.List;
 
 public class RodItem extends FishingRodItem implements PolymerItem {
     private final RodTiers tier;
-    private final Item vanillaItem;
 
     public RodItem(Properties properties, RodTiers tier) {
         super(properties.stacksTo(1).durability(tier.getDurability()).repairable(tier.getStack()));
-        this.vanillaItem = Items.FISHING_ROD;
         this.tier = tier;
     }
 
-    @Override public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return vanillaItem; }
-    @Override public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) { return BuiltInRegistries.ITEM.getKey(vanillaItem); }
-    @Override public @NonNull Component getName(@NonNull ItemStack itemStack) { return Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)); }
+    public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return Items.FISHING_ROD; }
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) { return BuiltInRegistries.ITEM.getKey(Items.FISHING_ROD); }
+    public @NonNull Component getName(@NonNull ItemStack itemStack) { return Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)); }
+    public RodTiers getTier() { return tier; }
+    public boolean canVoidFish() { return getTier().ordinal() >= RodTiers.CELESTIAL.ordinal() || getTier() == RodTiers.AIR; }
+    public boolean canLavaFish() { return getTier() == RodTiers.NETHERITE || getTier().ordinal() >= RodTiers.CELESTIAL.ordinal(); }
 
-    @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.CUSTOM_NAME, Component.literal(tier.toString() + " Rod").withColor(tier.getColor()).withStyle(style -> style.withItalic(false)));
         out.set(DataComponents.LORE, new ItemLore(buildLore()));
@@ -50,11 +50,6 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint);
     }
 
-    public RodTiers getTier() {
-        return tier;
-    }
-
-    @Override
     public @NonNull InteractionResult use(final @NonNull Level level, final Player player, final @NonNull InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
         if (player.fishing == null) {
@@ -67,9 +62,6 @@ public class RodItem extends FishingRodItem implements PolymerItem {
         }
         return InteractionResult.SUCCESS;
     }
-
-    public boolean canVoidFish() { return getTier().ordinal() >= RodTiers.CELESTIAL.ordinal() || getTier() == RodTiers.AIR; }
-    public boolean canLavaFish() { return getTier() == RodTiers.NETHERITE || getTier().ordinal() >= RodTiers.CELESTIAL.ordinal(); }
 
     private List<Component> buildLore() {
         List<Component> list = new ArrayList<>(List.of(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.getCatchLuckBonus() - 1.0f) * 100)).withStyle(ChatFormatting.GREEN).withStyle(style -> style.withItalic(false)), Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.getGreenZoneSize() * 100)).withStyle(ChatFormatting.AQUA).withStyle(style -> style.withItalic(false))));

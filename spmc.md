@@ -5,11 +5,14 @@
 ### Ore Baseline Valuation & Gem Deposits (6.6)
 The SpaceMC economy functions like a real-world stock exchange.
 
-Diamonds serve as the server’s permanent financial baseline ($100 per diamond). 
+Diamonds serve as the server’s permanent financial baseline ($100 per diamond).
 
-All other trade minerals float dynamically based on player supply, demand, and organic market drift.
+All other trade minerals and rotating market items float dynamically based on player supply, demand, and organic market drift.
 
 To simulate a realistic market, exact algorithmic formulas are **not given** to players.
+
+#### Permanent Mineral Baseline
+This is the main mineral pool, which will not be changed.
 
 | Ore / Gem Item       | Base Deposit Value |
 |----------------------|--------------------|
@@ -27,25 +30,38 @@ To simulate a realistic market, exact algorithmic formulas are **not given** to 
 | **Coal**             | $0.1               |
 | **Amethyst Shard**   | $0.05              |
 
+#### Rotating Market Pool
+A secondary pool of high-value consumables and utility items temporarily enters the `/market` on an automated schedule (refreshing every 2–4 hours).
+
+| Rotating Item                           | Base Price | Fluctuation Rate |
+|-----------------------------------------|------------|------------------|
+| **Enchanted Golden Apple**              | $1,500     | High (4.5x)      |
+| **Shulker Shell**                       | $1,200     | High (4.0x)      |
+| **Netherite Upgrade Smithing Template** | $750       | Medium (2.5x)    |
+| **Totem of Undying**                    | $350       | Moderate (1.5x)  |
+
 #### Commands & Controls
+
 * `/balance [player]` — Check your current cash balance or another player's balance.
-* `/deposit [all]` — Convert ores/gems from inventory into bank account funds.
+* `/deposit [all]` — Convert ores, gems, or active rotation items from inventory into bank account funds.
 * `/withdraw <amount>` — Convert bank balance back into physical currency items.
 * `/send <player> <amount>` — Transfer money directly to another player.
 * `/baltop [page]` — View the server wealth leaderboard.
-* `/market` — View current dynamic market prices for fluctuating trade ores.
+* `/market` — View current dynamic market prices for all trade items (including active rotation items).
 
 #### Market Behaviour
 1. Supply & Demand Impact
-    * Mass depositing minerals increases market supply and depresses buy prices.
-    * Purchasing or withdrawing minerals increases scarcity and drives prices up.
-2. Automated Market Decay
-    * If a mineral receives no buy/sell transactions for 2.5 minutes (150 seconds), its price enters an automated drift cycle.
-    * Inactive minerals have a **60% chance** to decay back toward their base equilibrium price, and a **40% chance** to experience natural market drift.
-3. Dynamic Server Scaling
-    * Market evaluation cycles adjust dynamically depending on how many players are online, ensuring the economy stays active during peak hours while conserving server resources during quiet periods.
-4. Laziness Prevention
-    * To punish laziness, deposits could be compressed to blocks, but giving a 7% decrease rate, encouraging players to deposit slowly.
+   * Mass depositing minerals increases market supply and depresses buy/sell prices.
+   * Purchasing or withdrawing minerals increases scarcity and drives prices up.
+2. Automated Market Decay & Drift
+   * Permanent minerals decay toward equilibrium or drift naturally if inactive.
+   * Active temporary rotation items undergo price decay and expires automatically.
+3. Automated Rotation Scheduler
+   * Every 2 – 4 hours, the server selects a temporary utility item from the rotation pool to inject into `/market`.
+4. Dynamic Server Scaling
+   * Market evaluation cycles adjust dynamically depending on how many players are online, ensuring the economy stays active during peak hours while conserving server resources during quiet periods.
+5. Block Compression Fee (Laziness Penalty)
+   * Depositing items in block form (e.g. Gold Blocks, Netherite Blocks) yields a 7% penalty compared to depositing individual ingots/gems, encouraging manual uncrafting or rewarding uncompressed deposits.
 
 ### Player Chest Shops (6.6)
 The Shop System allows players and admins to set up automated physical stores using Barrels and Signs. Displays (holograms and 3D item floating models) automatically render above the shop barrel to showcase items, batch sizes, live stock, and pricing.
@@ -68,13 +84,12 @@ Full cross-platform support is included for both Java and Bedrock (Geyser/Floodg
 
 #### Shop Interaction Controls
 **Shop Owners:**
-* `Shift + Right Click` — Open shop owner management menu.
-* `Shift + Left Click` — Destroy the shop.
+* `Shift + Left Click` — Open shop owner management menu.
+* `Shift + Right Click` — Destroy the shop.
 
 **Customers:**
-* `Right Click` — Purchase item.
-* `Left Click` — View item details and stock information.
-
+* `Left Click` — Purchase item.
+* `Right Click` — View item details and stock information.
 **TODO: include photo**
 
 ### Income Streams
@@ -89,17 +104,18 @@ Full cross-platform support is included for both Java and Bedrock (Geyser/Floodg
 
 Refine raw carbon and nether materials into high-tier industrial components inside the Compressor.
 
-| Input Material    | Quantity | Output Material         | Quantity |
-|-------------------|----------|-------------------------|----------|
-| Charcoal          | 16x      | Carbon                  | 1x       |
-| Coal              | 48x      | Carbon                  | 1x       |
-| Carbon            | 12x      | Compressed Carbon       | 1x       |
-| Compressed Carbon | 4x       | Carbon Chunk            | 1x       |
-| Nether Brick      | 32x      | Compressed Nether Brick | 1x       |
+| Input Material     | Quantity | Output Material         | Quantity | Note                                       |
+|--------------------|----------|-------------------------|----------|--------------------------------------------|
+| Charcoal           | 16x      | Carbon                  | 1x       | Coal is not perferred because it costs 48x |
+| Carbon             | 12x      | Compressed Carbon       | 1x       |                                            |
+| Compressed Carbon  | 4x       | Carbon Chunk            | 1x       |                                            |
+| Nether Brick       | 32x      | Compressed Nether Brick | 1x       |                                            |
+| Different Raw Ores | Varying  | Compressed Ore          | Varying  | Raw Gold is the best ore, 1x -> 2x ore     |
+| Gold Dust          | 16x      | 4-Karat Gold Ingot      | 1x       | Karat Gold could scale up to 24K           |
 
-### Smeltry Recipes
+### Smeltery Recipes
 
-The smeltry is used to create alloy materials.
+The smeltery is used to create alloy materials.
 
 | Input Material       | Quantity | Output Material         | Quantity |
 |----------------------|----------|-------------------------|----------|
@@ -107,7 +123,12 @@ The smeltry is used to create alloy materials.
 
 ### Other Recipes
 
-These are other recipes that should be noted into the code
+These are other recipes that should be noted by players.
+
+| Input Material                                                  | Output Material  | Crafting Station |
+|-----------------------------------------------------------------|------------------|------------------|
+| Compressed Nether Brick (x5), Nether Star (x3), Netherite Block | Nether Core      | Crafting Table   |
+| Sculk Catalyst (x5), Piston (x3), Redstone Dust                 | Sculk Compressor | Crafting Table   |
 
 **TODO: write the crafting recipes**
 
@@ -127,6 +148,9 @@ To know more, please refer to: **TODO: write this part**
 
 * **Minigame Hook Mechanics:** When a fish bites, a timing bar appears. Press **SPACE** when the indicator aligns with the **green sweet spot** to successfully land the catch.
 * **Progression Unlocks:** Earn money to purchase custom upgraded fishing rods with higher catch probabilities and unique loot tables.
+
+## Better Planting System (7.3)
+stub
 
 ## Lodestone Chunk Loading & Automation (6.6)
 * **Chunk Loading:** Placing a Lodestone force-loads its surrounding chunk area.

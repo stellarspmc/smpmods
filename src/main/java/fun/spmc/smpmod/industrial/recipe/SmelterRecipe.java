@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.industrial.recipe;
 
-import fun.spmc.smpmod.registry.PolymerIndustrial;
+import fun.spmc.smpmod.registry.IndustrialRegistry;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
@@ -15,8 +15,8 @@ public record SmelterRecipe(List<Ingredient> ingredients, int count, ItemStackTe
     @Override public @NonNull ItemStack assemble(SmelterRecipe.@NonNull TripleRecipeInput input) { return this.result.create(); }
     @Override public boolean showNotification() { return false; }
     @Override public @NonNull String group() { return ""; }
-    @Override public @NonNull RecipeSerializer<? extends Recipe<TripleRecipeInput>> getSerializer() { return PolymerIndustrial.SMELTERY_SERIALIZER; }
-    @Override public @NonNull RecipeType<? extends Recipe<TripleRecipeInput>> getType() { return PolymerIndustrial.SMELTERY_TYPE; }
+    @Override public @NonNull RecipeSerializer<? extends Recipe<TripleRecipeInput>> getSerializer() { return IndustrialRegistry.SMELTERY_SERIALIZER; }
+    @Override public @NonNull RecipeType<? extends Recipe<TripleRecipeInput>> getType() { return IndustrialRegistry.SMELTERY_TYPE; }
     @Override public @NonNull PlacementInfo placementInfo() { return PlacementInfo.NOT_PLACEABLE; }
     @Override public @Nullable RecipeBookCategory recipeBookCategory() { return null; }
     @Override public boolean matches(TripleRecipeInput input, @NonNull Level level) {

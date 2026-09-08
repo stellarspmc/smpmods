@@ -6,7 +6,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import fun.spmc.smpmod.industrial.machine.abstr.BaseMachineBlock;
 import fun.spmc.smpmod.industrial.machine.entity.SculkCompressorEntity;
-import fun.spmc.smpmod.registry.PolymerIndustrial;
+import fun.spmc.smpmod.registry.IndustrialRegistry;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 public class SculkCompressorBlock extends BaseMachineBlock<SculkCompressorEntity> {
     public static final MapCodec<SculkCompressorBlock> CODEC = simpleCodec(SculkCompressorBlock::new);
 
-    public SculkCompressorBlock(Properties properties) { super(properties, () -> PolymerIndustrial.SCULK_ENTITY, SculkCompressorEntity::new); }
+    public SculkCompressorBlock(Properties properties) { super(properties, () -> IndustrialRegistry.SCULK_ENTITY, SculkCompressorEntity::new); }
     @Override protected @NonNull MapCodec<? extends SculkCompressorBlock> codec() { return CODEC; }
     @Override public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) { return Blocks.SCULK_CATALYST.defaultBlockState().setValue(BlockStateProperties.BLOOM, true); }
 

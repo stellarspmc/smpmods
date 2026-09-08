@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -22,12 +23,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootTable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TreasureEvents {
     public static double eventPercentage = 1f;
+
+    public static HashMap<ChunkPos, Integer> chunkBasedPool = new HashMap<>();
 
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity ignoredBlockEntity) {
         if (world.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) return;
@@ -54,6 +58,8 @@ public class TreasureEvents {
 
         ResourceKey<LootTable> lootTableUri = ResourceKey.create(Registries.LOOT_TABLE, tableLocation);
 
+        if (chunkBasedPool.get(world.getChunk(pos).getPos()) > 225) return;
+        chunkBasedPool.put(world.getChunk(pos).getPos(), chunkBasedPool.get(world.getChunk(pos).getPos()) + 1);
         TreasureSpawner.spawnTreasureContainer((ServerLevel) world, pos, rarityName, lootTableUri, serverPlayer);
     }
 
@@ -128,7 +134,7 @@ public class TreasureEvents {
         } else if (dimension == Level.NETHER) {
             if (NETHER_ORES.contains(block)) return 1.5f;
             if (NETHER_STONES.contains(block)) return .96f;
-            if (NETHER_LOW.contains(block)) return .01f;
+            if (NETHER_LOW.contains(block)) return .04f;
         } else if (dimension == Level.END) return 0.55f;
         return 0;
     }

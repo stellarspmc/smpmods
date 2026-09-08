@@ -2,7 +2,7 @@ package fun.spmc.smpmod.industrial.machine.entity;
 
 import fun.spmc.smpmod.industrial.machine.abstr.BaseMachineEntity;
 import fun.spmc.smpmod.industrial.recipe.SmelterRecipe;
-import fun.spmc.smpmod.registry.PolymerIndustrial;
+import fun.spmc.smpmod.registry.IndustrialRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Arrays;
 
 public class SmelteryEntity extends BaseMachineEntity<SmelterRecipe.TripleRecipeInput, SmelterRecipe> {
-    public SmelteryEntity(BlockPos pos, BlockState state) { super(PolymerIndustrial.SMELTERY_ENTITY, pos, state, 4, PolymerIndustrial.SMELTERY_TYPE, new int[]{0, 1, 2}, new int[]{3}); }
+    public SmelteryEntity(BlockPos pos, BlockState state) { super(IndustrialRegistry.SMELTERY_ENTITY, pos, state, 4, IndustrialRegistry.SMELTERY_TYPE, new int[]{0, 1, 2}, new int[]{3}); }
 
     @Override
     protected void onProcessTick(ServerLevel level, int currentProgress, int maxProgress) {
