@@ -11,8 +11,8 @@ public class ServerMobSpawner {
     private static final ArrayList<ServerMob> mobList = new ArrayList<>();
 
     public static void onEntityJoin(Entity entity, ServerLevel ignoredLevel) {
-        for (ServerMob mob : mobList.stream().filter(mob -> mob.getEntityType() == entity.getType()).toList()) {
-            if (entity.getRandom().nextFloat() >= mob.entitySpawnRate()) {
+        for (ServerMob mob : mobList) {
+            if (mob.getEntityType() == entity.getType() && entity.getRandom().nextFloat() >= mob.entitySpawnRate()) {
                 mob.setEntity((LivingEntity) entity);
                 break;
             }

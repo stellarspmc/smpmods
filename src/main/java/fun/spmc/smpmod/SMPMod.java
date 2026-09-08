@@ -12,6 +12,7 @@ import fun.spmc.smpmod.mobs.boss.CrystalBoss;
 import fun.spmc.smpmod.npc.NPCManager;
 import fun.spmc.smpmod.quest.QuestManager;
 import fun.spmc.smpmod.registry.NPCRegistry;
+import fun.spmc.smpmod.registry.PolymerPlants;
 import fun.spmc.smpmod.registry.QuestRegistry;
 import fun.spmc.smpmod.treasure.TreasureEvents;
 import fun.spmc.smpmod.command.CommandRegistry;
@@ -48,6 +49,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ScoreAccess;
@@ -191,5 +195,16 @@ public class SMPMod implements DedicatedServerModInitializer {
         PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
         ServerEntityEvents.ENTITY_LOAD.register(ServerMobSpawner::onEntityJoin);
         UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss);
+
+        // dont ask why twice
+        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+            if (world.isClientSide()) return;
+
+            if (state.is(Blocks.SHORT_GRASS) || state.is(Blocks.TALL_GRASS)) {
+                if (world.getRandom().nextFloat() < 0.08f) { // 8% chance
+                    Block.popResource(world, pos, new ItemStack(PolymerPlants.SEEDS.get("wheat")));
+                }
+            }
+        });
     }
 }

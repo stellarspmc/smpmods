@@ -110,12 +110,9 @@ public class EconomyCommands {
         return Commands.literal("withdraw")
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
                         .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
-                                Stream.concat(MarketState.getState().getAll().keySet().stream(), Stream.of(Items.DIAMOND)).distinct().map(BuiltInRegistries.ITEM::getKey),
-                                builder
-                        ))
+                                Stream.concat(MarketState.getState().getAll().keySet().stream(), Stream.of(Items.DIAMOND)).distinct().map(BuiltInRegistries.ITEM::getKey), builder))
                         .executes(ctx -> handleWithdrawItem(ctx, 1))
-                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400))
-                                .executes(ctx -> handleWithdrawItem(ctx, IntegerArgumentType.getInteger(ctx, "count")))));
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 6400)).executes(ctx -> handleWithdrawItem(ctx, IntegerArgumentType.getInteger(ctx, "count")))));
     }
 
     private static int handleWithdrawItem(CommandContext<CommandSourceStack> ctx, int count) throws CommandSyntaxException {
@@ -225,10 +222,7 @@ public class EconomyCommands {
         return Commands.literal("market")
                 .executes(EconomyCommands::listMarketPrices)
                 .then(Commands.argument("item", ItemArgument.item(buildContext))
-                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(
-                                MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey),
-                                builder
-                        ))
+                        .suggests((_, builder) -> SharedSuggestionProvider.suggestResource(MarketState.getState().getAll().keySet().stream().map(BuiltInRegistries.ITEM::getKey), builder))
                         .executes(ctx -> showItemPrice(ctx, ItemArgument.getItem(ctx, "item").item().value())));
     }
 

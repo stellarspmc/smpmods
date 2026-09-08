@@ -1,5 +1,7 @@
 package fun.spmc.smpmod.npc;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
@@ -36,7 +38,7 @@ import static fun.spmc.smpmod.SMPMod.minecraftServer;
 public class NPCData extends SavedData {
     public static final Codec<NPCData> CODEC = RecordCodecBuilder.create(instance -> instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", Map.of()).forGetter(NPCData::getNpcMap)).apply(instance, NPCData::new));
     public static final SavedDataType<NPCData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), NPCData::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
-    private final Map<String, UUID> npcs = new HashMap<>();
+    private final BiMap<String, UUID> npcs = HashBiMap.create();
 
     public NPCData() {}
     public NPCData(Map<String, UUID> npcs) { this.npcs.putAll(npcs); }
@@ -45,7 +47,7 @@ public class NPCData extends SavedData {
     public void removeNpc(String id) { if (this.npcs.remove(id) != null) this.setDirty(); }
     public @Nullable UUID getUuid(String id) { return this.npcs.get(id); }
     public boolean hasNpc(String id) { return this.npcs.containsKey(id); }
-    public @Nullable String getNpcId(UUID uuid) { return this.npcs.entrySet().stream().filter(entry -> entry.getValue().equals(uuid)).collect(Collectors.toCollection(ArrayList::new)).getFirst().getKey(); }
+    public @Nullable String getNpcId(UUID uuid) { return this.npcs.inverse().get(uuid); }
 
     public void registerNpc(String id, UUID uuid) {
         this.npcs.put(id, uuid);

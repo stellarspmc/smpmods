@@ -114,7 +114,7 @@ These are other recipes that should be noted into the code
 ## Vault System (6.7)
 The Vault tracks community-wide donation goals and grants server-wide perks upon milestone completion.
 
-* **Hub Interaction:** Punch the `vault master` in the server hub.
+* **Hub Interaction:** Punch the `Vault Master` in the server hub.
 * **Left Click:** Check current contribution progress and tier milestones.
 * **Right Click:** Donate items or funds directly into the Vault.
 
@@ -147,3 +147,6 @@ Treasures grant dynamic rewards while preventing automated or high-speed farming
 $$\text{Drop Chance} = 0.85^x$$ (wip, changed)
 
 *(where $x$ is the number of consecutive triggers without waiting for the cooldown).*
+
+## Questing System (7.3)
+* stub

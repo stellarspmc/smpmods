@@ -8,12 +8,14 @@ import fun.spmc.smpmod.utils.MessageUtils;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PolymerPlants {
-    public final static List<SeedItem> SEEDS = new ArrayList<>();
+    public final static HashMap<String, SeedItem> SEEDS = new HashMap<>();
 
     private static Item getBaseSeed(Item baseCrop) {
         if (baseCrop == Items.WHEAT) return Items.WHEAT_SEEDS;
@@ -31,8 +33,10 @@ public class PolymerPlants {
         CropItem cropItem = PolymerRegistry.createItem(cropId, properties -> new CropItem(properties, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity));
         SeedBlock seedBlock = (SeedBlock) PolymerRegistry.createBlockOnly(cropId + "_crop", properties -> new SeedBlock(properties, () -> cropItem), BlockBehaviour.Properties.of());
         SeedItem seedItem = PolymerRegistry.createItem(cropId + "_seeds", properties -> new SeedItem(seedBlock, properties, baseSeed, MessageUtils.formatName(cropId + "_seeds")));
-        SEEDS.add(seedItem);
+        SEEDS.putIfAbsent(cropId, seedItem);
     }
+
+    @Nullable public static SeedItem getItem(String id) { return SEEDS.getOrDefault(id, null); }
 
     protected static void register() {
         registerPlant("wheat", Items.WHEAT, 1f, ItemRarity.COMMON);
