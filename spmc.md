@@ -50,7 +50,7 @@ To simulate a realistic market, exact algorithmic formulas are **not given** to 
 ### Player Chest Shops (6.6)
 The Shop System allows players and admins to set up automated physical stores using Barrels and Signs. Displays (holograms and 3D item floating models) automatically render above the shop barrel to showcase items, batch sizes, live stock, and pricing.
 
-Full cross-platform support is included for both Java and Bedrock (Geyser/Floodgate) players with custom-tailored user interfaces.
+Full cross-platform support is included for both Java and Bedrock (Geyser/Floodgate) players with UIs.
 
 #### How to Create a Shop
 1. Place a **Barrel** on the ground.
@@ -97,9 +97,21 @@ Refine raw carbon and nether materials into high-tier industrial components insi
 | Compressed Carbon | 4x       | Carbon Chunk            | 1x       |
 | Nether Brick      | 32x      | Compressed Nether Brick | 1x       |
 
-## Community Systems & Activities
+### Smeltry Recipes
 
-### Vault System (6.7)
+The smeltry is used to create alloy materials.
+
+| Input Material       | Quantity | Output Material         | Quantity |
+|----------------------|----------|-------------------------|----------|
+| Iron Ingot + Silicon | 1x       | Ferrosilicon            | 1x       |
+
+### Other Recipes
+
+These are other recipes that should be noted into the code
+
+**TODO: write the crafting recipes**
+
+## Vault System (6.7)
 The Vault tracks community-wide donation goals and grants server-wide perks upon milestone completion.
 
 * **Hub Interaction:** Punch the `vault master` in the server hub.
@@ -108,31 +120,25 @@ The Vault tracks community-wide donation goals and grants server-wide perks upon
 
 * **Command Access:** Run `/vault` anywhere in the world to view info and progress.
 
-### Better Fishing System
-
+## Better Fishing System (7.0)
 Fishing includes custom mechanics, rod progression, badges, and quests.
+
+To know more, please refer to: **TODO: write this part**
 
 * **Minigame Hook Mechanics:** When a fish bites, a timing bar appears. Press **SPACE** when the indicator aligns with the **green sweet spot** to successfully land the catch.
 * **Progression Unlocks:** Earn money to purchase custom upgraded fishing rods with higher catch probabilities and unique loot tables.
 
-### Lodestone Chunk Loading & Automation
-
+## Lodestone Chunk Loading & Automation (6.6)
 * **Chunk Loading:** Placing a Lodestone force-loads its surrounding chunk area.
 * **Entity Persistence:** Keeps entities inside loaded chunks persistent to prevent despawning.
-* **Fakeplayer Integration:** Automation designs utilizing fakeplayers require a Lodestone to keep chunks active and functional.
 
-### Quality of Life & Server Mechanics
+## Quality of Life & Server Mechanics (6.4 - 7.3)
+* **Mob Variants:** Wild mobs occasionally spawn with custom variants (such as `nickwong` and `eye` variants). **TODO: expand**
+* **Happy Ghasts:** Ghast flying speed is fixed at 3x default speed to match Elytra travel rates. 
+* **Core Commands:** `/home` (7 home limit), `/surface` (teleport to world surface), `/mapart` (render canvas maps). **TODO: expand**
 
-* **Mob Variants:** Wild mobs occasionally spawn with custom variants (such as `nickwong` and `eye` variants).
-* **Happy Ghasts:** Ghast flying speed is fixed at 3x default speed to match Elytra travel rates.
-* **Death Messages:** Death coordinates log cleanly as `at (x, y, z)`. Bedrock crossplay players trigger a Bedrock death grave upon dying.
-* **Core Commands:** `/home` (2 home limit), `/surface` (teleport to world surface), `/mapart` (render canvas maps).
-
----
-
-### Treasure System (6.35)
-
-Treasures grant dynamic rewards while preventing automated or high-speed farming.
+## Treasure System (6.35)
+Treasures grant dynamic rewards while preventing automated or high-speed farming. **TODO: rewrite + expand**
 
 * **Base Payout:** $3 per treasure.
 * **Cooldown Buffer:** 10-minute default cooldown timer between full-value drops.
