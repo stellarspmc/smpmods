@@ -18,7 +18,7 @@ public class MixinResultSlot {
     @Inject(method = "onTake", at = @At("HEAD"))
     private void onCraftItem(Player player, ItemStack carried, CallbackInfo ci) {
         if (player instanceof ServerPlayer serverPlayer) {
-            QuestManager.getQuests(serverPlayer).getActiveQuests().forEach(activeQuest -> {
+            QuestManager.getQuests(serverPlayer).activeQuests.forEach(activeQuest -> {
                 Quest quest = activeQuest.getQuest();
                 if (quest.type() == Quest.QuestType.CRAFTING && quest.target().equals(BuiltInRegistries.ITEM.getKey(carried.getItem()))) activeQuest.increment(1);
             });

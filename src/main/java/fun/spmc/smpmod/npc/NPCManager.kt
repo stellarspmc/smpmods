@@ -27,7 +27,7 @@ object NPCManager {
     @JvmStatic val allIds: ArrayList<String> get() = java.util.ArrayList(DEFINITIONS.keys)
 
     @JvmStatic
-    fun spawn(id: String?, level: ServerLevel, pos: BlockPos): Mannequin? {
+    fun spawn(id: String, level: ServerLevel, pos: BlockPos): Mannequin? {
         val def = DEFINITIONS[id] ?: return null
 
         val data = NPCData.get()
@@ -50,34 +50,22 @@ object NPCManager {
 
     @JvmStatic
     fun register() {
-        AttackEntityCallback.EVENT.register(AttackEntityCallback { player: Player?, world: Level?, hand: InteractionHand?, entity: Entity?, `_`: EntityHitResult? ->
-            if (hand != InteractionHand.MAIN_HAND || world!!.isClientSide) InteractionResult.PASS
+        AttackEntityCallback.EVENT.register(AttackEntityCallback { player: Player, world: Level, hand: InteractionHand, entity: Entity, _: EntityHitResult? ->
+            if (hand != InteractionHand.MAIN_HAND || world.isClientSide) return@AttackEntityCallback InteractionResult.PASS
             if (entity is Mannequin) {
-                val npcId = NPCData.get().getNpcId(entity.getUUID())
-                if (npcId != null) {
-                    val def = DEFINITIONS[npcId]
-                    if (def != null) {
-                        def.onAttack.accept(player as ServerPlayer, entity)
-                        InteractionResult.SUCCESS
-                    }
-                }
+                (DEFINITIONS[NPCData.get().getNpcId(entity.getUUID())?: return@AttackEntityCallback InteractionResult.PASS]?: return@AttackEntityCallback InteractionResult.PASS).onAttack.accept(player as ServerPlayer, entity)
+                return@AttackEntityCallback InteractionResult.SUCCESS
             }
-            InteractionResult.PASS
+            return@AttackEntityCallback InteractionResult.PASS
         })
 
-        UseEntityCallback.EVENT.register(UseEntityCallback { player: Player?, world: Level?, hand: InteractionHand?, entity: Entity?, `_`: EntityHitResult? ->
-            if (world!!.isClientSide || hand != InteractionHand.MAIN_HAND) InteractionResult.PASS
+        UseEntityCallback.EVENT.register(UseEntityCallback { player: Player, world: Level, hand: InteractionHand, entity: Entity, _: EntityHitResult? ->
+            if (world.isClientSide || hand != InteractionHand.MAIN_HAND) return@UseEntityCallback InteractionResult.PASS
             if (entity is Mannequin) {
-                val npcId = NPCData.get().getNpcId(entity.getUUID())
-                if (npcId != null) {
-                    val def = DEFINITIONS[npcId]
-                    if (def != null) {
-                        def.onUse.accept(player as ServerPlayer, entity)
-                        InteractionResult.SUCCESS
-                    }
-                }
+                (DEFINITIONS[NPCData.get().getNpcId(entity.getUUID())?: return@UseEntityCallback InteractionResult.PASS]?: return@UseEntityCallback InteractionResult.PASS).onUse.accept(player as ServerPlayer, entity)
+                return@UseEntityCallback InteractionResult.SUCCESS
             }
-            InteractionResult.PASS
+            return@UseEntityCallback InteractionResult.PASS
         })
     }
 

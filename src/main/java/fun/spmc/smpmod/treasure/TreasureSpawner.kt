@@ -25,18 +25,20 @@ object TreasureSpawner {
     fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: TreasureHelper.Biomes) {
         world.destroyBlock(pos, true)
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3)
-        if (world.getBlockEntity(pos) is BarrelBlockEntity) {
-            //(world.getBlockEntity(pos) as BarrelBlockEntity).setLootTable(lootTable, world.getRandom().nextLong());
-            val list = TreasureRegistry.getEligibleTreasures(world, biomes, rarity)
-            for (i in 1..3) { // please fix this TODO: dont hard set 3
-                val treasure = list[world.random.nextInt(list.size)]
-                treasure.createStack()
+        val barrel = world.getBlockEntity(pos) as? BarrelBlockEntity ?: return
+        val list = TreasureRegistry.getEligibleTreasures(world, biomes, rarity)
+        val availableSlots = (0 until barrel.containerSize).toMutableList()
+        if (list.isEmpty()) return
 
-                (world.getBlockEntity(pos) as BarrelBlockEntity)
-            }
-            (world.getBlockEntity(pos) as BarrelBlockEntity).setChanged()
+        repeat(world.random.nextIntBetweenInclusive(1, 9 - rarity.ordinal)) {
+            if (availableSlots.isEmpty()) return@repeat
+
+            val treasure = list[world.random.nextInt(list.size)]
+            val slotIndex = world.random.nextInt(availableSlots.size)
+            barrel.setItem(availableSlots.removeAt(slotIndex), treasure.createStack())
         }
 
+        barrel.setChanged()
         spawnLootEffects(world, pos, rarity, player)
     }
 
@@ -62,17 +64,7 @@ object TreasureSpawner {
             ItemRarity.RARE -> TODO()
 
             ItemRarity.EPIC -> {
-                world.sendParticles(
-                    PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1f),
-                    x,
-                    y,
-                    z,
-                    60,
-                    .5,
-                    .5,
-                    .5,
-                    .03
-                )
+                world.sendParticles(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1f), x, y, z, 60, .5, .5, .5, .03)
                 world.sendParticles(ParticleTypes.END_ROD, x, y, z, 25, .4, .4, .4, .08)
                 world.playSound(null, pos, SoundEvents.EVOKER_CAST_SPELL, SoundSource.BLOCKS, 1f, 1f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, .7f, 1.3f)
@@ -88,17 +80,7 @@ object TreasureSpawner {
             }
 
             ItemRarity.MYTHIC -> {
-                world.sendParticles(
-                    ColorParticleOption.create(ParticleTypes.FLASH, -0xaa01),
-                    x,
-                    y,
-                    z,
-                    2,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                )
+                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, -0xaa01), x, y, z, 2, 0.0, 0.0, 0.0, 0.0)
                 world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 200, .8, .8, .8, .5)
                 world.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 80, .5, .5, .5, .2)
                 world.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, .5, .5, .5, .1)
@@ -129,7 +111,6 @@ object TreasureSpawner {
             .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD))
 
         world.server.playerList.broadcastSystemMessage(chatAnnouncement, false)
-        SMPMod.messageChannel!!.sendMessage("**" + MarkdownSanitizer.escape(player.scoreboardName) + "** just got a **" + rarity.name + "** loot drop!")
-            .queue()
+        SMPMod.messageChannel!!.sendMessage("**" + MarkdownSanitizer.escape(player.scoreboardName) + "** just got a **" + rarity.name + "** loot drop!").queue()
     }
 }

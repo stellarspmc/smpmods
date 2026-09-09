@@ -1,138 +1,139 @@
-package fun.spmc.smpmod.core;
+package `fun`.spmc.smpmod.core
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
-import fun.spmc.smpmod.mixin.AccessorGameProfile;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
-import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.PositionMoveRotation;
-import org.geysermc.floodgate.api.FloodgateApi;
-import org.geysermc.floodgate.api.player.FloodgatePlayer;
+import com.google.common.collect.LinkedHashMultimap
+import com.google.common.collect.Multimap
+import com.google.gson.JsonParser
+import com.mojang.authlib.properties.Property
+import com.mojang.authlib.properties.PropertyMap
+import `fun`.spmc.smpmod.SMPMod
+import `fun`.spmc.smpmod.mixin.AccessorGameProfile
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ChunkMap
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.PositionMoveRotation
+import org.geysermc.floodgate.api.FloodgateApi
+import java.io.StringReader
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
+import java.util.function.Function
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.http.*;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
+object BedrockSkinFetcher {
+    private val SKIN_REQUEST_TIMEOUT: Duration? = Duration.ofSeconds(8L)
+    private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
-import static fun.spmc.smpmod.SMPMod.modLogger;
+    fun restoreSkin(server: MinecraftServer, player: ServerPlayer) {
+        val uuid = player.getUUID()
+        if (!FloodgateApi.getInstance().isFloodgatePlayer(uuid)) return
+        val floodgatePlayer = FloodgateApi.getInstance().getPlayer(uuid) ?: return
 
-public class BedrockSkinFetcher {
-    private static final Duration SKIN_REQUEST_TIMEOUT = Duration.ofSeconds(8L);
-    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-    public static void restoreSkin(MinecraftServer server, ServerPlayer player) {
-        UUID uuid = player.getUUID();
-        if (!FloodgateApi.getInstance().isFloodgatePlayer(uuid)) return;
-        FloodgatePlayer floodgatePlayer = FloodgateApi.getInstance().getPlayer(uuid);
-        if (floodgatePlayer == null) return;
-
-        String xuid = floodgatePlayer.getXuid();
-        fetchAndApplySkin(server, uuid, player.getGameProfile().name(), xuid, 0);
+        val xuid = floodgatePlayer.xuid
+        fetchAndApplySkin(server, uuid, player.gameProfile.name(), xuid, 0)
     }
 
-    private static void fetchAndApplySkin(MinecraftServer server, UUID playerId, String playerName, String xuid, int attempt) {
-        GeyserSkinClient.fetchSkin(xuid).thenAccept(skinOpt -> {
-            if (skinOpt.isEmpty()) scheduleRetry(server, playerId, playerName, xuid, attempt);
-            else server.execute(() -> applySkin(server, playerId, skinOpt.get()));
-        }).exceptionally(_ -> {
-            modLogger.warn("Failed to fetch Bedrock skin for {} ({}), retrying...", playerName, xuid);
-            scheduleRetry(server, playerId, playerName, xuid, attempt);
-            return null;
-        });
+    private fun fetchAndApplySkin(server: MinecraftServer, playerId: UUID, playerName: String, xuid: String, attempt: Int) {
+        GeyserSkinClient.fetchSkin(xuid).thenAccept(Consumer { skinOpt: Optional<SkinProperty> ->
+            if (skinOpt.isEmpty) scheduleRetry(server, playerId, playerName, xuid, attempt)
+            else server.execute { applySkin(server, playerId, skinOpt.get()) }
+        }).exceptionally(Function { _: Throwable? ->
+            SMPMod.modLogger.warn("Failed to fetch Bedrock skin for {} ({}), retrying...", playerName, xuid)
+            scheduleRetry(server, playerId, playerName, xuid, attempt)
+            null
+        })
     }
 
-    private static void scheduleRetry(MinecraftServer server, UUID playerId, String playerName, String xuid, int attempt) {
+    private fun scheduleRetry(server: MinecraftServer, playerId: UUID, playerName: String, xuid: String, attempt: Int) {
         if (attempt >= 5) {
-            modLogger.info("No converted Bedrock skin available for {} after max attempts.", playerName);
-            return;
+            SMPMod.modLogger.info("No converted Bedrock skin available for {} after max attempts.", playerName)
+            return
         }
 
-        scheduler.schedule(() -> server.execute(() -> {
-            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player != null && player.connection.isAcceptingMessages()) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
-        }), 850L, TimeUnit.MILLISECONDS);
+        scheduler.schedule({
+            server.execute {
+                val player = server.playerList.getPlayer(playerId)?: return@execute
+                if (player.connection.isAcceptingMessages) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1)
+            }
+        }, 850L, TimeUnit.MILLISECONDS)
     }
 
-    private static void applySkin(MinecraftServer server, UUID playerId, SkinProperty skin) {
-        ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-        if (player == null) return;
+    private fun applySkin(server: MinecraftServer, playerId: UUID, skin: SkinProperty) {
+        val player = server.playerList.getPlayer(playerId) ?: return
 
-        GameProfile profile = player.getGameProfile();
-        PropertyMap currentProperties = profile.properties();
-        Multimap<String, Property> map = LinkedHashMultimap.create();
+        val profile = player.gameProfile
+        val currentProperties = profile.properties()
+        val map: Multimap<String, Property> = LinkedHashMultimap.create()
+        for ((key, value) in currentProperties.entries()) if (key != "textures") map.put(key, value)
 
-        for (Map.Entry<String, Property> entry : currentProperties.entries()) if (!entry.getKey().equals("textures")) map.put(entry.getKey(), entry.getValue());
+        map.put("textures", Property("textures", skin.value, skin.signature))
+        val newProperties = PropertyMap(map)
+        (profile as AccessorGameProfile).setProperties(newProperties) // shush
+        val removePacket = ClientboundPlayerInfoRemovePacket(listOf(player.getUUID()))
+        val addPacket = ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), listOf(player))
 
-        map.put("textures", new Property("textures", skin.value(), skin.signature()));
-        PropertyMap newProperties = new PropertyMap(map);
-        ((AccessorGameProfile) (Object) profile).setProperties(newProperties);
-        ClientboundPlayerInfoRemovePacket removePacket = new ClientboundPlayerInfoRemovePacket(List.of(player.getUUID()));
-        ClientboundPlayerInfoUpdatePacket addPacket = new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), List.of(player));
-
-        for (ServerPlayer other : server.getPlayerList().getPlayers()) {
-            other.connection.send(removePacket);
-            other.connection.send(addPacket);
+        for (other in server.playerList.players) {
+            other.connection.send(removePacket)
+            other.connection.send(addPacket)
         }
 
-        if (player.level() instanceof ServerLevel serverLevel) {
-            ChunkMap chunkMap = serverLevel.getChunkSource().chunkMap;
-            chunkMap.removeEntity(player);
-            chunkMap.addEntity(player);
+        val level = player.level()
+        val chunkMap: ChunkMap = level.chunkSource.chunkMap
+        chunkMap.removeEntity(player)
+        chunkMap.addEntity(player)
 
-            player.connection.send(new ClientboundRespawnPacket(player.createCommonSpawnInfo(serverLevel), ClientboundRespawnPacket.KEEP_ALL_DATA));
-            player.connection.send(new ClientboundPlayerPositionPacket(0, PositionMoveRotation.of(player), Set.of()));
-            server.getPlayerList().sendAllPlayerInfo(player);
-            player.onUpdateAbilities();
-            player.inventoryMenu.sendAllDataToRemote();
-        }
+        player.connection.send(ClientboundRespawnPacket(player.createCommonSpawnInfo(level), ClientboundRespawnPacket.KEEP_ALL_DATA))
+        player.connection.send(ClientboundPlayerPositionPacket(0, PositionMoveRotation.of(player), mutableSetOf()))
+        server.playerList.sendAllPlayerInfo(player)
+        player.onUpdateAbilities()
+        player.inventoryMenu.sendAllDataToRemote()
 
-        modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
+        SMPMod.modLogger.info("Successfully restored Bedrock skin for {}", player.scoreboardName)
     }
 
 
-    private record SkinProperty(String value, String signature) {}
+    @JvmRecord
+    private data class SkinProperty(val value: String?, val signature: String?)
 
-    private static class GeyserSkinClient {
-        private static final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(SKIN_REQUEST_TIMEOUT).followRedirects(HttpClient.Redirect.NORMAL).build();
+    private object GeyserSkinClient {
+        private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(SKIN_REQUEST_TIMEOUT).followRedirects(HttpClient.Redirect.NORMAL).build()
 
-        public static CompletableFuture<Optional<SkinProperty>> fetchSkin(String xuid) {
-            if (xuid == null || xuid.isBlank()) return CompletableFuture.completedFuture(Optional.empty());
-            HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.geysermc.org/v2/skin/" + xuid)).timeout(SKIN_REQUEST_TIMEOUT).header("Accept", "application/json").GET().build();
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(GeyserSkinClient::parseSkinResponse);
+        fun fetchSkin(xuid: String): CompletableFuture<Optional<SkinProperty>> {
+            if (xuid.isBlank()) return CompletableFuture.completedFuture(Optional.empty<SkinProperty>())
+            val request = HttpRequest.newBuilder(URI.create("https://api.geysermc.org/v2/skin/$xuid")).timeout(SKIN_REQUEST_TIMEOUT).header("Accept", "application/json").GET().build()
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply { res: HttpResponse<String> -> parseSkinResponse(res) }
         }
 
-        private static Optional<SkinProperty> parseSkinResponse(HttpResponse<String> response) {
-            int statusCode = response.statusCode();
-            if (statusCode == 404) return Optional.empty();
+        fun parseSkinResponse(response: HttpResponse<String>): Optional<SkinProperty> {
+            val statusCode = response.statusCode()
+            if (statusCode == 404) return Optional.empty<SkinProperty?>()
 
-            if (statusCode >= 200 && statusCode < 300) {
-                try (Reader reader = new StringReader(response.body())) {
-                    JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                    if (!json.has("value") || json.get("value").isJsonNull()) return Optional.empty();
+            if (statusCode in 200..<300) {
+                try {
+                    StringReader(response.body()).use { reader ->
+                        val json = JsonParser.parseReader(reader).getAsJsonObject()
+                        if (!json.has("value") || json.get("value").isJsonNull) return Optional.empty<SkinProperty?>()
 
-                    String value = json.get("value").getAsString();
-                    String signature = (json.has("signature") && !json.get("signature").isJsonNull()) ? json.get("signature").getAsString() : null;
+                        val value = json.get("value").asString
+                        val signature = if (json.has("signature") && !json.get("signature").isJsonNull) json.get("signature").asString else null
 
-                    if (value.isBlank()) return Optional.empty();
-                    return Optional.of(new SkinProperty(value, signature));
-                } catch (Exception error) {
-                    throw new IllegalArgumentException("Invalid Geyser skin API response", error);
+                        if (value.isBlank()) return Optional.empty<SkinProperty?>()
+                        return Optional.of<SkinProperty?>(SkinProperty(value, signature))
+                    }
+                } catch (error: Exception) {
+                    throw IllegalArgumentException("Invalid Geyser skin API response", error)
                 }
-            } else throw new IllegalStateException("Geyser skin API returned HTTP " + statusCode);
+            } else throw IllegalStateException("Geyser skin API returned HTTP $statusCode")
         }
     }
 }

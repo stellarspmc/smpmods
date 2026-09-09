@@ -1,24 +1,27 @@
-package fun.spmc.smpmod.cosmetics;
+package `fun`.spmc.smpmod.cosmetics
 
-import eu.pb4.placeholders.api.PlaceholderResult;
-import eu.pb4.placeholders.api.Placeholders;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.saveddata.SavedData;
+import eu.pb4.placeholders.api.PlaceholderResult
+import eu.pb4.placeholders.api.Placeholders
+import eu.pb4.placeholders.api.ServerPlaceholderContext
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.saveddata.SavedData
 
-public class CosmeticSavedData extends SavedData {
-    public static void register() {
-        Placeholders.registerServer(Identifier.fromNamespaceAndPath("smpmod", "prefix"), (context, argument) -> {
-            if (context.hasPlayer()) {
-                Component prefix = CosmeticSavedData.getEquippedPrefix((ServerPlayer) context.player());
-                if (!prefix.getString().isBlank()) return PlaceholderResult.value(prefix);
+object CosmeticSavedData : SavedData() {
+    fun register() {
+        Placeholders.registerServer<Any?>(
+            Identifier.fromNamespaceAndPath("smpmod", "prefix")
+        ) { context: ServerPlaceholderContext?, _: String? ->
+            if (context!!.hasPlayer()) {
+                val prefix = getEquippedPrefix(context.player() as ServerPlayer?)
+                if (prefix.string.isNotBlank()) return@registerServer PlaceholderResult.value(prefix)
             }
-            return PlaceholderResult.value(Component.empty());
-        });
+            PlaceholderResult.value(Component.empty())
+        }
     }
 
-    private static Component getEquippedPrefix(ServerPlayer player) {
-        return Component.empty().append("");
+    private fun getEquippedPrefix(player: ServerPlayer?): Component {
+        return Component.empty().append("")
     }
 }

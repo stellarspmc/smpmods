@@ -17,7 +17,7 @@ import java.util.stream.Stream
 object UtilityFunctions {
     fun getLevelOfEntity(uuid: UUID): ServerLevel {
         val level = AtomicReference<ServerLevel>()
-        SMPMod.minecraftServer.allLevels.forEach(Consumer { a: ServerLevel -> if (a.getEntity(uuid) != null) level.set(a) })
+        SMPMod.minecraftServer!!.allLevels.forEach(Consumer { a: ServerLevel -> if (a.getEntity(uuid) != null) level.set(a) })
         return level.get()
     }
 

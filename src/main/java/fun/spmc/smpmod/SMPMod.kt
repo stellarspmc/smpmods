@@ -61,10 +61,8 @@ import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.RecipeHolder
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
@@ -82,7 +80,7 @@ import kotlin.system.exitProcess
 class SMPMod : DedicatedServerModInitializer {
     override fun onInitializeServer() {
         try {
-            CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext, ignoredCommandSelection: CommandSelection -> CommandRegistry.register(dispatcher, context, ignoredCommandSelection) })
+            CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext, _: CommandSelection -> CommandRegistry.register(dispatcher, context) })
         } catch (e: Exception) {
             modLogger.error(ExceptionUtils.getStackTrace(e))
             exitProcess(1)
@@ -231,15 +229,7 @@ class SMPMod : DedicatedServerModInitializer {
             bot!!.shutdown()
         })
 
-        PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level?, player: Player?, pos: BlockPos?, state: BlockState?, ignoredBlockEntity: BlockEntity? ->
-            TreasureEvents.onBlockBreak(
-                world,
-                player,
-                pos,
-                state,
-                ignoredBlockEntity
-            )
-        })
+        PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level, player: Player, pos: BlockPos, state: BlockState, _: BlockEntity? -> TreasureEvents.onBlockBreak(world, player, pos, state) })
         ServerEntityEvents.ENTITY_LOAD.register(ServerEntityEvents.Load { entity: Entity, level: ServerLevel -> ServerMobEvents.onEntityJoin(entity, level) })
         UseBlockCallback.EVENT.register(UseBlockCallback { player: Player, world: Level, hand: InteractionHand, hitResult: BlockHitResult? -> CrystalBoss.eventSpawnBoss(player, world, hand, hitResult) })
 
@@ -247,11 +237,8 @@ class SMPMod : DedicatedServerModInitializer {
         PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level, _: Player, pos: BlockPos, state: BlockState, _: BlockEntity? ->
             if (world.isClientSide) return@After
             if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
-                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(
-                    world,
-                    pos,
-                    ItemStack(PlantRegistry.SEEDS.get("wheat"))
-                )
+                TODO("to be fixed")
+                //if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, ItemStack(PlantRegistry.SEEDS.get("wheat")))
             }
         })
     }

@@ -54,7 +54,7 @@ public class FishingLoot {
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
         FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
         if (caughtFish.getRarity().shouldAnnounce()) announceLoot(caughtFish.getRarity().toString().toUpperCase(), caughtFish.getFishName(), caughtFish.getRarity().color, player);
-        QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
+        QuestManager.getQuests(player).activeQuests.forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
     }
 
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {

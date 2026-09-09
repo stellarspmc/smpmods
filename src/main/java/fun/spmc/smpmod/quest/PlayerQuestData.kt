@@ -1,82 +1,67 @@
-package fun.spmc.smpmod.quest;
+package `fun`.spmc.smpmod.quest
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.registry.QuestRegistry;
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
+import `fun`.spmc.smpmod.registry.QuestRegistry
+import org.jetbrains.annotations.Unmodifiable
+import java.util.function.Function
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+class PlayerQuestData {
+    @JvmField
+    val activeQuests: MutableList<ActiveQuest> = ArrayList()
+    val completedQuestIds: MutableSet<String> = HashSet()
+    private var lastDailyResetDay: Long = 0
+    private var lastWeeklyResetWeek: Long = 0
 
-public class PlayerQuestData {
-    private final List<ActiveQuest> activeQuests = new ArrayList<>();
-    private final Set<String> completedQuestIds = new HashSet<>();
-    private long lastDailyResetDay = 0;
-    private long lastWeeklyResetWeek = 0;
+    fun addQuest(quest: String) { activeQuests.add(ActiveQuest(quest)) }
+    fun getLastDailyResetDay(): Long { return lastDailyResetDay }
+    fun setLastDailyResetDay(day: Long) { this.lastDailyResetDay = day }
+    fun getLastWeeklyResetWeek(): Long { return lastWeeklyResetWeek }
+    fun setLastWeeklyResetWeek(week: Long) { this.lastWeeklyResetWeek = week }
 
-    public static final Codec<PlayerQuestData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ActiveQuest.CODEC.listOf().fieldOf("active_quests").forGetter(p -> p.activeQuests),
-            Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).fieldOf("completed_quests").forGetter(p -> p.completedQuestIds),
-            Codec.LONG.optionalFieldOf("last_daily_reset", 0L).forGetter(p -> p.lastDailyResetDay),
-            Codec.LONG.optionalFieldOf("last_weekly_reset", 0L).forGetter(p -> p.lastWeeklyResetWeek)
-    ).apply(instance, (active, completed, daily, weekly) -> {
-        PlayerQuestData data = new PlayerQuestData();
-        data.activeQuests.addAll(active);
-        data.completedQuestIds.addAll(completed);
-        data.lastDailyResetDay = daily;
-        data.lastWeeklyResetWeek = weekly;
-        return data;
-    }));
+    class ActiveQuest @JvmOverloads constructor(val questId: String, @JvmField var currentCount: Int = 0, var isCompleted: Boolean = false, var isClaimed: Boolean = false) {
+        fun increment(amount: Int): Boolean {
+            if (this.isCompleted) return false
 
-    public void addQuest(String quest) { activeQuests.add(new ActiveQuest(quest)); }
-    public List<ActiveQuest> getActiveQuests() { return activeQuests; }
-    public Set<String> getCompletedQuestIds() { return completedQuestIds; }
-    public long getLastDailyResetDay() { return lastDailyResetDay; }
-    public void setLastDailyResetDay(long day) { this.lastDailyResetDay = day; }
-    public long getLastWeeklyResetWeek() { return lastWeeklyResetWeek; }
-    public void setLastWeeklyResetWeek(long week) { this.lastWeeklyResetWeek = week; }
-
-    public static class ActiveQuest {
-        private final String quest;
-        private int currentCount;
-        private boolean completed;
-        private boolean claimed;
-
-        public static final Codec<ActiveQuest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("quest").forGetter(ActiveQuest::getQuestId),
-                Codec.INT.fieldOf("current_count").forGetter(ActiveQuest::getCurrentCount),
-                Codec.BOOL.fieldOf("completed").forGetter(ActiveQuest::isCompleted),
-                Codec.BOOL.optionalFieldOf("claimed", false).forGetter(ActiveQuest::isClaimed)
-        ).apply(instance, ActiveQuest::new));
-
-        public ActiveQuest(String quest, int currentCount, boolean completed, boolean claimed) {
-            this.quest = quest;
-            this.currentCount = currentCount;
-            this.completed = completed;
-            this.claimed = claimed;
-        }
-
-        public ActiveQuest(String quest) {
-            this(quest, 0, false, false);
-        }
-
-        public boolean increment(int amount) {
-            if (this.completed) return false;
-
-            this.currentCount += amount;
-            if (this.currentCount >= QuestRegistry.get(this.quest).requiredCount()) {
-                this.currentCount = QuestRegistry.get(this.quest).requiredCount();
-                this.completed = true;
+            this.currentCount += amount
+            if (this.currentCount >= QuestRegistry.get(this.questId).requiredCount) {
+                this.currentCount = QuestRegistry.get(this.questId).requiredCount
+                this.isCompleted = true
             }
-            return this.completed;
+            return this.isCompleted
         }
 
-        public String getQuestId() { return quest; }
-        public Quest getQuest() { return QuestRegistry.get(this.quest); }
-        public int getCurrentCount() { return currentCount; }
-        public boolean isCompleted() { return completed; }
-        public boolean isClaimed() { return claimed; }
-        public void setClaimed(boolean claimed) { this.claimed = claimed; }
+        fun getQuest(): Quest? { return QuestRegistry.get(this.questId) }
+
+        companion object {
+            val CODEC: Codec<ActiveQuest> =
+                RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ActiveQuest> ->
+                    instance.group(
+                        Codec.STRING.fieldOf("quest").forGetter { obj: ActiveQuest -> obj.questId },
+                        Codec.INT.fieldOf("current_count").forGetter { obj: ActiveQuest -> obj.currentCount },
+                        Codec.BOOL.fieldOf("completed").forGetter { obj: ActiveQuest -> obj.isCompleted },
+                        Codec.BOOL.optionalFieldOf("claimed", false).forGetter { obj: ActiveQuest -> obj.isClaimed }
+                    ).apply(instance)
+                    { quest: String, currentCount: Int, completed: Boolean, claimed: Boolean -> ActiveQuest(quest, currentCount, completed, claimed) }
+                })
+        }
+    }
+
+    companion object {
+        val CODEC: Codec<PlayerQuestData> =
+            RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<PlayerQuestData> ->
+                instance.group<List<ActiveQuest>, @Unmodifiable Set<String>, Long, Long>(
+                    ActiveQuest.CODEC.listOf().fieldOf("active_quests").forGetter { p: PlayerQuestData -> p.activeQuests },
+                    Codec.STRING.listOf().xmap<@Unmodifiable Set<String>>(Function { coll: List<String> -> ArrayList(coll).toSet() }, Function { coll: Set<String> -> ArrayList(coll) }).fieldOf("completed_quests").forGetter { p: PlayerQuestData -> p.completedQuestIds },
+                    Codec.LONG.optionalFieldOf("last_daily_reset", 0L).forGetter { p: PlayerQuestData -> p.lastDailyResetDay },
+                    Codec.LONG.optionalFieldOf("last_weekly_reset", 0L).forGetter { p: PlayerQuestData -> p.lastWeeklyResetWeek }
+                ).apply(instance) { active: List<ActiveQuest>, completed: Set<String>, daily: Long, weekly: Long -> val data = PlayerQuestData()
+                    data.activeQuests.addAll(active)
+                    data.completedQuestIds.addAll(completed)
+                    data.lastDailyResetDay = daily
+                    data.lastWeeklyResetWeek = weekly
+                    data
+                }
+            })
     }
 }

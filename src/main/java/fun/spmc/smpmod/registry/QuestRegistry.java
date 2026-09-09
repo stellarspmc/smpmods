@@ -44,7 +44,7 @@ public class QuestRegistry {
                 Optional.of("blacksmith_1")
         ));*/
 
-        PlayerBlockBreakEvents.AFTER.register((_, player, _, state, _) -> QuestManager.getQuests((ServerPlayer) player).getActiveQuests().forEach(activeQuest -> {
+        PlayerBlockBreakEvents.AFTER.register((_, player, _, state, _) -> QuestManager.getQuests((ServerPlayer) player).activeQuests.forEach(activeQuest -> {
             Quest quest = activeQuest.getQuest();
             if (quest.type() == Quest.QuestType.MINE_BLOCK && quest.target().equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()))) activeQuest.increment(1);
         }));
@@ -53,7 +53,7 @@ public class QuestRegistry {
             if (damageSource.getEntity() instanceof ServerPlayer player) {
                 Identifier mobId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
-                QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> {
+                QuestManager.getQuests(player).activeQuests.forEach(activeQuest -> {
                     Quest quest = activeQuest.getQuest();
                     if (quest.type() == Quest.QuestType.KILL_MOB && quest.target().equals(mobId)) {
                         activeQuest.increment(1);

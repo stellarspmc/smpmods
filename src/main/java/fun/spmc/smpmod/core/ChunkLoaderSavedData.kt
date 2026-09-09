@@ -1,137 +1,128 @@
-package fun.spmc.smpmod.core;
+package `fun`.spmc.smpmod.core
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.utils.MessageUtils;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
+import `fun`.spmc.smpmod.utils.MessageUtils.sendError
+import `fun`.spmc.smpmod.utils.MessageUtils.sendSuccess
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.core.BlockPos
+import net.minecraft.resources.Identifier
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.network.ServerGamePacketListenerImpl
+import net.minecraft.util.datafix.DataFixTypes
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.saveddata.SavedData
+import net.minecraft.world.level.saveddata.SavedDataType
+import net.minecraft.world.phys.BlockHitResult
+import java.util.function.Function
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()) : SavedData() {
+    private val activeLoaders: MutableSet<BlockPos> = HashSet(activeLoaders)
+    private var suspended = false
 
-public class ChunkLoaderSavedData extends SavedData {
-    private static final Codec<Set<BlockPos>> LOADERS_CODEC =
-            BlockPos.CODEC.listOf().xmap(HashSet::new, ArrayList::new);
-
-    public static final Codec<ChunkLoaderSavedData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            LOADERS_CODEC.fieldOf("active_loaders").forGetter(data -> data.activeLoaders)
-    ).apply(instance, ChunkLoaderSavedData::new));
-
-    public static final SavedDataType<ChunkLoaderSavedData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"),
-            ChunkLoaderSavedData::new,
-            CODEC,
-            DataFixTypes.SAVED_DATA_COMMAND_STORAGE
-    );
-
-    private final Set<BlockPos> activeLoaders;
-    private boolean suspended = false;
-
-    public ChunkLoaderSavedData(Set<BlockPos> activeLoaders) {
-        this.activeLoaders = new HashSet<>(activeLoaders);
-    }
-
-    public ChunkLoaderSavedData() {
-        this(new HashSet<>());
-    }
-
-    public static ChunkLoaderSavedData get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
-    }
-
-    public void addLoader(ServerLevel level, BlockPos pos) {
+    fun addLoader(level: ServerLevel, pos: BlockPos) {
         if (activeLoaders.add(pos)) {
-            this.setDirty();
+            this.setDirty()
             if (!suspended) {
-                ChunkPos chunkPos = ChunkPos.containing(pos);
-                level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
+                val chunkPos = ChunkPos.containing(pos)
+                level.setChunkForced(chunkPos.x(), chunkPos.z(), true)
             }
         }
     }
 
-    public void removeLoader(ServerLevel level, BlockPos pos) {
+    fun removeLoader(level: ServerLevel, pos: BlockPos) {
         if (activeLoaders.remove(pos)) {
-            this.setDirty();
-            ChunkPos chunkPos = ChunkPos.containing(pos);
-            boolean hasOtherLoadersInChunk = activeLoaders.stream().anyMatch(p -> ChunkPos.containing(p).equals(chunkPos));
+            this.setDirty()
+            val chunkPos = ChunkPos.containing(pos)
+            val hasOtherLoadersInChunk = activeLoaders.stream().anyMatch { p: BlockPos? -> ChunkPos.containing(p!!) == chunkPos }
 
-            if (!hasOtherLoadersInChunk) level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
+            if (!hasOtherLoadersInChunk) level.setChunkForced(chunkPos.x(), chunkPos.z(), false)
         }
     }
 
-    public boolean isLoader(BlockPos pos) {
-        return activeLoaders.contains(pos);
-    }
+    fun isLoader(pos: BlockPos): Boolean { return activeLoaders.contains(pos) }
 
-    public void suspendAll(ServerLevel level) {
-        if (suspended) return;
-        this.suspended = true;
-        for (BlockPos pos : activeLoaders) {
-            ChunkPos chunkPos = ChunkPos.containing(pos);
-            level.setChunkForced(chunkPos.x(), chunkPos.z(), false);
+    fun suspendAll(level: ServerLevel) {
+        if (suspended) return
+        this.suspended = true
+        for (pos in activeLoaders) {
+            val chunkPos = ChunkPos.containing(pos)
+            level.setChunkForced(chunkPos.x(), chunkPos.z(), false)
         }
     }
 
-    public void restoreAll(ServerLevel level) {
-        if (!suspended) return;
-        this.suspended = false;
-        for (BlockPos pos : activeLoaders) {
-            ChunkPos chunkPos = ChunkPos.containing(pos);
-            level.setChunkForced(chunkPos.x(), chunkPos.z(), true);
+    fun restoreAll(level: ServerLevel) {
+        if (!suspended) return
+        this.suspended = false
+        for (pos in activeLoaders) {
+            val chunkPos = ChunkPos.containing(pos)
+            level.setChunkForced(chunkPos.x(), chunkPos.z(), true)
         }
     }
 
-    public static void register() {
-        UseBlockCallback.EVENT.register((player, level, _, hitResult) -> {
-            if (level.isClientSide()) return InteractionResult.PASS;
+    companion object {
+        private val LOADERS_CODEC: Codec<MutableSet<BlockPos>> = BlockPos.CODEC.listOf().xmap(
+            Function { c: MutableList<BlockPos> -> HashSet(c) },
+            Function { c: MutableSet<BlockPos> -> ArrayList(c) })
 
-            ServerLevel serverLevel = (ServerLevel) level;
-            var pos = hitResult.getBlockPos();
+        val CODEC: Codec<ChunkLoaderSavedData> =
+            RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ChunkLoaderSavedData> ->
+                instance.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter<ChunkLoaderSavedData?> { data: ChunkLoaderSavedData -> data.activeLoaders }
+                ).apply(instance) { activeLoaders: MutableSet<BlockPos> -> ChunkLoaderSavedData(activeLoaders) }
+            })
 
-            if (level.getBlockState(pos).is(Blocks.LODESTONE)) {
-                ChunkLoaderSavedData data = ChunkLoaderSavedData.get(serverLevel);
+        val TYPE: SavedDataType<ChunkLoaderSavedData> = SavedDataType(
+            Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), { ChunkLoaderSavedData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE
+        )
 
-                if (!data.isLoader(pos)) {
-                    data.addLoader(serverLevel, pos);
-                    MessageUtils.INSTANCE.sendSuccess((ServerPlayer) player, "Chunk loader activated.", 1);
+        fun get(level: ServerLevel): ChunkLoaderSavedData {
+            return level.dataStorage.computeIfAbsent(TYPE)
+        }
+
+        fun register() {
+            UseBlockCallback.EVENT.register(UseBlockCallback { player: Player, level: Level, _: InteractionHand, hitResult: BlockHitResult ->
+                if (level.isClientSide) return@UseBlockCallback InteractionResult.PASS
+                val serverLevel = level as ServerLevel
+                val pos = hitResult.blockPos
+
+                if (level.getBlockState(pos).`is`(Blocks.LODESTONE)) {
+                    val data: ChunkLoaderSavedData = get(serverLevel)
+
+                    if (!data.isLoader(pos)) {
+                        data.addLoader(serverLevel, pos)
+                        return@UseBlockCallback sendSuccess(player as ServerPlayer, "Chunk loader activated.", InteractionResult.SUCCESS)
+                    }
                 }
-            }
-            return InteractionResult.PASS;
-        });
+                return@UseBlockCallback InteractionResult.PASS
+            })
 
-        PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, _) -> {
-            if (!level.isClientSide() && state.is(Blocks.LODESTONE)) {
-                ServerLevel serverLevel = (ServerLevel) level;
-                ChunkLoaderSavedData data = ChunkLoaderSavedData.get(serverLevel);
+            PlayerBlockBreakEvents.BEFORE.register(PlayerBlockBreakEvents.Before { level: Level, player: Player, pos: BlockPos, state: BlockState, _: BlockEntity? ->
+                if (!level.isClientSide && state.`is`(Blocks.LODESTONE)) {
+                    val serverLevel = level as ServerLevel
+                    val data: ChunkLoaderSavedData = get(serverLevel)
 
-                if (data.isLoader(pos)) {
-                    data.removeLoader(serverLevel, pos);
-                    MessageUtils.INSTANCE.sendError((ServerPlayer) player, "Chunk loader deactivated.", 0);
+                    if (data.isLoader(pos)) {
+                        data.removeLoader(serverLevel, pos)
+                        return@Before sendError(player as ServerPlayer, "Chunk loader deactivated.", true)
+                    }
                 }
-            }
-            return true;
-        });
+                return@Before true
+            })
 
-        ServerPlayConnectionEvents.JOIN.register((_, _, server) -> {
-            if (server.getPlayerList().getPlayerCount() == 1)
-                for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).restoreAll(level);
-        });
-
-        ServerPlayConnectionEvents.DISCONNECT.register((_, server) -> {
-            if (server.getPlayerList().getPlayerCount() <= 1)
-                for (ServerLevel level : server.getAllLevels()) ChunkLoaderSavedData.get(level).suspendAll(level);
-        });
+            ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { _: ServerGamePacketListenerImpl, _: PacketSender, server: MinecraftServer -> if (server.playerList.playerCount == 1) for (level in server.allLevels) get(level).restoreAll(level) })
+            ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { _: ServerGamePacketListenerImpl, server: MinecraftServer -> if (server.playerList.playerCount <= 1) for (level in server.allLevels) get(level).suspendAll(level) })
+        }
     }
 }

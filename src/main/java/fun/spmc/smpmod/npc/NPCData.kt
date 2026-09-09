@@ -28,13 +28,13 @@ class NPCData : SavedData {
     constructor()
     constructor(npcs: MutableMap<String, UUID>) { npcMap.putAll(npcs) }
 
-    val npcMap: MutableMap<String?, UUID?>field: BiMap<String?, UUID?> = HashBiMap.create<String?, UUID?>()
+    val npcMap: MutableMap<String, UUID>field: BiMap<String, UUID> = HashBiMap.create<String, UUID>()
     fun removeNpc(id: String) { if (npcMap.remove(id) != null) this.setDirty() }
     fun getUuid(id: String): UUID? { return npcMap[id] }
     fun hasNpc(id: String): Boolean { return npcMap.containsKey(id) }
     fun getNpcId(uuid: UUID): String? { return npcMap.inverse()[uuid] }
 
-    fun registerNpc(id: String?, uuid: UUID?) {
+    fun registerNpc(id: String, uuid: UUID) {
         npcMap[id] = uuid
         this.setDirty()
     }
@@ -48,22 +48,16 @@ class NPCData : SavedData {
     }
 
     companion object {
-        val CODEC: Codec<NPCData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<NPCData> ->
-                instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", mapOf()).forGetter { obj: NPCData -> obj.npcMap }).apply(instance) { npcs: MutableMap<String, UUID> -> NPCData(npcs) } })
-        val TYPE: SavedDataType<NPCData> = SavedDataType(
-            Identifier.fromNamespaceAndPath("smpmod", "npc_data"),
-            { NPCData() },
-            CODEC,
-            DataFixTypes.SAVED_DATA_COMMAND_STORAGE
-        )
+        val CODEC: Codec<NPCData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<NPCData> -> instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", mapOf()).forGetter { obj: NPCData -> obj.npcMap }).apply(instance) { npcs: MutableMap<String, UUID> -> NPCData(npcs) } })
+        val TYPE: SavedDataType<NPCData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), { NPCData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
-        @JvmStatic fun get(): NPCData { return SMPMod.minecraftServer.overworld().dataStorage.computeIfAbsent(TYPE) }
-        @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String?): ResolvableProfile { return createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue) }
+        @JvmStatic fun get(): NPCData { return SMPMod.minecraftServer!!.overworld().dataStorage.computeIfAbsent(TYPE) }
+        @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String): ResolvableProfile { return createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue) }
         @JvmStatic fun talkAsMannequin(mannequin: Mannequin, message: Component, player: ServerPlayer) { player.sendSystemMessage(Component.empty().append(mannequin.customName ?: mannequin.name).append(Component.literal(": ").withStyle(ChatFormatting.WHITE)).append(message.copy().withStyle(ChatFormatting.WHITE))) }
 
         @JvmStatic
-        fun createCustomProfile(name: String, uuid: UUID, textureValue: String?): ResolvableProfile {
-            val map: Multimap<String?, Property?> = HashMultimap.create()
+        fun createCustomProfile(name: String, uuid: UUID, textureValue: String): ResolvableProfile {
+            val map: Multimap<String, Property> = HashMultimap.create()
             map.put("textures", Property("textures", textureValue))
 
             val properties = PropertyMap(map)
