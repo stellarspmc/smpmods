@@ -68,27 +68,13 @@ class PolymerRegistry {
             return Registry.register(BuiltInRegistries.BLOCK, identifier, block)
         }
 
-        fun <T : BlockEntity> createBlockWithItemEntity(
-            id: String,
-            blockFactory: Function<BlockBehaviour.Properties, Block>,
-            properties: BlockBehaviour.Properties,
-            entityFactory: FabricBlockEntityTypeBuilder.Factory<out T>,
-            item: Item
-        ): BlockEntityType<T> {
+        fun <T : BlockEntity> createBlockWithItemEntity(id: String, blockFactory: Function<BlockBehaviour.Properties, Block>, properties: BlockBehaviour.Properties, entityFactory: FabricBlockEntityTypeBuilder.Factory<out T>, item: Item): BlockEntityType<T> {
             val identifier = Identifier.fromNamespaceAndPath("smpmod", id)
             val blockId = BlockItemId.create(identifier, identifier)
             val block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)))
             Registry.register(BuiltInRegistries.BLOCK, identifier, block)
-            Registry.register(
-                BuiltInRegistries.ITEM,
-                blockId.item(),
-                BaseImplementedItem(block, Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id)
-            )
-            val type: BlockEntityType<T> = Registry.register<BlockEntityType<*>, BlockEntityType<T>>(
-                BuiltInRegistries.BLOCK_ENTITY_TYPE,
-                identifier,
-                FabricBlockEntityTypeBuilder.create(entityFactory, block).build()
-            )
+            Registry.register(BuiltInRegistries.ITEM, blockId.item(), BaseImplementedItem(block, Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id))
+            val type: BlockEntityType<T> = Registry.register<BlockEntityType<*>, BlockEntityType<T>>(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.create(entityFactory, block).build())
             PolymerBlockUtils.registerBlockEntity(type)
             return type
         }
@@ -100,13 +86,7 @@ class PolymerRegistry {
         }
 
         // recipe serializer
-        fun <T : Recipe<*>> registerRecipeSerializer(id: String, codec: MapCodec<T>, streamCodec: StreamCodec<RegistryFriendlyByteBuf, T>): RecipeSerializer<T> {
-            return Registry.register<RecipeSerializer<*>, RecipeSerializer<T>>(
-                BuiltInRegistries.RECIPE_SERIALIZER,
-                Identifier.fromNamespaceAndPath("smpmod", id),
-                RecipeSerializer(codec, streamCodec)
-            )
-        }
+        fun <T : Recipe<*>> registerRecipeSerializer(id: String, codec: MapCodec<T>, streamCodec: StreamCodec<RegistryFriendlyByteBuf, T>): RecipeSerializer<T> { return Registry.register<RecipeSerializer<*>, RecipeSerializer<T>>(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), RecipeSerializer(codec, streamCodec)) }
 
         fun <T: LivingEntity> registerEntity(id: String, builder: EntityType.Builder<T>, supplier: AttributeSupplier.Builder) {
             val key: ResourceKey<EntityType<*>> = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("smpmod", id))

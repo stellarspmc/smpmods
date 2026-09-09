@@ -21,8 +21,8 @@ object NPCManager {
     private val DEFINITIONS: MutableMap<String, CustomNPC> = HashMap()
 
     @JvmStatic fun register(npc: CustomNPC) { DEFINITIONS[npc.id] = npc }
-    fun getDefinition(id: String): CustomNPC? { return DEFINITIONS[id] }
-    fun isRegistered(id: String): Boolean { return DEFINITIONS.containsKey(id) }
+    fun getDefinition(id: String): CustomNPC? = DEFINITIONS[id]
+    fun isRegistered(id: String): Boolean = DEFINITIONS.containsKey(id)
 
     @JvmStatic val allIds: ArrayList<String> get() = java.util.ArrayList(DEFINITIONS.keys)
 

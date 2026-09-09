@@ -26,7 +26,7 @@ class PlayerQuestData {
             return this.isCompleted
         }
 
-        fun getQuest(): Quest? { return QuestRegistry.get(this.questId) }
+        fun getQuest(): Quest? = QuestRegistry.get(this.questId)
 
         companion object {
             val CODEC: Codec<ActiveQuest> =

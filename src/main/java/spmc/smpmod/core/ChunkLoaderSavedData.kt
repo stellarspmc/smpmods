@@ -52,7 +52,7 @@ class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<B
         }
     }
 
-    fun isLoader(pos: BlockPos): Boolean { return activeLoaders.contains(pos) }
+    fun isLoader(pos: BlockPos): Boolean = activeLoaders.contains(pos)
 
     fun suspendAll(level: ServerLevel) {
         if (suspended) return
@@ -73,23 +73,17 @@ class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<B
     }
 
     companion object {
-        private val LOADERS_CODEC: Codec<MutableSet<BlockPos>> = BlockPos.CODEC.listOf().xmap(
-            Function { c: MutableList<BlockPos> -> HashSet(c) },
-            Function { c: MutableSet<BlockPos> -> ArrayList(c) })
+        private val LOADERS_CODEC: Codec<MutableSet<BlockPos>> = BlockPos.CODEC.listOf().xmap({ c: MutableList<BlockPos> -> HashSet(c) }, { c: MutableSet<BlockPos> -> ArrayList(c) })
 
-        val CODEC: Codec<ChunkLoaderSavedData> =
-            RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ChunkLoaderSavedData> ->
-                instance.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter<ChunkLoaderSavedData?> { data: ChunkLoaderSavedData -> data.activeLoaders }
-                ).apply(instance) { activeLoaders: MutableSet<BlockPos> -> ChunkLoaderSavedData(activeLoaders) }
-            })
+        val CODEC: Codec<ChunkLoaderSavedData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ChunkLoaderSavedData> -> instance
+			.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter<ChunkLoaderSavedData?> { data: ChunkLoaderSavedData -> data.activeLoaders })
+			.apply(instance) { activeLoaders: MutableSet<BlockPos> -> ChunkLoaderSavedData(activeLoaders) }
+		})
 
-        val TYPE: SavedDataType<ChunkLoaderSavedData> = SavedDataType(
-            Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), { ChunkLoaderSavedData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE
-        )
+        val TYPE: SavedDataType<ChunkLoaderSavedData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), { ChunkLoaderSavedData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
-        fun get(level: ServerLevel): ChunkLoaderSavedData {
-            return level.dataStorage.computeIfAbsent(TYPE)
-        }
+        fun get(level: ServerLevel): ChunkLoaderSavedData = level.dataStorage.computeIfAbsent(TYPE)
+
 
         fun register() {
             UseBlockCallback.EVENT.register(UseBlockCallback { player: Player, level: Level, _: InteractionHand, hitResult: BlockHitResult ->

@@ -44,14 +44,14 @@ object BedrockSkinFetcher {
     }
 
     private fun fetchAndApplySkin(server: MinecraftServer, playerId: UUID, playerName: String, xuid: String, attempt: Int) {
-        GeyserSkinClient.fetchSkin(xuid).thenAccept(Consumer { skinOpt: Optional<SkinProperty> ->
-            if (skinOpt.isEmpty) scheduleRetry(server, playerId, playerName, xuid, attempt)
-            else server.execute { applySkin(server, playerId, skinOpt.get()) }
-        }).exceptionally(Function { _: Throwable? ->
-            SMPMod.modLogger.warn("Failed to fetch Bedrock skin for {} ({}), retrying...", playerName, xuid)
-            scheduleRetry(server, playerId, playerName, xuid, attempt)
-            null
-        })
+        GeyserSkinClient.fetchSkin(xuid).thenAccept { skinOpt: Optional<SkinProperty> ->
+	        if (skinOpt.isEmpty) scheduleRetry(server, playerId, playerName, xuid, attempt)
+	        else server.execute { applySkin(server, playerId, skinOpt.get()) }
+        }.exceptionally { _: Throwable ->
+	        SMPMod.modLogger.warn("Failed to fetch Bedrock skin for {} ({}), retrying...", playerName, xuid)
+	        scheduleRetry(server, playerId, playerName, xuid, attempt)
+	        return@exceptionally null
+        }
     }
 
     private fun scheduleRetry(server: MinecraftServer, playerId: UUID, playerName: String, xuid: String, attempt: Int) {
@@ -60,12 +60,7 @@ object BedrockSkinFetcher {
             return
         }
 
-        scheduler.schedule({
-            server.execute {
-                val player = server.playerList.getPlayer(playerId)?: return@execute
-                if (player.connection.isAcceptingMessages) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1)
-            }
-        }, 850L, TimeUnit.MILLISECONDS)
+        scheduler.schedule({ server.execute { if ((server.playerList.getPlayer(playerId)?: return@execute).connection.isAcceptingMessages) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1) } }, 850L, TimeUnit.MILLISECONDS)
     }
 
     private fun applySkin(server: MinecraftServer, playerId: UUID, skin: SkinProperty) {

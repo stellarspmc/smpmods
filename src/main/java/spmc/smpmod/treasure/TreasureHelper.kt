@@ -68,7 +68,7 @@ object TreasureHelper {
         return null
     }
 
-    private fun getBaseCommonChance(state: BlockState): Float { return BlockRates.getMultiplier(state) }
+    private fun getBaseCommonChance(state: BlockState): Float = BlockRates.getMultiplier(state)
 
     private fun adjustRarity(rarity: ItemRarity): ItemRarity {
         if (!rigTreasures || rarity.ordinal == ItemRarity.entries.size) return rarity
@@ -100,24 +100,19 @@ object TreasureHelper {
         END(mutableListOf("end")),
         DEFAULT(mutableListOf(""));
 
-        override fun toString(): String { return name[0].toString() + name.substring(1).lowercase(Locale.getDefault()) }
-        fun contains(biome: ResourceKey<Biome>): Boolean { return biomes.stream().anyMatch { a: String -> biome.identifier().path.contains(a) } || this == DEFAULT }
+        override fun toString(): String = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
+        fun contains(biome: ResourceKey<Biome>): Boolean = biomes.stream().anyMatch { a: String -> biome.identifier().path.contains(a) } || this == DEFAULT
 
         companion object {
             private val BIOME_CACHE = ConcurrentHashMap<ResourceKey<Biome>, Biomes>()
             val OVERWORLD: List<Biomes> = listOf(BADLANDS, DESERT, DRIP, DARK_FOREST, SCULK, LUSH, MUSHROOM, SWAMP, JUNGLE, TAIGA, SAVANNA, OCEAN, FLOWER, ICE, MOUNTAIN, WINDSWEPT)
-            val NETHER_LIST: List<Biomes> = listOf(BASALT, CRIMSON, WARPED, SOUL, Biomes.NETHER) // TODO: check if all nether biomes are included (amplified nether)
-            val END_LIST: List<Biomes> = listOf(Biomes.END) // TODO: diversity (nullscape)
+            val NETHER_LIST: List<Biomes> = listOf(BASALT, CRIMSON, WARPED, SOUL, NETHER) // TODO: check if all nether biomes are included (amplified nether)
+            val END_LIST: List<Biomes> = listOf(END) // TODO: diversity (nullscape)
             val CAVES: List<Biomes> = listOf(DRIP, SCULK, LUSH) // this doesnt make sense but might come in handy
 
-            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes {
-                return BIOME_CACHE.computeIfAbsent(biomeKey) { key ->
-                    entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) } } ?: DEFAULT
-                }
-            }
+            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes =BIOME_CACHE.computeIfAbsent(biomeKey) { key -> entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) } } ?: DEFAULT }
         }
     }
-
     internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) {
         VERY_HIGH(
             2f, mutableListOf(
@@ -160,7 +155,7 @@ object TreasureHelper {
 
         companion object {
             private val RATE_MAP: Map<Block, Float> = IdentityHashMap<Block, Float>().apply { enumEntries<BlockRates>().forEach { entry -> entry.blocks.forEach { block -> put(block, entry.multiplier) } } }
-            fun getMultiplier(state: BlockState): Float { return RATE_MAP[state.block] ?: 0f }
+            fun getMultiplier(state: BlockState): Float = RATE_MAP[state.block] ?: 0f
         }
     }
 }
