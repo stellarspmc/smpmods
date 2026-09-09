@@ -12,7 +12,6 @@ import net.minecraft.world.level.saveddata.SavedDataType
 import java.time.LocalDate
 import java.util.*
 import java.util.function.Function
-import java.util.function.Supplier
 import kotlin.math.min
 
 class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQuestData> = HashMap<UUID, PlayerQuestData>()) : SavedData() {
@@ -35,20 +34,18 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
         }
 
         data.activeQuests.stream()
-            .filter { a: PlayerQuestData.ActiveQuest -> (a.quest.questType == Quest.QuestCategory.DAILY) or (a.quest.questType == Quest.QuestCategory.WEEKLY) }
+            .filter { a: PlayerQuestData.ActiveQuest -> (QuestRegistry.get(a.questId).questType == Quest.QuestCategory.DAILY) or (QuestRegistry.get(a.questId).questType == Quest.QuestCategory.WEEKLY) }
             .forEach { a: PlayerQuestData.ActiveQuest -> completeAndClaim(player, a) }
     }
 
     fun getAvailableNpcQuests(player: ServerPlayer, npcId: String?): List<Quest>? {
         val data: PlayerQuestData = getQuests(player)
 
-        return QuestRegistry.getAllForNpc(npcId).stream().filter { quest: Quest ->
-            return@filter !(data.activeQuests.stream().anyMatch { a: PlayerQuestData.ActiveQuest -> a.quest.id == quest.id } || data.completedQuestIds.contains(quest.id)) && quest.preQuestId.map(Function { o: String -> data.completedQuestIds.contains(o) }).orElse(true)!!
-        }.toList()
+        return QuestRegistry.getAllForNpc(npcId).stream().filter{ quest: Quest -> return@filter !(data.activeQuests.stream().anyMatch { a: PlayerQuestData.ActiveQuest -> a.questId == quest.id } || data.completedQuestIds.contains(quest.id)) && quest.preQuestId.map{ o: String -> data.completedQuestIds.contains(o) }.orElse(true)!!}.toList()
     }
 
     fun completeAndClaim(player: ServerPlayer, activeQuest: PlayerQuestData.ActiveQuest) {
-        val quest: Quest = activeQuest.quest?: return
+        val quest: Quest = activeQuest.getQuest()?: return
         if (!activeQuest.isCompleted || activeQuest.isClaimed) return
 
         val data: PlayerQuestData = getQuests(player)
@@ -61,7 +58,7 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
     }
 
     private fun refreshQuestsForCategory(data: PlayerQuestData, player: ServerPlayer, category: Quest.QuestCategory, availablePool: MutableList<Quest?>) {
-        data.activeQuests.removeIf { q: PlayerQuestData.ActiveQuest -> QuestRegistry.get(q.getQuestId()) != null && QuestRegistry.get(q.getQuestId()).questType == category }
+        data.activeQuests.removeIf { q: PlayerQuestData.ActiveQuest -> QuestRegistry.get(q.questId) != null && QuestRegistry.get(q.questId).questType == category }
         if (availablePool.isEmpty()) return
 
         val pool: MutableList<Quest> = ArrayList(availablePool)
@@ -71,9 +68,9 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
 
     companion object {
         val CODEC: Codec<QuestManager> = Codec.unboundedMap(UUIDUtil.CODEC, PlayerQuestData.CODEC).xmap(Function { questData: MutableMap<UUID, PlayerQuestData> -> QuestManager(questData) }, Function { manager: QuestManager -> manager.playerQuests })
-        val TYPE: SavedDataType<QuestManager> = SavedDataType<QuestManager>(Identifier.fromNamespaceAndPath("smpmod", "questing"), { QuestManager() }, CODEC, DataFixTypes.LEVEL)
+        val TYPE: SavedDataType<QuestManager> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "questing"), { QuestManager() }, CODEC, DataFixTypes.LEVEL)
 
-        @JvmStatic fun get(): QuestManager { return SMPMod.minecraftServer!!.overworld().dataStorage.computeIfAbsent<QuestManager>(TYPE) }
-        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData { return get().playerQuests.computeIfAbsent(player.getUUID()) { `_`: UUID? -> PlayerQuestData() } }
+        @JvmStatic fun get(): QuestManager { return SMPMod.minecraftServer!!.overworld().dataStorage.computeIfAbsent(TYPE) }
+        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData { return get().playerQuests.computeIfAbsent(player.getUUID()) { _: UUID? -> PlayerQuestData() } }
     }
 }

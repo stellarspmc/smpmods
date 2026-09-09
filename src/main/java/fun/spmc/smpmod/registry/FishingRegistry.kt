@@ -34,7 +34,7 @@ object FishingRegistry {
 
     @JvmStatic
     fun getFish(id: String): Item {
-        val item: Item = FISH_REGISTRY[id]!!
+        val item: Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
         return item
     }
 

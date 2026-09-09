@@ -1,416 +1,351 @@
-package fun.spmc.smpmod.economy.shop;
+package `fun`.spmc.smpmod.economy.shop
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.SimpleGui;
-import fun.spmc.smpmod.economy.EconomyData;
-import fun.spmc.smpmod.utils.MessageUtils;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.permissions.PermissionLevel;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-import org.geysermc.cumulus.form.CustomForm;
-import org.geysermc.cumulus.form.SimpleForm;
-import org.geysermc.floodgate.api.FloodgateApi;
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
+import eu.pb4.sgui.api.ClickType
+import eu.pb4.sgui.api.elements.GuiElementBuilder
+import eu.pb4.sgui.api.gui.SimpleGui
+import `fun`.spmc.smpmod.SMPMod
+import `fun`.spmc.smpmod.economy.EconomyData
+import `fun`.spmc.smpmod.utils.MessageUtils.sendError
+import net.minecraft.ChatFormatting
+import net.minecraft.core.BlockPos
+import net.minecraft.core.UUIDUtil
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.Registries
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.permissions.PermissionLevel
+import net.minecraft.world.Container
+import net.minecraft.world.entity.Display
+import net.minecraft.world.entity.Display.ItemDisplay
+import net.minecraft.world.inventory.MenuType
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
+import org.geysermc.cumulus.form.CustomForm
+import org.geysermc.cumulus.form.SimpleForm
+import org.geysermc.cumulus.response.CustomFormResponse
+import org.geysermc.cumulus.response.SimpleFormResponse
+import org.geysermc.floodgate.api.FloodgateApi
+import java.util.*
+import java.util.function.Function
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey<Level>, val barrelPos: BlockPos, val interactionEntityUuid: UUID, val itemDisplayUuid: UUID, val textDisplayUuid: UUID, private var itemSold: ItemStack, private var stack: Int, private var price: Double, receipts: MutableList<ShopReceipt>, val isCreative: Boolean) {
+    val receipts: MutableList<ShopReceipt>
+    init { this.receipts = ArrayList<ShopReceipt>(receipts) }
 
-import static fun.spmc.smpmod.SMPMod.minecraftServer;
+    constructor(shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, creative: Boolean) : this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, ArrayList<ShopReceipt>(), creative)
+    fun getItemSold(): ItemStack { return itemSold }
+    fun getStack(): Int { return stack }
+    fun getPrice(): Double { return price }
+    fun openOwnerMenu(owner: ServerPlayer) { ShopOwnerMenu.open(owner, this) }
 
-public class ShopData {
-    public static final Codec<ShopData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::getShopId),
-            UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::getOwnerUuid),
-            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(ShopData::getDimension),
-            BlockPos.CODEC.fieldOf("barrel_pos").forGetter(ShopData::getBarrelPos),
-            UUIDUtil.CODEC.fieldOf("interaction_id").forGetter(ShopData::getInteractionEntityUuid),
-            UUIDUtil.CODEC.fieldOf("item_display_id").forGetter(ShopData::getItemDisplayUuid),
-            UUIDUtil.CODEC.fieldOf("text_display_id").forGetter(ShopData::getTextDisplayUuid),
-            ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold),
-            Codec.INT.fieldOf("stack").forGetter(ShopData::getStack),
-            Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice),
-            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", List.of()).forGetter(ShopData::getReceipts),
-            Codec.BOOL.optionalFieldOf("is_creative", false).forGetter(ShopData::isCreative)
-    ).apply(instance, ShopData::new));
+    val level: ServerLevel? get() = SMPMod.minecraftServer!!.getLevel(dimension)
 
-    private final UUID shopId;
-    private final UUID ownerUuid;
-    private final BlockPos barrelPos;
-
-    private final UUID interactionEntityUuid;
-    private final UUID itemDisplayUuid;
-    private final UUID textDisplayUuid;
-    private final ResourceKey<Level> dimension;
-
-    private ItemStack itemSold;
-    private int stack;
-    private double price;
-    private final List<ShopReceipt> receipts;
-    private final boolean creative;
-
-    public ShopData(UUID shopId, UUID ownerUuid, ResourceKey<Level> dimension, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
-                    ItemStack itemSold, int stack, double price, List<ShopReceipt> receipts, boolean creative) {
-        this.shopId = shopId;
-        this.ownerUuid = ownerUuid;
-        this.dimension = dimension;
-        this.barrelPos = barrelPos;
-        this.interactionEntityUuid = interaction;
-        this.itemDisplayUuid = item;
-        this.textDisplayUuid = text;
-        this.itemSold = itemSold;
-        this.stack = stack;
-        this.price = price;
-        this.receipts = new ArrayList<>(receipts);
-        this.creative = creative;
+    fun recordReceipt(receipt: ShopReceipt) {
+        this.receipts.addFirst(receipt)
+        while (this.receipts.size > 27) this.receipts.removeLast()
+        ShopManager.get(this.level?: return).setDirty()
     }
 
-    public ShopData(UUID shopId, UUID ownerUuid, ResourceKey<Level> dimension, BlockPos barrelPos, UUID interaction, UUID item, UUID text,
-                    ItemStack itemSold, int stack, double price, boolean creative) {
-        this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, new ArrayList<>(), creative);
+    fun isOwner(player: ServerPlayer): Boolean {
+        if (this.isCreative) return player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
+        return player.getUUID() == ownerUuid
     }
 
-    public UUID getShopId() { return shopId; }
-    public UUID getOwnerUuid() { return ownerUuid; }
-    public BlockPos getBarrelPos() { return barrelPos; }
-    public UUID getInteractionEntityUuid() { return interactionEntityUuid; }
-    public UUID getItemDisplayUuid() { return itemDisplayUuid; }
-    public UUID getTextDisplayUuid() { return textDisplayUuid; }
-    public ItemStack getItemSold() { return itemSold; }
-    public int getStack() { return stack; }
-    public double getPrice() { return price; }
-    public List<ShopReceipt> getReceipts() { return receipts; }
-    public boolean isCreative() { return creative; }
-    public ResourceKey<Level> getDimension() { return dimension; }
-    public ServerLevel getLevel() { return minecraftServer.getLevel(dimension); }
+    val availableStock: Int get() {
+        if (this.isCreative) return Int.MAX_VALUE
 
-    public void recordReceipt(ShopReceipt receipt) {
-        if (getLevel() == null) return;
-        this.receipts.addFirst(receipt);
-        while (this.receipts.size() > 27) this.receipts.removeLast();
-        ShopManager.get(getLevel()).setDirty();
-    }
-
-    public boolean isOwner(ServerPlayer player) {
-        if (creative) return player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS);
-        return player.getUUID().equals(ownerUuid);
-    }
-
-    public int getAvailableStock() {
-        if (creative) return Integer.MAX_VALUE;
-        if (getLevel() == null) return 0;
-        if (!(getLevel().getBlockEntity(barrelPos) instanceof Container container)) return 0;
-
-        int totalItems = 0;
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack slotItem = container.getItem(i);
-            if (ItemStack.isSameItemSameComponents(slotItem, itemSold)) totalItems += slotItem.getCount();
+        var totalItems = 0
+        val container = this.level?.getBlockEntity(barrelPos) as? Container ?: return 0
+        for (i in 0..<container.containerSize) {
+            val slotItem: ItemStack = container.getItem(i)
+            if (ItemStack.isSameItemSameComponents(slotItem, itemSold)) totalItems += slotItem.count
         }
-        return totalItems / stack;
+        return totalItems / stack
     }
 
-    public Component getFormattedInfoComponent(ServerLevel level) {
-
+    fun getFormattedInfoComponent(): Component {
         return Component.literal("\uD83D\uDED2 ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("Shop Details\n").withStyle(ChatFormatting.GOLD))
-                .append(Component.literal("Selling: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(stack + "x ").withStyle(ChatFormatting.AQUA))
-                .append(itemSold.getHoverName().copy().withStyle(ChatFormatting.AQUA))
-                .append(Component.literal("\nPrice: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(String.format("$%.2f", price)).withStyle(ChatFormatting.GOLD))
-                .append(Component.literal("\nStock: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(creative ? "∞" : getAvailableStock() + " batches").withStyle(ChatFormatting.GREEN));
+            .append(Component.literal("Shop Details\n").withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("Selling: ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(stack.toString() + "x ").withStyle(ChatFormatting.AQUA))
+            .append(itemSold.hoverName.copy().withStyle(ChatFormatting.AQUA))
+            .append(Component.literal("\nPrice: ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(String.format("$%.2f", price)).withStyle(ChatFormatting.GOLD))
+            .append(Component.literal("\nStock: ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(if (this.isCreative) "∞" else this.availableStock.toString() + " batches").withStyle(ChatFormatting.GREEN))
     }
 
-    public int processPurchase(ServerPlayer buyer) {
-        int availableBatches = getAvailableStock();
-        if (availableBatches < 1) return MessageUtils.sendError(buyer, "This shop is out of stock!", 0);
+    fun processPurchase(buyer: ServerPlayer): Int {
+        val availableBatches = this.availableStock
+        if (availableBatches < 1) return sendError(buyer, "This shop is out of stock!", 0)
 
-        EconomyData eco = EconomyData.get();
-        if (eco.getBalance(buyer.getUUID()) < price) return MessageUtils.sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0);
+        val eco: EconomyData = EconomyData.get()
+        if (eco.getBalance(buyer.getUUID()) < price) return sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0)
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
-            if (!creative) {
-                eco.changeBalance(ownerUuid, price);
-                removeStockFromBarrel(stack);
+            if (!this.isCreative) {
+                eco.changeBalance(ownerUuid, price)
+                removeStockFromBarrel(stack)
             }
 
-            recordReceipt(new ShopReceipt(buyer.getUUID(), buyer.getScoreboardName(), stack, price, System.currentTimeMillis()));
+            recordReceipt(ShopReceipt(buyer.getUUID(), buyer.scoreboardName, stack, price, System.currentTimeMillis()))
 
-            ItemStack itemsToGive = itemSold.copyWithCount(stack);
-            if (!buyer.getInventory().add(itemsToGive)) buyer.drop(itemsToGive, false);
+            val itemsToGive = itemSold.copyWithCount(stack)
+            if (!buyer.inventory.add(itemsToGive)) buyer.drop(itemsToGive, false)
 
             buyer.sendSystemMessage(Component.literal("🏢: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Bought ").withStyle(ChatFormatting.GOLD))
-                    .append(Component.literal(stack + "x " + itemSold.getHoverName().getString()).withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(String.format(" for $%.2f!", price)).withStyle(ChatFormatting.GOLD)));
+                    .append(Component.literal(stack.toString() + "x " + itemSold.hoverName.string).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(String.format(" for $%.2f!", price)).withStyle(ChatFormatting.GOLD))
+            )
 
-            updateHologram();
+            updateHologram()
         }
-        return 1;
+        return 1
     }
 
-    private void removeStockFromBarrel(int amountToRemove) {
-        if (getLevel() == null) return;
-        if (!(getLevel().getBlockEntity(barrelPos) instanceof Container container)) return;
+    private fun removeStockFromBarrel(amountToRemove: Int) {
+        var amountToRemove = amountToRemove
 
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            if (amountToRemove <= 0) break;
+        val container = this.level?.getBlockEntity(barrelPos) as? Container ?: return
+        for (i in 0..<container.containerSize) {
+            if (amountToRemove <= 0) break
 
-            ItemStack slotItem = container.getItem(i);
+            val slotItem: ItemStack = container.getItem(i)
             if (ItemStack.isSameItemSameComponents(slotItem, itemSold)) {
-                int countInSlot = slotItem.getCount();
-                int take = Math.min(countInSlot, amountToRemove);
+                val countInSlot = slotItem.count
+                val take = min(countInSlot, amountToRemove)
 
-                slotItem.shrink(take);
-                amountToRemove -= take;
+                slotItem.shrink(take)
+                amountToRemove -= take
             }
         }
-        container.setChanged();
+        container.setChanged()
     }
 
-    public void setPrice(double price) {
-        if (getLevel() == null) return;
-        this.price = Math.round(Math.max(0.0, price) * 100.0) / 100.0;
-        updateHologram();
-        ShopManager.get(getLevel()).setDirty();
+    fun setPrice(price: Double) {
+        this.price = (max(0.0, price) * 100.0).roundToInt() / 100.0
+        updateHologram()
+        ShopManager.get(this.level?: return).setDirty()
     }
 
-    public void setStack(int stack) {
-        if (getLevel() == null) return;
-        this.stack = Math.max(1, stack);
-        updateHologram();
-        ShopManager.get(getLevel()).setDirty();
+    fun setStack(stack: Int) {
+        this.stack = max(1, stack)
+        updateHologram()
+        ShopManager.get(this.level?: return).setDirty()
     }
 
-    public void setItemSold(ItemStack newItem) {
-        this.itemSold = newItem.copyWithCount(1);
-        updateItemDisplay();
-        updateHologram();
-        ShopManager.get(getLevel()).setDirty();
+    fun setItemSold(newItem: ItemStack) {
+        this.itemSold = newItem.copyWithCount(1)
+        updateItemDisplay()
+        updateHologram()
+        ShopManager.get(this.level?: return).setDirty()
     }
 
-    public void updateItemDisplay() {
-        if (getLevel() == null) return;
-        Entity entity = getLevel().getEntity(itemDisplayUuid);
-        if (entity instanceof Display.ItemDisplay itemDisplay) {
-            itemDisplay.setItemStack(itemSold.copy());
-        }
+    fun updateItemDisplay() { ((this.level?: return).getEntity(itemDisplayUuid) as? ItemDisplay)?.itemStack = itemSold.copy() }
+    fun updateHologram() { ((this.level?: return).getEntity(textDisplayUuid) as? Display.TextDisplay)?.text = Component.literal(String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", stack, itemSold.hoverName.string, price, if (this.isCreative) "∞" else this.availableStock.toString())) }
+    private fun safelyRemoveEntity(entityUuid: UUID?) { ((this.level?: return).getEntity(entityUuid!!))?.discard() }
+
+    fun destroyShop() {
+        safelyRemoveEntity(interactionEntityUuid)
+        safelyRemoveEntity(itemDisplayUuid)
+        safelyRemoveEntity(textDisplayUuid)
     }
 
-    public void updateHologram() {
-        if (getLevel() == null) return;
-        Entity entity = getLevel().getEntity(textDisplayUuid);
-        if (entity instanceof Display.TextDisplay textDisplay) {
-            String stockLabel = creative ? "∞" : String.valueOf(getAvailableStock());
-            String label = String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", stack, itemSold.getHoverName().getString(), price, stockLabel);
-            textDisplay.setText(Component.literal(label));
-        }
-    }
-
-    public void openOwnerMenu(ServerPlayer owner) { ShopOwnerMenu.open(owner, this); }
-
-    public void destroyShop() {
-        safelyRemoveEntity(interactionEntityUuid);
-        safelyRemoveEntity(itemDisplayUuid);
-        safelyRemoveEntity(textDisplayUuid);
-    }
-
-    private void safelyRemoveEntity(UUID entityUuid) {
-        if (getLevel() == null) return;
-        if (entityUuid == null) return;
-        Entity entity = getLevel().getEntity(entityUuid);
-        if (entity != null) entity.discard();
-    }
-
-    static class ShopOwnerMenu {
-
-        public static void open(ServerPlayer player, ShopData shopData) {
-            if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockForm(player, shopData);
-            else openJavaGui(player, shopData);
+    internal object ShopOwnerMenu {
+        fun open(player: ServerPlayer, shopData: ShopData) {
+            if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockForm(player, shopData)
+            else openJavaGui(player, shopData)
         }
 
-        private static void openJavaGui(ServerPlayer player, ShopData shopData) {
-            SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, player, false) {
-                @Override
-                public void onOpen() {
-                    refreshGui(this, player, shopData);
+        private fun openJavaGui(player: ServerPlayer, shopData: ShopData) {
+            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) {
+                override fun onOpen() {
+                    refreshGui(this, player, shopData)
                 }
-            };
-            gui.setTitle(Component.literal("Shop Settings"));
-            refreshGui(gui, player, shopData);
-            gui.open();
+            }
+            gui.setTitle(Component.literal("Shop Settings"))
+            refreshGui(gui, player, shopData)
+            gui.open()
         }
 
-        private static void refreshGui(SimpleGui gui, ServerPlayer player, ShopData shopData) {
-            GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
-            for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
-            gui.setSlot(10, new GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
-                    .setName(Component.literal("- $1.00").withStyle(ChatFormatting.RED)
-                            .append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback((type) -> {
-                        double step = type.isRight ? 0.1 : 1.0;
-                        shopData.setPrice(Math.max(0, shopData.getPrice() - step));
-                        refreshGui(gui, player, shopData);
-                    }));
-            gui.setSlot(11, new GuiElementBuilder(Items.GOLD_INGOT)
-                    .setName(Component.literal(String.format("Current Price: $%.2f", shopData.getPrice())).withStyle(ChatFormatting.GOLD)));
-            gui.setSlot(12, new GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
-                    .setName(Component.literal("+ $1.00").withStyle(ChatFormatting.GREEN)
-                            .append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback((type) -> {
-                        double step = type.isRight ? 0.1 : 1.0;
-                        shopData.setPrice(shopData.getPrice() + step);
-                        refreshGui(gui, player, shopData);
-                    }));
+        private fun refreshGui(gui: SimpleGui, player: ServerPlayer, shopData: ShopData) {
+            val filler = GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "))
+            for (i in 0..26) gui.setSlot(i, filler)
+            gui.setSlot(10, GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
+                    .setName(Component.literal("- $1.00").withStyle(ChatFormatting.RED).append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
+                    .setCallback { type: ClickType ->
+                        val step = if (type.isRight) 0.1 else 1.0
+                        shopData.setPrice(max(0.0, shopData.getPrice() - step))
+                        refreshGui(gui, player, shopData)
+                    }
+            )
+            gui.setSlot(11, GuiElementBuilder(Items.GOLD_INGOT).setName(Component.literal(String.format("Current Price: $%.2f", shopData.getPrice())).withStyle(ChatFormatting.GOLD)))
+            gui.setSlot(12, GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
+                    .setName(Component.literal("+ $1.00").withStyle(ChatFormatting.GREEN).append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)))
+                    .setCallback { type: ClickType ->
+                        val step = if (type.isRight) 0.1 else 1.0
+                        shopData.setPrice(shopData.getPrice() + step)
+                        refreshGui(gui, player, shopData)
+                    }
+            )
 
-            ItemStack soldDisplay = shopData.getItemSold().copyWithCount(Math.min(shopData.getStack(), 64));
+            val soldDisplay = shopData.getItemSold().copyWithCount(min(shopData.getStack(), 64))
             soldDisplay.set(DataComponents.CUSTOM_NAME, Component.literal("Selling: ").withStyle(ChatFormatting.YELLOW)
-                    .append(shopData.getItemSold().getHoverName())
-                    .append(Component.literal("\n\nClick with an item on your cursor to swap!").withStyle(ChatFormatting.DARK_GRAY)));
+                .append(shopData.getItemSold().hoverName)
+                .append(Component.literal("\n\nClick with an item on your cursor to swap!").withStyle(ChatFormatting.DARK_GRAY))
+            )
             gui.setSlot(13, GuiElementBuilder.from(soldDisplay)
-                    .setCallback((_) -> {
-                        ItemStack carried = gui.getPlayer().containerMenu.getCarried();
-                        if (!carried.isEmpty()) {
-                            shopData.setItemSold(carried.copy());
-                            refreshGui(gui, player, shopData);
-                        }
-                    }));
-            gui.setSlot(14, new GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
-                    .setName(Component.literal("- 1 Batch Size").withStyle(ChatFormatting.RED)
-                            .append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback((type) -> {
-                        int step = type.isRight ? 5 : 1;
-                        shopData.setStack(Math.max(1, shopData.getStack() - step));
-                        refreshGui(gui, player, shopData);
-                    }));
-            gui.setSlot(15, new GuiElementBuilder(Items.BARREL)
-                    .setName(Component.literal("Batch Size: " + shopData.getStack()).withStyle(ChatFormatting.AQUA)));
-            gui.setSlot(16, new GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
-                    .setName(Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN)
-                            .append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback((type) -> {
-                        int step = type.isRight ? 5 : 1;
-                        shopData.setStack(shopData.getStack() + step);
-                        refreshGui(gui, player, shopData);
-                    }));
-            gui.setSlot(22, new GuiElementBuilder(Items.PAPER)
-                    .setName(Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD)
-                            .append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)))
-                    .setCallback((_) -> openReceiptsGui(player, shopData)));
-        }
-
-        private static void openBedrockForm(ServerPlayer player, ShopData shopData) {
-            CustomForm form = CustomForm.builder()
-                    .title("Shop Settings")
-                    .input("Price ($)", "Enter new price", String.format("%.2f", shopData.getPrice()))
-                    .input("Batch Size", "Enter batch size", String.valueOf(shopData.getStack()))
-                    .label("💡 To swap the item sold, hold the new item in your main hand before submitting!")
-                    .validResultHandler(response -> {
-                        String priceStr = response.next();
-                        String stackStr = response.next();
-                        try {
-                            assert priceStr != null;
-                            double price = Math.max(0, Double.parseDouble(priceStr));
-                            assert stackStr != null;
-                            int stack = Math.max(1, Integer.parseInt(stackStr));
-
-                            shopData.setPrice(price);
-                            shopData.setStack(stack);
-
-                            ItemStack heldItem = player.getMainHandItem();
-                            if (!heldItem.isEmpty()) shopData.setItemSold(heldItem.copy());
-                        } catch (NumberFormatException ignored) {}
-                    })
-                    .build();
-
-            FloodgateApi.getInstance().sendForm(player.getUUID(), form);
-        }
-
-        public static void openReceiptsGui(ServerPlayer player, ShopData shopData) {
-            if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockReceiptsForm(player, shopData);
-            else openJavaReceiptsGui(player, shopData);
-        }
-
-        private static void openJavaReceiptsGui(ServerPlayer player, ShopData shopData) {
-            SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, player, false);
-            gui.setTitle(Component.literal("Sales History"));
-
-            GuiElementBuilder filler = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "));
-            for (int i = 0; i < 27; i++) gui.setSlot(i, filler);
-
-            List<ShopReceipt> receipts = shopData.getReceipts();
-            for (int i = 0; i < Math.min(receipts.size(), 22); i++) {
-                ShopReceipt receipt = receipts.get(i);
-                long diffMs = Math.max(0, System.currentTimeMillis() - receipt.timestamp());
-                long mins = diffMs / 60000;
-                String timeAgo = mins < 1 ? "Just now" : mins < 60 ? mins + "m ago" : (mins / 60) + "h ago";
-
-                Component name = Component.literal("🧾 Sale to ").withStyle(ChatFormatting.GOLD)
-                        .append(Component.literal(receipt.buyerName()).withStyle(ChatFormatting.YELLOW))
-                        .append(Component.literal("\n• Bought: ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(receipt.stack() + "x ").withStyle(ChatFormatting.AQUA))
-                        .append(shopData.getItemSold().getHoverName().copy().withStyle(ChatFormatting.AQUA))
-                        .append(Component.literal("\n• Earned: ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(String.format("$%.2f", receipt.price())).withStyle(ChatFormatting.GREEN))
-                        .append(Component.literal("\n• Time: ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(timeAgo).withStyle(ChatFormatting.DARK_GRAY));
-
-                gui.setSlot(i, new GuiElementBuilder(Items.PAPER).setName(name));
-            }
-
-            gui.setSlot(22, new GuiElementBuilder(Items.BARRIER)
-                    .setName(Component.literal("⬅ Back to Settings").withStyle(ChatFormatting.RED))
-                    .setCallback((_) -> open(player, shopData)));
-
-            gui.open();
-        }
-
-        private static void openBedrockReceiptsForm(ServerPlayer player, ShopData shopData) {
-            SimpleForm.Builder form = SimpleForm.builder().title("Sales History");
-            List<ShopReceipt> receipts = shopData.getReceipts();
-
-            if (receipts.isEmpty()) form.content("No sales recorded yet.");
-            else {
-                StringBuilder content = new StringBuilder();
-                for (ShopReceipt receipt : receipts) {
-                    long mins = Math.max(0, System.currentTimeMillis() - receipt.timestamp()) / 60000;
-                    String timeAgo = mins < 1 ? "Just now" : mins < 60 ? mins + "m ago" : (mins / 60) + "h ago";
-                    content.append(String.format("• %s bought %dx for $%.2f (%s)\n", receipt.buyerName(), receipt.stack(), receipt.price(), timeAgo));
+                .setCallback { _: ClickType -> val carried = gui.getPlayer().containerMenu.carried
+                    if (!carried.isEmpty) {
+                        shopData.setItemSold(carried.copy())
+                        refreshGui(gui, player, shopData)
+                    }
                 }
-                form.content(content.toString());
+            )
+            gui.setSlot(14, GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
+                .setName(Component.literal("- 1 Batch Size").withStyle(ChatFormatting.RED).append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)))
+                .setCallback { type: ClickType ->
+                    shopData.setStack(max(1, shopData.getStack() - if (type.isRight) 5 else 1))
+                    refreshGui(gui, player, shopData)
+                }
+            )
+            gui.setSlot(15, GuiElementBuilder(Items.BARREL).setName(Component.literal("Batch Size: " + shopData.getStack()).withStyle(ChatFormatting.AQUA)))
+            gui.setSlot(16, GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
+                .setName(Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN).append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)))
+                .setCallback { type: ClickType ->
+                    shopData.setStack(shopData.getStack() + if (type.isRight) 5 else 1)
+                    refreshGui(gui, player, shopData)
+                }
+            )
+            gui.setSlot(22, GuiElementBuilder(Items.PAPER)
+                .setName(Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD).append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)))
+                .setCallback { _: ClickType -> openReceiptsGui(player, shopData) }
+            )
+        }
+
+        private fun openBedrockForm(player: ServerPlayer, shopData: ShopData) {
+            val form = CustomForm.builder()
+                .title("Shop Settings")
+                .input("Price ($)", "Enter new price", String.format("%.2f", shopData.getPrice()))
+                .input("Batch Size", "Enter batch size", shopData.getStack().toString())
+                .label("💡 To swap the item sold, hold the new item in your main hand before submitting!")
+                .validResultHandler { response: CustomFormResponse ->
+                    val priceStr = response.next<String>()
+                    val stackStr = response.next<String>()
+                    try {
+                        checkNotNull(priceStr)
+                        val price = max(0.0, priceStr.toDouble())
+                        checkNotNull(stackStr)
+                        val stack = max(1, stackStr.toInt())
+
+                        shopData.setPrice(price)
+                        shopData.setStack(stack)
+
+                        val heldItem = player.mainHandItem
+                        if (!heldItem.isEmpty) shopData.setItemSold(heldItem.copy())
+                    } catch (_: NumberFormatException) {}
+                }.build()
+
+            FloodgateApi.getInstance().sendForm(player.getUUID(), form)
+        }
+
+        fun openReceiptsGui(player: ServerPlayer, shopData: ShopData) {
+            if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockReceiptsForm(player, shopData)
+            else openJavaReceiptsGui(player, shopData)
+        }
+
+        private fun openJavaReceiptsGui(player: ServerPlayer, shopData: ShopData) {
+            val gui = SimpleGui(MenuType.GENERIC_9x3, player, false)
+            gui.setTitle(Component.literal("Sales History"))
+
+            val filler = GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" "))
+            for (i in 0..26) gui.setSlot(i, filler)
+
+            val receipts = shopData.receipts
+            for (i in 0..<min(receipts.size, 22)) {
+                val receipt = receipts[i]
+                val diffMs = max(0, System.currentTimeMillis() - receipt.timestamp)
+                val mins = diffMs / 60000
+                val timeAgo = if (mins < 1) "Just now" else if (mins < 60) mins.toString() + "m ago" else (mins / 60).toString() + "h ago"
+
+                val name: Component = Component.literal("🧾 Sale to ").withStyle(ChatFormatting.GOLD)
+                    .append(Component.literal(receipt.buyerName).withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal("\n• Bought: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(receipt.stack.toString() + "x ").withStyle(ChatFormatting.AQUA))
+                    .append(shopData.getItemSold().hoverName.copy().withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal("\n• Earned: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(String.format("$%.2f", receipt.price)).withStyle(ChatFormatting.GREEN))
+                    .append(Component.literal("\n• Time: ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(timeAgo).withStyle(ChatFormatting.DARK_GRAY))
+
+                gui.setSlot(i, GuiElementBuilder(Items.PAPER).setName(name))
             }
 
-            form.button("Back to Settings")
-                    .validResultHandler(_ -> open(player, shopData));
+            gui.setSlot(22, GuiElementBuilder(Items.BARRIER)
+                .setName(Component.literal("⬅ Back to Settings").withStyle(ChatFormatting.RED))
+                .setCallback { _: ClickType -> open(player, shopData) }
+            )
 
-            FloodgateApi.getInstance().sendForm(player.getUUID(), form.build());
+            gui.open()
+        }
+
+        private fun openBedrockReceiptsForm(player: ServerPlayer, shopData: ShopData) {
+            val form = SimpleForm.builder().title("Sales History")
+            val receipts = shopData.receipts
+
+            if (receipts.isEmpty()) form.content("No sales recorded yet.")
+            else {
+                val content = StringBuilder()
+                for ((_, buyerName, stack, price, timestamp) in receipts) {
+                    val mins = max(0, System.currentTimeMillis() - timestamp) / 60000
+                    val timeAgo = if (mins < 1) "Just now" else if (mins < 60) mins.toString() + "m ago" else (mins / 60).toString() + "h ago"
+                    content.append(String.format("• %s bought %dx for $%.2f (%s)\n", buyerName, stack, price, timeAgo))
+                }
+                form.content(content.toString())
+            }
+            form.button("Back to Settings").validResultHandler { _: SimpleFormResponse -> open(player, shopData) }
+            FloodgateApi.getInstance().sendForm(player.getUUID(), form.build())
         }
     }
 
-    public record ShopReceipt(UUID buyerUuid, String buyerName, int stack, double price, long timestamp) {
-        public static final Codec<ShopReceipt> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid),
-                Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName),
-                Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack),
-                Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price),
-                Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)
-        ).apply(instance, ShopReceipt::new));
+    @JvmRecord data class ShopReceipt(val buyerUuid: UUID, val buyerName: String, val stack: Int, val price: Double, val timestamp: Long) {
+        companion object {
+            val CODEC: Codec<ShopReceipt> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<ShopReceipt> ->
+                instance.group(
+                    UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid),
+                    Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName),
+                    Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack),
+                    Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price),
+                    Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)
+                ).apply(instance) { buyerUuid: UUID, buyerName: String, stack: Int, price: Double, timestamp: Long -> ShopReceipt(buyerUuid, buyerName, stack, price, timestamp) }
+            }
+        }
+    }
+
+    companion object {
+        val CODEC: Codec<ShopData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ShopData> -> instance.group(
+            UUIDUtil.CODEC.fieldOf("shop_id").forGetter { obj: ShopData -> obj.shopId },
+            UUIDUtil.CODEC.fieldOf("owner_id").forGetter { obj: ShopData -> obj.ownerUuid },
+            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter { obj: ShopData -> obj.dimension },
+            BlockPos.CODEC.fieldOf("barrel_pos").forGetter { obj: ShopData -> obj.barrelPos },
+            UUIDUtil.CODEC.fieldOf("interaction_id").forGetter { obj: ShopData -> obj.interactionEntityUuid },
+            UUIDUtil.CODEC.fieldOf("item_display_id").forGetter { obj: ShopData -> obj.itemDisplayUuid },
+            UUIDUtil.CODEC.fieldOf("text_display_id").forGetter { obj: ShopData -> obj.textDisplayUuid },
+            ItemStack.CODEC.fieldOf("item_sold").forGetter { obj: ShopData -> obj.getItemSold() },
+            Codec.INT.fieldOf("stack").forGetter { obj: ShopData -> obj.getStack() },
+            Codec.DOUBLE.fieldOf("price").forGetter { obj: ShopData -> obj.getPrice() },
+            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", mutableListOf<ShopReceipt>()).forGetter { obj: ShopData -> obj.receipts },
+            Codec.BOOL.optionalFieldOf("is_creative", false).forGetter { obj: ShopData -> obj.isCreative }
+        ).apply(instance) { shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, receipts: MutableList<ShopReceipt>, creative: Boolean -> ShopData(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, receipts, creative) } })
     }
 }

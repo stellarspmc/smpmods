@@ -7,17 +7,12 @@ import org.jetbrains.annotations.Unmodifiable
 import java.util.function.Function
 
 class PlayerQuestData {
-    @JvmField
-    val activeQuests: MutableList<ActiveQuest> = ArrayList()
+    @JvmField val activeQuests: MutableList<ActiveQuest> = ArrayList()
     val completedQuestIds: MutableSet<String> = HashSet()
-    private var lastDailyResetDay: Long = 0
-    private var lastWeeklyResetWeek: Long = 0
+    var lastDailyResetDay: Long = 0
+    var lastWeeklyResetWeek: Long = 0
 
     fun addQuest(quest: String) { activeQuests.add(ActiveQuest(quest)) }
-    fun getLastDailyResetDay(): Long { return lastDailyResetDay }
-    fun setLastDailyResetDay(day: Long) { this.lastDailyResetDay = day }
-    fun getLastWeeklyResetWeek(): Long { return lastWeeklyResetWeek }
-    fun setLastWeeklyResetWeek(week: Long) { this.lastWeeklyResetWeek = week }
 
     class ActiveQuest @JvmOverloads constructor(val questId: String, @JvmField var currentCount: Int = 0, var isCompleted: Boolean = false, var isClaimed: Boolean = false) {
         fun increment(amount: Int): Boolean {
