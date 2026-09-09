@@ -52,19 +52,19 @@ public class MixinServerGamePacketListenerImpl {
             price = Double.parseDouble(priceText.replace("$", "").trim());
             if (price < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            MessageUtils.sendErrorMessage(player, "Invalid price format on line 2! Use e.g. $10.50");
+            MessageUtils.INSTANCE.sendError(player, "Invalid price format on line 2! Use e.g. $10.50", 0);
             return;
         }
 
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
-            MessageUtils.sendErrorMessage(player, "Hold the item you want to sell in your main hand!");
+            MessageUtils.INSTANCE.sendError(player, "Hold the item you want to sell in your main hand!", 0);
             return;
         }
 
-        ShopManager.createShop(player, barrelPos, price, heldItem, level);
+        ShopManager.Companion.createShop(player, barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
-        MessageUtils.sendSuccessMessage(player, "Shop created successfully!");
+        MessageUtils.INSTANCE.sendSuccess(player, "Shop created successfully!", 1);
     }
 
     @Unique
@@ -80,18 +80,18 @@ public class MixinServerGamePacketListenerImpl {
             price = Double.parseDouble(priceText.replace("$", "").trim());
             if (price < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            MessageUtils.sendErrorMessage(player, "Invalid price format on line 2! Use e.g. $10.50");
+            MessageUtils.INSTANCE.sendError(player, "Invalid price format on line 2! Use e.g. $10.50", 0);
             return;
         }
 
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
-            MessageUtils.sendErrorMessage(player, "Hold the item you want to sell in your main hand!");
+            MessageUtils.INSTANCE.sendError(player, "Hold the item you want to sell in your main hand!", 0);
             return;
         }
 
         ShopManager.createCreativeShop(barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
-        MessageUtils.sendSuccessMessage(player, "Shop created successfully!");
-    }
+        MessageUtils.INSTANCE.sendSuccess(player, "Shop created successfully!", 1);
+    } // i wasn't gonna include this but whatever
 }
