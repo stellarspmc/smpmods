@@ -14,18 +14,18 @@ import java.util.Optional;
 
 public record Quest(String id, String title, String description, QuestType type, Identifier target, int requiredCount,
         QuestCategory questType, QuestReward questReward, Optional<String> npcId, Optional<String> preQuestId) {
-    public static final Codec<Quest> CODEC = RecordCodecBuilder.<Quest>create(instance -> instance.<String, String, String, QuestType, Identifier, Integer, QuestCategory, QuestReward, Optional<String>,Optional<String>>group(
-            Codec.STRING.fieldOf("id").<Quest>forGetter(Quest::id),
-            Codec.STRING.fieldOf("title").<Quest>forGetter(Quest::title),
-            Codec.STRING.fieldOf("description").<Quest>forGetter(Quest::description),
-            QuestType.CODEC.fieldOf("type").<Quest>forGetter(Quest::type),
-            Identifier.CODEC.fieldOf("target").<Quest>forGetter(Quest::target),
-            Codec.INT.fieldOf("required_count").<Quest>forGetter(Quest::requiredCount),
-            QuestCategory.CODEC.fieldOf("quest_type").<Quest>forGetter(Quest::questType),
-            QuestReward.CODEC.fieldOf("reward").<Quest>forGetter(Quest::questReward),
-            Codec.STRING.optionalFieldOf("npc_id").<Quest>forGetter(Quest::npcId),
-            Codec.STRING.optionalFieldOf("prerequisite_quest_id").<Quest>forGetter(Quest::preQuestId)
-    ).<Quest>apply(instance, Quest::new));
+    public static final Codec<Quest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.STRING.fieldOf("id").forGetter(Quest::id),
+            Codec.STRING.fieldOf("title").forGetter(Quest::title),
+            Codec.STRING.fieldOf("description").forGetter(Quest::description),
+            QuestType.CODEC.fieldOf("type").forGetter(Quest::type),
+            Identifier.CODEC.fieldOf("target").forGetter(Quest::target),
+            Codec.INT.fieldOf("required_count").forGetter(Quest::requiredCount),
+            QuestCategory.CODEC.fieldOf("quest_type").forGetter(Quest::questType),
+            QuestReward.CODEC.fieldOf("reward").forGetter(Quest::questReward),
+            Codec.STRING.optionalFieldOf("npc_id").forGetter(Quest::npcId),
+            Codec.STRING.optionalFieldOf("prerequisite_quest_id").forGetter(Quest::preQuestId)
+    ).apply(instance, Quest::new));
 
     public boolean isNpcQuest() {
         return questType() == QuestCategory.NPC;
@@ -36,7 +36,7 @@ public record Quest(String id, String title, String description, QuestType type,
         WEEKLY("weekly"),
         NPC("npc");
 
-        public static final Codec<QuestCategory> CODEC = StringRepresentable.<QuestCategory>fromEnum(QuestCategory::values);
+        public static final Codec<QuestCategory> CODEC = StringRepresentable.fromEnum(QuestCategory::values);
         private final String name;
 
         QuestCategory(String name) { this.name = name; }
@@ -52,7 +52,7 @@ public record Quest(String id, String title, String description, QuestType type,
         FISHING("fishing"),
         TRADE_MARKET("trade_market"); // TODO: impl
 
-        public static final Codec<QuestType> CODEC = StringRepresentable.<QuestType>fromEnum(QuestType::values);
+        public static final Codec<QuestType> CODEC = StringRepresentable.fromEnum(QuestType::values);
 
         private final String name;
 
@@ -64,11 +64,11 @@ public record Quest(String id, String title, String description, QuestType type,
     }
 
     public record QuestReward(double money, int experience, List<ItemStack> items) {
-        public static final Codec<QuestReward> CODEC = RecordCodecBuilder.<QuestReward>create(instance -> instance.<Double, Integer, List<ItemStack>>group(
-                Codec.DOUBLE.optionalFieldOf("money", 0d).<QuestReward>forGetter(QuestReward::money),
-                Codec.INT.optionalFieldOf("experience", 0).<QuestReward>forGetter(QuestReward::experience),
-                ItemStack.CODEC.listOf().optionalFieldOf("items", List.<ItemStack>of()).<QuestReward>forGetter(QuestReward::items)
-        ).<QuestReward>apply(instance, QuestReward::new));
+        public static final Codec<QuestReward> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.DOUBLE.optionalFieldOf("money", 0d).forGetter(QuestReward::money),
+                Codec.INT.optionalFieldOf("experience", 0).forGetter(QuestReward::experience),
+                ItemStack.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(QuestReward::items)
+        ).apply(instance, QuestReward::new));
 
         public void grant(ServerPlayer player) {
             if (money > 0) EconomyData.get().changeBalance(player.getUUID(), money);

@@ -129,20 +129,8 @@ object IndustrialRegistry {
     }
 
     internal fun registerBlocks() {
-        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity(
-            "sculk_compressor",
-            { properties: BlockBehaviour.Properties -> SculkCompressorBlock(properties) },
-            BlockBehaviour.Properties.of(),
-            { pos: BlockPos, state: BlockState -> SculkCompressorEntity(pos, state) },
-            Items.SCULK_CATALYST
-        )
-        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity(
-            "smeltery",
-            { properties: BlockBehaviour.Properties -> SmelteryBlock(properties) },
-            BlockBehaviour.Properties.of(),
-            { pos: BlockPos, state: BlockState -> SmelteryEntity(pos, state) },
-            Items.SMOKER
-        )
+        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", { properties: BlockBehaviour.Properties -> SculkCompressorBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SculkCompressorEntity(pos, state) }, Items.SCULK_CATALYST)
+        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", { properties: BlockBehaviour.Properties -> SmelteryBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SmelteryEntity(pos, state) }, Items.SMOKER)
     }
 
     internal fun registerRecipes() {
@@ -167,19 +155,11 @@ object IndustrialRegistry {
                 Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count),
                 ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),
                 Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)
-            ).apply(instance) { ingredients, count, result, processTime ->
-                SmelterRecipe(
-                    ingredients,
-                    count,
-                    result,
-                    processTime
-                )
-            }
-            }, StreamCodec.composite(
+            ).apply(instance) { ingredients, count, result, processTime -> SmelterRecipe(ingredients, count, result, processTime) } }, StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients,
                 ByteBufCodecs.VAR_INT, SmelterRecipe::count,
                 ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result,
                 ByteBufCodecs.VAR_INT, SmelterRecipe::processTime
-            ) { ingredients, count, result, processTime -> SmelterRecipe(ingredients, count, result, processTime) })
+			) { ingredients, count, result, processTime -> SmelterRecipe(ingredients, count, result, processTime) })
     }
 }

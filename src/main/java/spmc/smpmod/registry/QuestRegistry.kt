@@ -1,129 +1,94 @@
-package spmc.smpmod.registry;
+package spmc.smpmod.registry
 
-import spmc.smpmod.quest.QuestManager;
-import spmc.smpmod.quest.Quest;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AfterDeath
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import spmc.smpmod.quest.PlayerQuestData.ActiveQuest
+import spmc.smpmod.quest.Quest
+import spmc.smpmod.quest.Quest.QuestReward
+import spmc.smpmod.quest.QuestManager.Companion.getQuests
+import java.util.*
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+object QuestRegistry {
+	private val QUESTS: MutableMap<String?, Quest?> = HashMap<String?, Quest?>()
 
-public class QuestRegistry {
-    private static final Map<String, Quest> QUESTS = new HashMap<>();
+	fun init() {
+		initDaily()
+		initWeekly()
 
-    public static void init() {
-        initDaily();
-        initWeekly();
+		// demo npc quests
+		/**
+		 * register(new Quest(
+		 * "blacksmith_1", "Gathering Supplies", "Bring 10 Coal to the Blacksmith",
+		 * QuestCategory.NPC,
+		 * QuestType.GATHER_ITEM,
+		 * Identifier.withDefaultNamespace("coal"),
+		 * 10,
+		 * new QuestReward(50.0, 20, List.of(new ItemStack(Items.IRON_INGOT, 3))),
+		 * Optional.of("blacksmith"),
+		 * Optional.empty()
+		 * ));
+		 * 
+		 * register(new Quest(
+		 * "blacksmith_2", "First Blade", "Craft an Iron Sword",
+		 * QuestCategory.NPC,
+		 * QuestType.CRAFTING,
+		 * Identifier.withDefaultNamespace("iron_sword"),
+		 * 1,
+		 * new QuestReward(200.0, 100, List.of(new ItemStack(Items.DIAMOND, 1))),
+		 * Optional.of("blacksmith"),
+		 * Optional.of("blacksmith_1")
+		 * )); */
 
-        // demo npc quests
-        /**
-        register(new Quest(
-                "blacksmith_1", "Gathering Supplies", "Bring 10 Coal to the Blacksmith",
-                QuestCategory.NPC,
-                QuestType.GATHER_ITEM,
-                Identifier.withDefaultNamespace("coal"),
-                10,
-                new QuestReward(50.0, 20, List.of(new ItemStack(Items.IRON_INGOT, 3))),
-                Optional.of("blacksmith"),
-                Optional.empty()
-        ));
+		PlayerBlockBreakEvents.AFTER.register { _: Level, player: Player, _: BlockPos, state: BlockState, _: BlockEntity? ->
+			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest: ActiveQuest ->
+				val quest = activeQuest.getQuest() ?: return@register
+				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) activeQuest.increment(1)
+			}
+		}
 
-        register(new Quest(
-                "blacksmith_2", "First Blade", "Craft an Iron Sword",
-                QuestCategory.NPC,
-                QuestType.CRAFTING,
-                Identifier.withDefaultNamespace("iron_sword"),
-                1,
-                new QuestReward(200.0, 100, List.of(new ItemStack(Items.DIAMOND, 1))),
-                Optional.of("blacksmith"),
-                Optional.of("blacksmith_1")
-        ));*/
+		ServerLivingEntityEvents.AFTER_DEATH.register { entity: LivingEntity, damageSource: DamageSource ->
+			getQuests(damageSource.entity as ServerPlayer).activeQuests.forEach { activeQuest: ActiveQuest ->
+				val quest = activeQuest.getQuest() ?: return@register
+				if (quest.type == Quest.QuestType.KILL_MOB && quest.target == BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)) activeQuest.increment(1)
+			}
+		}
+	}
 
-        PlayerBlockBreakEvents.AFTER.register((_, player, _, state, _) -> QuestManager.getQuests((ServerPlayer) player).activeQuests.forEach(activeQuest -> {
-            Quest quest = activeQuest.getQuest();
-            if (quest.type() == Quest.QuestType.MINE_BLOCK && quest.target().equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()))) activeQuest.increment(1);
-        }));
+	private fun initDaily() {
+		register(Quest("daily_mine_iron", "Iron Miner", "Mine 16 Iron Ore", Quest.QuestType.MINE_BLOCK, Identifier.withDefaultNamespace("iron_ore"), 16, Quest.QuestCategory.DAILY, QuestReward(3575.0, 75, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_mine_stone", "Stone Miner", "Mine 64 Stone", Quest.QuestType.MINE_BLOCK, Identifier.withDefaultNamespace("stone"), 64, Quest.QuestCategory.DAILY, QuestReward(2500.0, 80, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_kill_zombie", "Zombie Killer", "Kill 15 Zombies", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("zombie"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_kill_creeper", "Creeper Killer", "Kill 15 Creepers", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("creeper"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_kill_skeleton", "Skeleton Killer", "Kill 15 Skeletons", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("skeleton"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_1", "Fishing Newbie", "Fish 15 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 15, Quest.QuestCategory.DAILY, QuestReward(1550.0, 45, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_2", "Fishing Amateur", "Fish 35 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 35, Quest.QuestCategory.DAILY, QuestReward(3750.0, 65, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_3", "Fishing Master", "Fish 75 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY, QuestReward(5900.0, 85, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+	}
 
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (damageSource.getEntity() instanceof ServerPlayer player) {
-                Identifier mobId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-
-                QuestManager.getQuests(player).activeQuests.forEach(activeQuest -> {
-                    Quest quest = activeQuest.getQuest();
-                    if (quest.type() == Quest.QuestType.KILL_MOB && quest.target().equals(mobId)) {
-                        activeQuest.increment(1);
-                    }
-                });
-            }
-        });
-    }
-
-    private static void initDaily() {
-        register(new Quest(
-                "daily_mine_iron", "Iron Miner", "Mine 16 Iron Ore",
-                Quest.QuestType.MINE_BLOCK, Identifier.withDefaultNamespace("iron_ore"), 16, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(3575, 75, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_mine_stone", "Stone Miner", "Mine 64 Stone",
-                Quest.QuestType.MINE_BLOCK, Identifier.withDefaultNamespace("stone"), 64, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(2500, 80, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_kill_zombie", "Zombie Killer", "Kill 15 Zombies",
-                Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("zombie"), 15, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(4555, 120, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_kill_creeper", "Creeper Killer", "Kill 15 Creepers",
-                Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("creeper"), 15, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(4555, 120, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_kill_skeleton", "Skeleton Killer", "Kill 15 Skeletons",
-                Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("skeleton"), 15, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(4555, 120, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_fish_1", "Fishing Newbie", "Fish 15 Times",
-                Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 15, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(1550, 45, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_fish_2", "Fishing Amateur", "Fish 35 Times",
-                Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 35, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(3750, 65, List.of()), Optional.empty(), Optional.empty()
-        ));
-
-        register(new Quest(
-                "daily_fish_3", "Fishing Master", "Fish 75 Times",
-                Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY,
-                new Quest.QuestReward(5900, 85, List.of()), Optional.empty(), Optional.empty()
-        ));
-    }
-
-    private static void initWeekly() {
-        /*register(new Quest(
+	private fun initWeekly() {/*register(new Quest(
                 "weekly_fish_1", "Fishing Master", "Fish 125 Times",
                 Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 125, Quest.QuestCategory.WEEKLY,
                 new Quest.QuestReward(5900, 85, List.of()), Optional.empty(), Optional.empty()
         ));*/
-    }
+	}
 
-    private static void register(Quest quest) { QUESTS.put(quest.id(), quest); }
-    public static Quest get(String id) { return QUESTS.get(id); }
-    public static List<Quest> getAllForWeekly() { return QUESTS.values().stream().filter(q -> q.questType().equals(Quest.QuestCategory.WEEKLY)).toList(); }
-    public static List<Quest> getAllForDaily() { return QUESTS.values().stream().filter(q -> q.questType().equals(Quest.QuestCategory.DAILY)).toList(); }
-    public static List<Quest> getAllForNpc(String npcId) { return QUESTS.values().stream().filter(q -> q.npcId().map(id -> id.equals(npcId)).orElse(false)).toList(); }
+	val allForWeekly: List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.questType == Quest.QuestCategory.WEEKLY }.toList()
+	val allForDaily: List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.questType == Quest.QuestCategory.DAILY }.toList()
+
+	private fun register(quest: Quest) = apply { QUESTS[quest.id] = quest }
+	fun get(id: String): Quest? = QUESTS[id]
+	fun getAllForNpc(npcId: String): List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.npcId?.map { id: String -> id == npcId }?.orElse(false)!! }.toList()
+
 }

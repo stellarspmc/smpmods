@@ -1,3 +1,3 @@
 package spmc.smpmod.core
 
-enum class TierSystem
+enum class TierSystem // TODO

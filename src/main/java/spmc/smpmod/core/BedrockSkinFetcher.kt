@@ -27,8 +27,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
-import java.util.function.Function
 
 object BedrockSkinFetcher {
     private val SKIN_REQUEST_TIMEOUT: Duration? = Duration.ofSeconds(8L)
@@ -97,8 +95,7 @@ object BedrockSkinFetcher {
     }
 
 
-    @JvmRecord
-    private data class SkinProperty(val value: String?, val signature: String?)
+    @JvmRecord private data class SkinProperty(val value: String?, val signature: String?)
 
     private object GeyserSkinClient {
         private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(SKIN_REQUEST_TIMEOUT).followRedirects(HttpClient.Redirect.NORMAL).build()

@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.projectile.FishingHook
 
 class FishingSession(private val player: ServerPlayer, private val hook: FishingHook, private val tier: RodTiers) {
-    private var cursor = 0.0f
+    private var cursor = .0f
     private var movingRight = true
     private var wasJumping: Boolean
     private var ticksLeft = 100
@@ -19,8 +19,8 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
 
     init {
         val zoneWidth: Float = tier.greenZoneSize
-        this.greenStart = 0.5f - (zoneWidth / 2.0f)
-        this.greenEnd = 0.5f + (zoneWidth / 2.0f)
+        this.greenStart = .5f - (zoneWidth / 2f)
+        this.greenEnd = .5f + (zoneWidth / 2f)
         this.wasJumping = player.isJumping
     }
 
@@ -31,17 +31,17 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
             return true
         }
 
-        val speed = 0.05f
+        val speed = .05f
         if (movingRight) {
             cursor += speed
-            if (cursor >= 1.0f) {
-                cursor = 1.0f
+            if (cursor >= 1) {
+                cursor = 1f
                 movingRight = false
             }
         } else {
             cursor -= speed
-            if (cursor <= 0.0f) {
-                cursor = 0.0f
+            if (cursor <= .0) {
+                cursor = 0f
                 movingRight = true
             }
         }

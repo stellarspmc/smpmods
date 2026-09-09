@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 import net.minecraft.world.phys.BlockHitResult
-import java.util.function.Function
 
 class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()) : SavedData() {
     private val activeLoaders: MutableSet<BlockPos> = HashSet(activeLoaders)
@@ -74,49 +73,43 @@ class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<B
 
     companion object {
         private val LOADERS_CODEC: Codec<MutableSet<BlockPos>> = BlockPos.CODEC.listOf().xmap({ c: MutableList<BlockPos> -> HashSet(c) }, { c: MutableSet<BlockPos> -> ArrayList(c) })
-
-        val CODEC: Codec<ChunkLoaderSavedData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ChunkLoaderSavedData> -> instance
-			.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter<ChunkLoaderSavedData?> { data: ChunkLoaderSavedData -> data.activeLoaders })
-			.apply(instance) { activeLoaders: MutableSet<BlockPos> -> ChunkLoaderSavedData(activeLoaders) }
-		})
-
-        val TYPE: SavedDataType<ChunkLoaderSavedData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), { ChunkLoaderSavedData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+        val CODEC: Codec<ChunkLoaderSavedData> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<ChunkLoaderSavedData> -> instance.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter<ChunkLoaderSavedData?> { data: ChunkLoaderSavedData -> data.activeLoaders }).apply(instance) { activeLoaders: MutableSet<BlockPos> -> ChunkLoaderSavedData(activeLoaders) } }
+	    val TYPE: SavedDataType<ChunkLoaderSavedData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), { ChunkLoaderSavedData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
         fun get(level: ServerLevel): ChunkLoaderSavedData = level.dataStorage.computeIfAbsent(TYPE)
 
-
         fun register() {
-            UseBlockCallback.EVENT.register(UseBlockCallback { player: Player, level: Level, _: InteractionHand, hitResult: BlockHitResult ->
-                if (level.isClientSide) return@UseBlockCallback InteractionResult.PASS
-                val serverLevel = level as ServerLevel
-                val pos = hitResult.blockPos
+            UseBlockCallback.EVENT.register { player: Player, level: Level, _: InteractionHand, hitResult: BlockHitResult ->
+	            if (level.isClientSide) return@register InteractionResult.PASS
+	            val serverLevel = level as ServerLevel
+	            val pos = hitResult.blockPos
 
-                if (level.getBlockState(pos).`is`(Blocks.LODESTONE)) {
-                    val data: ChunkLoaderSavedData = get(serverLevel)
+	            if (level.getBlockState(pos).`is`(Blocks.LODESTONE)) {
+		            val data: ChunkLoaderSavedData = get(serverLevel)
 
-                    if (!data.isLoader(pos)) {
-                        data.addLoader(serverLevel, pos)
-                        return@UseBlockCallback sendSuccess(player as ServerPlayer, "Chunk loader activated.", InteractionResult.SUCCESS)
-                    }
-                }
-                return@UseBlockCallback InteractionResult.PASS
-            })
+		            if (!data.isLoader(pos)) {
+			            data.addLoader(serverLevel, pos)
+			            return@register sendSuccess(player as ServerPlayer, "Chunk loader activated.", InteractionResult.SUCCESS)
+		            }
+	            }
+	            return@register InteractionResult.PASS
+            }
 
-            PlayerBlockBreakEvents.BEFORE.register(PlayerBlockBreakEvents.Before { level: Level, player: Player, pos: BlockPos, state: BlockState, _: BlockEntity? ->
-                if (!level.isClientSide && state.`is`(Blocks.LODESTONE)) {
-                    val serverLevel = level as ServerLevel
-                    val data: ChunkLoaderSavedData = get(serverLevel)
+	        PlayerBlockBreakEvents.BEFORE.register { level: Level, player: Player, pos: BlockPos, state: BlockState, _: BlockEntity? ->
+	            if (!level.isClientSide && state.`is`(Blocks.LODESTONE)) {
+		            val serverLevel = level as ServerLevel
+		            val data: ChunkLoaderSavedData = get(serverLevel)
 
-                    if (data.isLoader(pos)) {
-                        data.removeLoader(serverLevel, pos)
-                        return@Before sendError(player as ServerPlayer, "Chunk loader deactivated.", true)
-                    }
-                }
-                return@Before true
-            })
+		            if (data.isLoader(pos)) {
+			            data.removeLoader(serverLevel, pos)
+			            return@register sendError(player as ServerPlayer, "Chunk loader deactivated.", true)
+		            }
+	            }
+	            return@register true
+            }
 
-            ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { _: ServerGamePacketListenerImpl, _: PacketSender, server: MinecraftServer -> if (server.playerList.playerCount == 1) for (level in server.allLevels) get(level).restoreAll(level) })
-            ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { _: ServerGamePacketListenerImpl, server: MinecraftServer -> if (server.playerList.playerCount <= 1) for (level in server.allLevels) get(level).suspendAll(level) })
+	        ServerPlayConnectionEvents.JOIN.register { _: ServerGamePacketListenerImpl, _: PacketSender, server: MinecraftServer -> if (server.playerList.playerCount == 1) for (level in server.allLevels) get(level).restoreAll(level) }
+	        ServerPlayConnectionEvents.DISCONNECT.register { _: ServerGamePacketListenerImpl, server: MinecraftServer -> if (server.playerList.playerCount <= 1) for (level in server.allLevels) get(level).suspendAll(level) }
         }
     }
 }

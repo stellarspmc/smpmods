@@ -216,7 +216,7 @@ object CommandRegistry {
     @Throws(CommandSyntaxException::class)
     private fun executeQuests(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().playerOrException
-        QuestManager.get().checkAndResetRotations(player)
+        QuestManager.get()?.checkAndResetRotations(player)
         val activeQuests: MutableList<ActiveQuest> = QuestManager.getQuests(player).activeQuests
         player.sendSystemMessage(Component.literal("=== Active Quests ===").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
         if (activeQuests.isEmpty()) {
