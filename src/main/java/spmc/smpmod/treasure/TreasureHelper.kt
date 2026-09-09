@@ -27,8 +27,8 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.enums.enumEntries
 
 object TreasureHelper {
-	public var rigTreasures = false
-	public var eventPercentage = 1.0
+	@JvmField var eventPercentage: Double = 1.0
+	@JvmField var rigTreasures: Boolean = false
 
     private const val THRESHOLD_CELESTIAL = .0001f // .0001%
     private const val THRESHOLD_CHROMATIC = THRESHOLD_CELESTIAL + .0005f // .0005%

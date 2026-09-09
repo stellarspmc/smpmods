@@ -61,7 +61,7 @@ public class FishTracker extends SavedData {
     }
 
     public static void openFishIndexMenu(ServerPlayer player, int page) {
-        List<Item> allFish = FishingRegistry.getAllFish();
+        List<Item> allFish = FishingRegistry.INSTANCE.getAllFish();
         int maxPages = Math.max(1, (int) Math.ceil((double) allFish.size() / 45));
         int currentPage = Math.clamp(page, 0, maxPages - 1);
 
@@ -73,7 +73,7 @@ public class FishTracker extends SavedData {
     }
 
     private static void refreshGui(SimpleGui gui, ServerPlayer player, int page, int maxPages) {
-        List<Item> allFish = FishingRegistry.getAllFish();
+        List<Item> allFish = FishingRegistry.INSTANCE.getAllFish(); // TODO: migration hell
         List<String> unlockedList = FishTracker.get().getUnlockedFish(player.getUUID());
 
         int startIndex = page * 45;

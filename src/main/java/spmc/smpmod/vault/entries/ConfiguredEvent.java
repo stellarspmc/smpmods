@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import spmc.smpmod.economy.fluctuate.FluctuationData;
 import spmc.smpmod.npc.NPCData;
-import spmc.smpmod.treasure.TreasureEvents;
 import spmc.smpmod.treasure.TreasureHelper;
 import spmc.smpmod.vault.VaultData;
 import net.minecraft.core.Holder;
@@ -113,7 +112,7 @@ public class ConfiguredEvent implements VaultEntry {
         HASTE_BUFF("haste_buff", 720 * 20 * 60, (amplifier, level) -> level.getServer().getPlayerList().getPlayers().forEach((player -> applyEffects(player, MobEffects.HASTE, amplifier.intValue())))),
         DEPOSIT_MONEY_BOOST("deposit_money_boost", 60 * 20 * 60, (boostPercent, _) -> FluctuationData.changeMargin(1 - boostPercent), (_) -> FluctuationData.changeMargin(1)),
         RESISTANCE_BUFF("resistance_buff", 720 * 20 * 60, (amplifier, level) -> level.getServer().getPlayerList().getPlayers().forEach((player -> applyEffects(player, MobEffects.RESISTANCE, amplifier.intValue())))),
-        BLOCK_TREASURE_RATE("block_treasure_rate", 120 * 20 * 60, (rateBonus, _) -> TreasureEvents.eventPercentage = 1 + rateBonus, (_) -> TreasureEvents.eventPercentage = 1),
+        BLOCK_TREASURE_RATE("block_treasure_rate", 120 * 20 * 60, (rateBonus, _) -> TreasureHelper.eventPercentage = 1 + rateBonus, (_) -> TreasureHelper.eventPercentage = 1),
         TREASURE_ALWAYS_RARE("treasure_always_rare", 15 * 20 * 60, (_, _) -> TreasureHelper.rigTreasures = true, (_) -> TreasureHelper.rigTreasures = false),
         EXTENDED_EFFECT_DURATION("extended_effect_duration", 120 * 20 * 60, (amplifier, _) -> VaultData.buffValue = amplifier.floatValue(), (_) -> VaultData.buffValue = 0),
         LUCK_EFFECT("luck_effect", 120 * 20 * 60, (amplifier, level) -> level.getServer().getPlayerList().getPlayers().forEach((player -> applyEffects(player, MobEffects.LUCK, amplifier.intValue())))),

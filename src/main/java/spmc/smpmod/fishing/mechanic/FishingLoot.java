@@ -35,17 +35,17 @@ public class FishingLoot {
 
         FishItem caughtFish = getRandomFishForTier(player, tier);
         Map<ItemModifier, Integer> modMap = new HashMap<>();
-        double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.getCatchLuckBonus());
+        double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.catchLuckBonus);
 
         List<ItemModifier> mods = new ArrayList<>(Arrays.stream(ItemModifier.values()).filter(ItemModifier::isNotLocked).toList());
-        mods.addAll(Arrays.stream(tier.getObtainable()).toList());
+        mods.addAll(Arrays.stream(tier.obtainable).toList());
         while (!mods.isEmpty() && random.nextDouble() < traitChance) {
             int index = random.nextInt(mods.size());
             modMap.put(mods.remove(index), random.nextInt(5) + 1);
-            traitChance *= Math.max(.4, .2 * tier.getCatchLuckBonus() / 1.8);
+            traitChance *= Math.max(.4, .2 * tier.catchLuckBonus / 1.8);
         }
 
-        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1/tier.getCatchLuckBonus()), modMap);
+        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1/ tier.catchLuckBonus), modMap);
         if (!player.getInventory().add(fishStack)) player.drop(fishStack, false);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1, 1.2f);
@@ -60,7 +60,7 @@ public class FishingLoot {
     private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
         List<Item> pool = BiomeCategory.getAvailableFish(player);
         if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
-        double[] weights = tier.getRates();
+        double[] weights = tier.rates;
         double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;
         double current = 0;
         ItemRarity selectedRarity = ItemRarity.COMMON;
