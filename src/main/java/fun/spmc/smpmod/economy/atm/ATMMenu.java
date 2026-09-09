@@ -100,7 +100,7 @@ public class ATMMenu {
             totalCount -= stackSize;
         }
 
-        MessageUtils.sendSuccess(player, String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100), 1);
+        //MessageUtils.sendSuccess(player, String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100), 1);
     }
 
     private static double getDepositItems(ServerPlayer player) {
@@ -117,8 +117,8 @@ public class ATMMenu {
             }
         }
 
-        if (totalPayout > 0) MessageUtils.sendSuccess(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout), 1);
-        MessageUtils.sendError(player, "No valid market currency items found in inventory.", 0);
+        //if (totalPayout > 0) MessageUtils.sendSuccess(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout), 1);
+        //MessageUtils.sendError(player, "No valid market currency items found in inventory.", 0);
 
         return totalPayout;
     }

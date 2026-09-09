@@ -31,7 +31,7 @@ object NPCManager {
         val def = DEFINITIONS[id] ?: return null
 
         val data = NPCData.get()
-        if (data.hasNpc(id)) return data.getMannequin(level, id)
+        if (data?.hasNpc(id) == true) return data.getMannequin(level, id)
 
         val mannequin = EntityTypes.MANNEQUIN.create(level, EntitySpawnReason.TRIGGERED) ?: return null
 
@@ -43,7 +43,7 @@ object NPCManager {
         mannequin.setHideDescription(true)
 
         level.addFreshEntity(mannequin)
-        data.registerNpc(id, mannequin.getUUID())
+        data?.registerNpc(id, mannequin.getUUID())
 
         return mannequin
     }
@@ -53,7 +53,7 @@ object NPCManager {
         AttackEntityCallback.EVENT.register(AttackEntityCallback { player: Player, world: Level, hand: InteractionHand, entity: Entity, _: EntityHitResult? ->
             if (hand != InteractionHand.MAIN_HAND || world.isClientSide) return@AttackEntityCallback InteractionResult.PASS
             if (entity is Mannequin) {
-                (DEFINITIONS[NPCData.get().getNpcId(entity.getUUID())?: return@AttackEntityCallback InteractionResult.PASS]?: return@AttackEntityCallback InteractionResult.PASS).onAttack.accept(player as ServerPlayer, entity)
+                (DEFINITIONS[NPCData.get()?.getNpcId(entity.getUUID())?: return@AttackEntityCallback InteractionResult.PASS]?: return@AttackEntityCallback InteractionResult.PASS).onAttack.accept(player as ServerPlayer, entity)
                 return@AttackEntityCallback InteractionResult.SUCCESS
             }
             return@AttackEntityCallback InteractionResult.PASS
@@ -62,7 +62,7 @@ object NPCManager {
         UseEntityCallback.EVENT.register(UseEntityCallback { player: Player, world: Level, hand: InteractionHand, entity: Entity, _: EntityHitResult? ->
             if (world.isClientSide || hand != InteractionHand.MAIN_HAND) return@UseEntityCallback InteractionResult.PASS
             if (entity is Mannequin) {
-                (DEFINITIONS[NPCData.get().getNpcId(entity.getUUID())?: return@UseEntityCallback InteractionResult.PASS]?: return@UseEntityCallback InteractionResult.PASS).onUse.accept(player as ServerPlayer, entity)
+                (DEFINITIONS[NPCData.get()?.getNpcId(entity.getUUID())?: return@UseEntityCallback InteractionResult.PASS]?: return@UseEntityCallback InteractionResult.PASS).onUse.accept(player as ServerPlayer, entity)
                 return@UseEntityCallback InteractionResult.SUCCESS
             }
             return@UseEntityCallback InteractionResult.PASS
@@ -71,7 +71,7 @@ object NPCManager {
 
     @JvmStatic
     fun serverTickLoop(server: MinecraftServer) {
-        val npcData = NPCData.get()
+        val npcData = NPCData.get()?: return
         for (uuid in npcData.npcMap.values) {
             val def = DEFINITIONS[npcData.getNpcId(uuid)]
             val entity = server.overworld().getEntity(uuid) // TODO: account of different dimensions
