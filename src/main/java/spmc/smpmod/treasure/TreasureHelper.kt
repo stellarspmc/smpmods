@@ -20,6 +20,7 @@ import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
+import spmc.smpmod.treasure.ChunkPool.multiplier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.enums.enumEntries
@@ -46,7 +47,7 @@ object TreasureHelper {
         if (silkTouchHolder.isPresent && EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder.get(), mainHand) > 0) return
 
         val biomes = Biomes.getGroup(world.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(world.getBiome(pos).value()).orElse(net.minecraft.world.level.biome.Biomes.PLAINS)!!)
-        val rarity: ItemRarity = rollTreasureRarity(state, eventPercentage, world.getRandom()) ?: return
+        val rarity: ItemRarity = rollTreasureRarity(state, eventPercentage * multiplier(ChunkPos.containing(pos)), world.getRandom()) ?: return
 
         if (checkChunkPool(ChunkPos.containing(pos))) return
         increment(ChunkPos.containing(pos))
@@ -75,7 +76,7 @@ object TreasureHelper {
         return ItemRarity.entries[rarity.ordinal + 1]
     }
 
-    enum class Biomes(private val biomes: MutableList<String>) {
+    enum class Biomes(private val biomes: MutableList<String>) { // TODO: eval, not complete?
         BADLANDS(mutableListOf("badlands")),
         DESERT(mutableListOf("desert")),
         DRIP(mutableListOf("dripstone")),
@@ -110,10 +111,10 @@ object TreasureHelper {
             val END_LIST: List<Biomes> = listOf(END) // TODO: diversity (nullscape)
             val CAVES: List<Biomes> = listOf(DRIP, SCULK, LUSH) // this doesnt make sense but might come in handy
 
-            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes =BIOME_CACHE.computeIfAbsent(biomeKey) { key -> entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) } } ?: DEFAULT }
+            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes = BIOME_CACHE.computeIfAbsent(biomeKey) { key -> entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) } } ?: DEFAULT }
         }
     }
-    internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) {
+    internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) { // TODO: eval, new blocks?
         VERY_HIGH(
             2f, mutableListOf(
                 Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE,

@@ -1,4 +1,5 @@
-package spmc.smpmod.treasure;
+package spmc.smpmod.treasure
 
-public enum PickaxeTiers {
+enum class PickaxeTiers {
+	// TODO: tiers bruv go work
 }

@@ -36,8 +36,7 @@ object MessageUtils {
     }
 
     private fun getMatches(string: String, regex: String): MutableList<String> {
-        val pattern = Pattern.compile(regex)
-        val matcher = pattern.matcher(string)
+        val matcher = Pattern.compile(regex).matcher(string)
         val matches: MutableList<String> = ArrayList()
 
         while (matcher.find()) matches.add(matcher.group(1))

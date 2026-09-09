@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BarrelBlockEntity
 
 object TreasureSpawner {
-    @JvmStatic
     fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: TreasureHelper.Biomes) {
         world.destroyBlock(pos, true)
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3)
@@ -35,7 +34,7 @@ object TreasureSpawner {
 
             val treasure = list[world.random.nextInt(list.size)]
             val slotIndex = world.random.nextInt(availableSlots.size)
-            barrel.setItem(availableSlots.removeAt(slotIndex), treasure.createStack(level))
+            barrel.setItem(availableSlots.removeAt(slotIndex), treasure.createStack(world))
         }
 
         barrel.setChanged()

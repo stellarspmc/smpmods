@@ -6,7 +6,7 @@
 * **Core Idea:** Align the Treasure Module with the Fishing update, featuring 8 rarity tiers, a custom pickaxe progression tree, vanilla tool integration, and a reworked chunk-based exhaustion system.
 * **Technical Requirements:**
 * 8 rarity loot tier tables
-* Pickaxe progression tree & chunk digging limit logic
+* Pickaxe progression tree (cross emoji) & chunk digging limit logic (tick emoji)
 
 ### Stock Market Screen Monitors
 * **Core Idea:** In-world physical display screens at spawn to display live market trends, integrated with quick-trade market NPCs for instant command-free transactions.

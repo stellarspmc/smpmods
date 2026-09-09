@@ -12,16 +12,16 @@ import net.minecraft.world.level.block.state.BlockBehaviour
 object PlantRegistry {
     val SEEDS: HashMap<String, SeedItem> = HashMap()
 
-    private fun getBaseSeed(baseCrop: Item): Item {
-        if (baseCrop === Items.WHEAT) return Items.WHEAT_SEEDS
-        if (baseCrop === Items.CARROT) return Items.CARROT
-        if (baseCrop === Items.POTATO) return Items.POTATO
-        if (baseCrop === Items.BEETROOT) return Items.BEETROOT_SEEDS
-        if (baseCrop === Items.TORCHFLOWER) return Items.TORCHFLOWER_SEEDS
-        if (baseCrop === Items.MELON) return Items.MELON_SEEDS
-        if (baseCrop === Items.PUMPKIN) return Items.PUMPKIN_SEEDS
-        return Items.AIR
-    }
+    private fun getBaseSeed(baseCrop: Item): Item = when (baseCrop) {
+		Items.WHEAT -> Items.WHEAT_SEEDS
+	    Items.CARROT -> Items.CARROT
+	    Items.POTATO -> Items.POTATO
+	    Items.BEETROOT -> Items.BEETROOT_SEEDS
+	    Items.TORCHFLOWER -> Items.TORCHFLOWER_SEEDS
+	    Items.MELON -> Items.MELON_SEEDS
+	    Items.PUMPKIN -> Items.PUMPKIN_SEEDS
+	    else -> Items.AIR
+	}
 
     private fun registerPlant(cropId: String, baseCrop: Item, basePrice: Double, rarity: ItemRarity) {
         val baseSeed = getBaseSeed(baseCrop)
@@ -31,9 +31,8 @@ object PlantRegistry {
         SEEDS.putIfAbsent(cropId, seedItem)
     }
 
-    fun getItem(id: String): SeedItem? {
-        return SEEDS.getOrDefault(id, null)
-    }
+    fun getItem(id: String): SeedItem? = SEEDS.getOrDefault(id, null)
+    
 
     internal fun register() {
         registerPlant("wheat", Items.WHEAT, 1.0, ItemRarity.COMMON)

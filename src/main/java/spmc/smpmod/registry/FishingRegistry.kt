@@ -24,7 +24,7 @@ object FishingRegistry {
     @JvmField val SKY: MutableList<Item> = ArrayList()
 
     val allFish: List<Item> get() = Stream.of(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY).flatMap { obj: MutableList<Item> -> obj.stream() }.distinct().toList() // immutable bruv
-    private fun registerRod(tier: RodTiers) { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { properties: Item.Properties -> RodItem(properties, tier) } }
+    private fun registerRod(tier: RodTiers) = apply { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { properties: Item.Properties -> RodItem(properties, tier) } }
 
     private fun registerFish(id: String, vanillaModel: Item, basePrice: Double, rarity: ItemRarity, listToBeAdded: MutableList<Item>) {
         val item: Item = PolymerRegistry.createItem(id) { properties: Item.Properties -> FishItem(properties, vanillaModel, formatName(id), basePrice, rarity) }
@@ -32,10 +32,7 @@ object FishingRegistry {
         FISH_REGISTRY[id] = item
     }
 
-    fun getFish(id: String): Item {
-        val item: Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
-        return item
-    }
+    fun getFish(id: String): Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
 
     internal fun registerRods() {
         registerRod(RodTiers.NORMAL)

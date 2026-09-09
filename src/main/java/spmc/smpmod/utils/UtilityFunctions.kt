@@ -21,9 +21,5 @@ object UtilityFunctions {
         return level.get()
     }
 
-    fun streamToSuggestion(itemStream: Stream<Item>): SuggestionProvider<CommandSourceStack> {
-        return SuggestionProvider { _: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder ->
-            SharedSuggestionProvider.suggestResource(itemStream.distinct().map { thing: Item -> BuiltInRegistries.ITEM.getKey(thing) }, builder)
-        }
-    }
+    fun streamToSuggestion(itemStream: Stream<Item>): SuggestionProvider<CommandSourceStack> = SuggestionProvider { _: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder -> SharedSuggestionProvider.suggestResource(itemStream.distinct().map { thing: Item -> BuiltInRegistries.ITEM.getKey(thing) }, builder)}
 }

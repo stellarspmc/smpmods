@@ -27,10 +27,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 
 object IndustrialRegistry {
-    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
-    private fun registerMineral(id: String, vanillaModel: Item, name: Component) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, name) } }
-    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) } }
-    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
+    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
+    private fun registerMineral(id: String, vanillaModel: Item, name: Component) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, name) } }
+    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) } }
+    private fun registerHead(id: String, texture: String, textColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
 
     @JvmField var COMPRESSOR_TYPE: RecipeType<CompressorRecipe>? = null
     @JvmField var COMPRESSOR_SERIALIZER: RecipeSerializer<CompressorRecipe>? = null
