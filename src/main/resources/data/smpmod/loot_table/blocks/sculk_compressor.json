@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "smpmod:sculk_compressor"
+          "name": "minecraft:sculk_catalyst"
         }
       ],
       "rolls": 1.0

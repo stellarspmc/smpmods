@@ -235,7 +235,7 @@ public class VaultData extends SavedData {
                                     .append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.GOLD))
                                     .append(Component.literal(" to the Vault!"))
                     );
-                } else MessageUtils.sendErrorMessage(player, "You do not have enough money to donate to the Vault.");
+                } else MessageUtils.INSTANCE.sendError(player, "You do not have enough money to donate to the Vault.", 0);
                 this.close();
             });
         }

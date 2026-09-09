@@ -1,98 +1,95 @@
-package fun.spmc.smpmod.npc;
+package `fun`.spmc.smpmod.npc
 
-import fun.spmc.smpmod.economy.fluctuate.FluctuationData;
-import fun.spmc.smpmod.economy.fluctuate.MarketState;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.decoration.Mannequin;
-import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.Nullable;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.minecraft.commands.arguments.EntityAnchorArgument
+import net.minecraft.core.BlockPos
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntitySpawnReason
+import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.entity.decoration.Mannequin
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.EntityHitResult
 
-import java.util.*;
+object NPCManager {
+    private val DEFINITIONS: MutableMap<String, CustomNPC> = HashMap()
 
-public class NPCManager {
-    private static final Map<String, CustomNPC> DEFINITIONS = new HashMap<>();
-    public static void register(CustomNPC npc) { DEFINITIONS.put(npc.getId(), npc); }
-    public static @Nullable CustomNPC getDefinition(String id) { return DEFINITIONS.get(id); }
-    public static boolean isRegistered(String id) { return DEFINITIONS.containsKey(id); }
-    public static ArrayList<String> getAllIds() { return new ArrayList<>(DEFINITIONS.keySet()); }
+    @JvmStatic fun register(npc: CustomNPC) { DEFINITIONS[npc.id] = npc }
+    fun getDefinition(id: String): CustomNPC? { return DEFINITIONS[id] }
+    fun isRegistered(id: String): Boolean { return DEFINITIONS.containsKey(id) }
 
-    public static @Nullable Mannequin spawn(String id, ServerLevel level, BlockPos pos) {
-        CustomNPC def = DEFINITIONS.get(id);
-        if (def == null) return null;
+    @JvmStatic val allIds: ArrayList<String> get() = java.util.ArrayList(DEFINITIONS.keys)
 
-        NPCData data = NPCData.get();
-        if (data.hasNpc(id)) return data.getMannequin(level, id);
+    @JvmStatic
+    fun spawn(id: String?, level: ServerLevel, pos: BlockPos): Mannequin? {
+        val def = DEFINITIONS[id] ?: return null
 
-        Mannequin mannequin = EntityTypes.MANNEQUIN.create(level, EntitySpawnReason.TRIGGERED);
-        if (mannequin == null) return null;
+        val data = NPCData.get()
+        if (data.hasNpc(id)) return data.getMannequin(level, id)
 
-        mannequin.setPos(pos.getX(), pos.getY(), pos.getZ());
-        if (def.getProfile() != null) mannequin.setProfile(def.getProfile());
-        mannequin.setCustomName(def.getDisplayName());
-        mannequin.setImmovable(true);
-        mannequin.setInvulnerable(true);
-        mannequin.setHideDescription(true);
+        val mannequin = EntityTypes.MANNEQUIN.create(level, EntitySpawnReason.TRIGGERED) ?: return null
 
-        level.addFreshEntity(mannequin);
-        data.registerNpc(id, mannequin.getUUID());
+        mannequin.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
+        if (def.profile != null) mannequin.profile = def.profile
+        mannequin.customName = def.displayName
+        mannequin.setImmovable(true)
+        mannequin.isInvulnerable = true
+        mannequin.setHideDescription(true)
 
-        return mannequin;
+        level.addFreshEntity(mannequin)
+        data.registerNpc(id, mannequin.getUUID())
+
+        return mannequin
     }
 
-    public static void register() {
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
-            if (hand != InteractionHand.MAIN_HAND || world.isClientSide()) return InteractionResult.PASS;
-
-            if (entity instanceof Mannequin mannequin) {
-                String npcId = NPCData.get().getNpcId(mannequin.getUUID());
+    @JvmStatic
+    fun register() {
+        AttackEntityCallback.EVENT.register(AttackEntityCallback { player: Player?, world: Level?, hand: InteractionHand?, entity: Entity?, `_`: EntityHitResult? ->
+            if (hand != InteractionHand.MAIN_HAND || world!!.isClientSide) InteractionResult.PASS
+            if (entity is Mannequin) {
+                val npcId = NPCData.get().getNpcId(entity.getUUID())
                 if (npcId != null) {
-                    CustomNPC def = DEFINITIONS.get(npcId);
+                    val def = DEFINITIONS[npcId]
                     if (def != null) {
-                        def.getOnAttack().accept((ServerPlayer) player, mannequin);
-                        return InteractionResult.SUCCESS;
+                        def.onAttack.accept(player as ServerPlayer, entity)
+                        InteractionResult.SUCCESS
                     }
                 }
             }
-            return InteractionResult.PASS;
-        });
+            InteractionResult.PASS
+        })
 
-        UseEntityCallback.EVENT.register((player, world, hand, entity, _) -> {
-            if (world.isClientSide() || hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-
-            if (entity instanceof Mannequin mannequin) {
-                String npcId = NPCData.get().getNpcId(mannequin.getUUID());
+        UseEntityCallback.EVENT.register(UseEntityCallback { player: Player?, world: Level?, hand: InteractionHand?, entity: Entity?, `_`: EntityHitResult? ->
+            if (world!!.isClientSide || hand != InteractionHand.MAIN_HAND) InteractionResult.PASS
+            if (entity is Mannequin) {
+                val npcId = NPCData.get().getNpcId(entity.getUUID())
                 if (npcId != null) {
-                    CustomNPC def = DEFINITIONS.get(npcId);
+                    val def = DEFINITIONS[npcId]
                     if (def != null) {
-                        def.getOnUse().accept((ServerPlayer) player, mannequin);
-                        return InteractionResult.SUCCESS;
+                        def.onUse.accept(player as ServerPlayer, entity)
+                        InteractionResult.SUCCESS
                     }
                 }
             }
-            return InteractionResult.PASS;
-        });
+            InteractionResult.PASS
+        })
     }
 
-    public static void serverTickLoop(MinecraftServer server) {
-        NPCData npcData = NPCData.get();
-        for (UUID uuid : npcData.getNpcMap().values()) {
-            CustomNPC def = DEFINITIONS.get(npcData.getNpcId(uuid));
-            Entity entity = server.overworld().getEntity(uuid); // TODO: account of different dimensions
-            if (entity instanceof Mannequin mannequin && mannequin.isAlive() && def != null && def.lookAtPlayer()) {
-                Player nearestPlayer = mannequin.level().getNearestPlayer(mannequin, 12.0);
-                if (nearestPlayer != null) mannequin.lookAt(EntityAnchorArgument.Anchor.EYES, nearestPlayer.getEyePosition());
+    @JvmStatic
+    fun serverTickLoop(server: MinecraftServer) {
+        val npcData = NPCData.get()
+        for (uuid in npcData.npcMap.values) {
+            val def = DEFINITIONS[npcData.getNpcId(uuid)]
+            val entity = server.overworld().getEntity(uuid) // TODO: account of different dimensions
+            if (entity is Mannequin && entity.isAlive && def != null && def.lookAtPlayer()) {
+                val nearestPlayer = entity.level().getNearestPlayer(entity, 12.0)
+                if (nearestPlayer != null) entity.lookAt(EntityAnchorArgument.Anchor.EYES, nearestPlayer.eyePosition)
             }
         }
     }

@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.fishing;
+package `fun`.spmc.smpmod.fishing
 
-public class FishMob {
+class FishMob {
 }

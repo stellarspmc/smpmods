@@ -1,41 +1,29 @@
-package fun.spmc.smpmod.utils;
+package `fun`.spmc.smpmod.utils
 
-import eu.pb4.polymer.core.api.item.PolymerItem;
-import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemLore;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import eu.pb4.polymer.core.api.item.PolymerItem
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.ItemLore
 
-import java.util.List;
+abstract class BasePolymerItem(properties: Properties, private val vanillaItem: Item) : Item(properties), PolymerItem {
+    override fun getPolymerItem(itemStack: ItemStack, context: PacketContext): Item { return vanillaItem }
+    override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider): Identifier? { return BuiltInRegistries.ITEM.getKey(vanillaItem) }
+    override fun getName(itemStack: ItemStack): Component { return buildName(itemStack) }
 
-public abstract class BasePolymerItem extends Item implements PolymerItem {
-    private final Item vanillaItem;
-
-    public BasePolymerItem(Properties properties, Item vanillaItem) {
-        super(properties);
-        this.vanillaItem = vanillaItem;
+    override fun modifyBasePolymerItemStack(out: ItemStack, stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider) {
+        out.set(DataComponents.CUSTOM_NAME, buildName(stack))
+        out.set(DataComponents.LORE, ItemLore(buildLore(stack)))
+        modifyItem(out, stack)
     }
 
-    @Override public Item getPolymerItem(ItemStack itemStack, PacketContext context) { return vanillaItem; }
-    @Override public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) { return BuiltInRegistries.ITEM.getKey(vanillaItem); }
-    @Override public @NonNull Component getName(@NonNull ItemStack itemStack) { return buildName(itemStack); }
-
-    @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        out.set(DataComponents.CUSTOM_NAME, buildName(stack));
-        out.set(DataComponents.LORE, new ItemLore(buildLore(stack)));
-        modifyItem(out, stack);
-    }
-
-    public abstract Component buildName(ItemStack stack);
-    public abstract List<Component> buildLore(ItemStack stack);
-    public abstract void modifyItem(ItemStack stack, ItemStack stackData);
+    abstract fun buildName(stack: ItemStack): Component
+    abstract fun buildLore(stack: ItemStack): MutableList<Component>
+    abstract fun modifyItem(stack: ItemStack, stackData: ItemStack)
 }
 

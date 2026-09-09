@@ -1,209 +1,265 @@
-package fun.spmc.smpmod;
+package `fun`.spmc.smpmod
 
-import fun.spmc.smpmod.discord.DiscordWebhook;
-import fun.spmc.smpmod.discord.EventHandler;
-import fun.spmc.smpmod.misc.ChunkLoaderSavedData;
-import fun.spmc.smpmod.economy.EconomyData;
-import fun.spmc.smpmod.economy.fluctuate.MarketState;
-import fun.spmc.smpmod.economy.shop.ShopManager;
-import fun.spmc.smpmod.mobs.ServerMobSpawner;
-import fun.spmc.smpmod.fishing.mechanic.FishingManager;
-import fun.spmc.smpmod.mobs.boss.CrystalBoss;
-import fun.spmc.smpmod.npc.NPCManager;
-import fun.spmc.smpmod.quest.QuestManager;
-import fun.spmc.smpmod.registry.NPCRegistry;
-import fun.spmc.smpmod.registry.PlantRegistry;
-import fun.spmc.smpmod.registry.QuestRegistry;
-import fun.spmc.smpmod.treasure.TreasureEvents;
-import fun.spmc.smpmod.registry.CommandRegistry;
-import fun.spmc.smpmod.discord.config.ConfigLoader;
-import fun.spmc.smpmod.misc.BedrockSkinFetcher;
-
-import fun.spmc.smpmod.utils.MessageUtils;
-import fun.spmc.smpmod.vault.VaultData;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.utils.MarkdownSanitizer;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
-
-import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.scores.DisplaySlot;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.ScoreAccess;
-import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.criteria.ObjectiveCriteria;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mojang.brigadier.CommandDispatcher
+import `fun`.spmc.smpmod.core.*
+import `fun`.spmc.smpmod.discord.*
+import `fun`.spmc.smpmod.discord.config.ConfigLoader
+import `fun`.spmc.smpmod.economy.EconomyData
+import `fun`.spmc.smpmod.economy.fluctuate.MarketState
+import `fun`.spmc.smpmod.economy.shop.ShopManager
+import `fun`.spmc.smpmod.fishing.mechanic.FishingManager
+import `fun`.spmc.smpmod.mobs.ServerMobEvents
+import `fun`.spmc.smpmod.mobs.boss.CrystalBoss
+import `fun`.spmc.smpmod.npc.NPCManager
+import `fun`.spmc.smpmod.quest.QuestManager
+import `fun`.spmc.smpmod.registry.*
+import `fun`.spmc.smpmod.treasure.*
+import `fun`.spmc.smpmod.utils.MessageUtils
+import `fun`.spmc.smpmod.vault.VaultData
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import net.dv8tion.jda.api.utils.MemberCachePolicy
+import net.fabricmc.api.DedicatedServerModInitializer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AfterDeath
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStopped
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents.ChatMessage
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.ChatFormatting
+import net.minecraft.commands.CommandBuildContext
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands.CommandSelection
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.ChatType
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.PlayerChatMessage
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.network.ServerGamePacketListenerImpl
+import net.minecraft.stats.Stats
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.RecipeHolder
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.Scoreboard
+import net.minecraft.world.scores.criteria.ObjectiveCriteria
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 @Environment(EnvType.SERVER)
-public class SMPMod implements DedicatedServerModInitializer {
-    public static final Logger modLogger = LoggerFactory.getLogger("SMPMod");
-    public static JDA bot;
-    public static TextChannel messageChannel;
-    public static MinecraftServer minecraftServer;
-
-    @Override
-    public void onInitializeServer() {
+class SMPMod : DedicatedServerModInitializer {
+    override fun onInitializeServer() {
         try {
-            CommandRegistrationCallback.EVENT.register(CommandRegistry::register);
-        } catch (Exception e) {
-            modLogger.error(ExceptionUtils.getStackTrace(e));
-            System.exit(1);
+            CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext, ignoredCommandSelection: CommandSelection -> CommandRegistry.register(dispatcher, context, ignoredCommandSelection) })
+        } catch (e: Exception) {
+            modLogger.error(ExceptionUtils.getStackTrace(e))
+            exitProcess(1)
         }
 
-        ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
+        ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
             try {
-                ConfigLoader.checkConfigs();
-                minecraftServer = server;
-                bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token()).setMemberCachePolicy(MemberCachePolicy.ALL).addEventListeners(new EventHandler()).enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES).build();
-                bot.awaitReady();
-                messageChannel = bot.getTextChannelById(ConfigLoader.CONFIG.messageChannelId());
-                bot.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"));
-                messageChannel.sendMessage("Server has opened!").queue();
-                bot.updateCommands().addCommands(
-                        Commands.slash("players", "Get the number of players."),
-                        Commands.slash("market", "Get the market inside the server."),
-                        Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
-                ).queue();
+                ConfigLoader.checkConfigs()
+                minecraftServer = server
+                bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token).setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .addEventListeners(EventHandler()).enableIntents(
+                        GatewayIntent.DIRECT_MESSAGE_TYPING,
+                        GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                        GatewayIntent.MESSAGE_CONTENT,
+                        GatewayIntent.GUILD_VOICE_STATES
+                    ).build()
+                bot!!.awaitReady()
+                messageChannel = bot!!.getTextChannelById(ConfigLoader.CONFIG.messageChannelId)
+                bot!!.presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"))
+                messageChannel!!.sendMessage("Server has opened!").queue()
+                bot!!.updateCommands().addCommands(
+                    Commands.slash("players", "Get the number of players."),
+                    Commands.slash("market", "Get the market inside the server."),
+                    Commands.slash("top", "Get the economy leaderboard.")
+                        .addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
+                ).queue()
 
-                FishingManager.register();
-                MarketState.register();
-                VaultData.register();
-                NPCManager.register();
-            } catch (Exception e) {
-                modLogger.error("Config not initialized, please finish the config.");
-                throw new RuntimeException(e);
+                FishingManager.register()
+                MarketState.register()
+                VaultData.register()
+                NPCManager.register()
+            } catch (e: Exception) {
+                modLogger.error("Config not initialized, please finish the config.")
+                throw RuntimeException(e)
             }
-        });
+        })
 
-        ShopManager.register();
-        ChunkLoaderSavedData.register();
-        ServerMobSpawner.registerMobs();
-        QuestRegistry.init();
-        NPCRegistry.init();
+        ShopManager.register()
+        ChunkLoaderSavedData.register()
+        ServerMobEvents.registerMobs()
+        QuestRegistry.init()
+        NPCRegistry.init()
 
-        ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
-            ServerPlayer player = handler.getPlayer();
-            BedrockSkinFetcher.restoreSkin(server, player);
-            QuestManager.get().checkAndResetRotations(player);
-            EconomyData.get().registerPlayer(player.getUUID(), player.getGameProfile().name());
-            player.awardRecipes(server.getRecipeManager().getRecipes().stream().distinct().filter((a) -> a.id().identifier().getNamespace().equals("smpmod")).toList());
+        ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerGamePacketListenerImpl, _: PacketSender, server: MinecraftServer ->
+            val player = handler.getPlayer()
+            BedrockSkinFetcher.restoreSkin(server, player)
+            QuestManager.get().checkAndResetRotations(player)
+            EconomyData.get().registerPlayer(player.getUUID(), player.gameProfile.name())
+            player.awardRecipes(
+                server.recipeManager.recipes.stream().distinct()
+                    .filter { a: RecipeHolder<*>? -> a!!.id().identifier().namespace == "smpmod" }.toList()
+            )
+            if (messageChannel != null) messageChannel!!.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string)).queue()
+        })
 
-            if (messageChannel != null) messageChannel.sendMessage("[+] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
-        });
+        ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerGamePacketListenerImpl?, _: MinecraftServer? ->
+            val player = handler!!.getPlayer()
+            if (messageChannel != null) messageChannel!!.sendMessage(
+                "[-] " + MarkdownSanitizer.escape(
+                    player.name.string
+                )
+            ).queue()
+        })
 
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, _) -> {
-            ServerPlayer player = handler.getPlayer();
-            if (messageChannel != null) messageChannel.sendMessage("[-] " + MarkdownSanitizer.escape(player.getName().getString())).queue();
-        });
+        ServerMessageEvents.CHAT_MESSAGE.register(ChatMessage { message: PlayerChatMessage, sender: ServerPlayer, _: ChatType.Bound ->
+            DiscordWebhook.sendChatMessage(
+                message.signedContent().replace("<[^>]*>".toRegex(), ""),
+                sender.name.string,
+                sender.getStringUUID()
+            )
+        })
+        ServerLivingEntityEvents.AFTER_DEATH.register(AfterDeath { entity: LivingEntity, damageSource: DamageSource ->
+            if (entity is ServerPlayer && messageChannel != null) {
+                val deathMessage = damageSource.getLocalizedDeathMessage(entity).string
+                val fullMessage = "☠ " + deathMessage + " at (" + entity.x.toInt() + ", " + entity.y
+                    .toInt() + ", " + entity.z.toInt() + ")"
+                messageChannel!!.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue()
 
-        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, _) -> DiscordWebhook.sendChatMessage(message.signedContent().replaceAll("<[^>]*>", ""), sender.getName().getString(), sender.getStringUUID()));
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (entity instanceof ServerPlayer player && messageChannel != null) {
-                String deathMessage = damageSource.getLocalizedDeathMessage(player).getString();
-                String fullMessage = "☠ " + deathMessage + " at (" + (int) player.getX() + ", " + (int) player.getY() + ", " + (int) player.getZ() + ")";
-                messageChannel.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue();
-
-                EconomyData eco = EconomyData.get();
-                double victimBalance = eco.getBalance(player.getUUID());
+                val eco: EconomyData = EconomyData.get()
+                val victimBalance: Double = eco.getBalance(entity.getUUID())
 
                 if (victimBalance >= 1000) {
-                    double lossPercent = .05 + (player.getRandom().nextDouble() * .05);
-                    double totalLost = Math.round((victimBalance * lossPercent) * 100.0) / 100.0;
+                    val lossPercent = .05 + (entity.getRandom().nextDouble() * .05)
+                    val totalLost = ((victimBalance * lossPercent) * 100.0).roundToInt() / 100.0
 
                     if (totalLost > 0) {
-                        eco.changeBalance(player.getUUID(), -totalLost);
-                        MessageUtils.sendError(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100), 0);
+                        eco.changeBalance(entity.getUUID(), -totalLost)
+                        MessageUtils.sendError(
+                            entity,
+                            String.format(
+                                "You died and lost $%.2f (%.1f%% of your balance)!",
+                                totalLost,
+                                lossPercent * 100
+                            ),
+                            0
+                        )
 
-                        if (damageSource.getEntity() instanceof ServerPlayer killer && !killer.getUUID().equals(player.getUUID())) {
-                            double bountyReward = Math.round((totalLost * .7) * 100.0) / 100.0;
+                        if (damageSource.entity is ServerPlayer && damageSource.entity?.getUUID() != entity.getUUID()) {
+                            val killer: ServerPlayer = damageSource.entity as ServerPlayer
+                            val bountyReward = ((totalLost * .7) * 100.0).roundToInt() / 100.0
 
-                            eco.changeBalance(killer.getUUID(), bountyReward);
-                            MessageUtils.sendSuccess(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.getScoreboardName(), bountyReward), 1);
+                            eco.changeBalance(killer.getUUID(), bountyReward)
+                            MessageUtils.sendSuccess(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", entity.scoreboardName, bountyReward), 1)
                         }
                     }
                 }
             }
-        });
+        })
 
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getPlayerList().getPlayers().isEmpty()) return;
+        ServerTickEvents.END_SERVER_TICK.register(ServerTickEvents.EndTick { server: MinecraftServer? ->
+            if (server!!.playerList.players.isEmpty()) return@EndTick
+            if (server.tickCount % 360 == 0) ShopManager.serverTickLoop(server)
+            if (server.tickCount % 15 == 0) NPCManager.serverTickLoop(server)
+            if (server.tickCount % 50 == 0) ChunkPool.serverTickLoop()
+            if (server.tickCount % 1200 != 0) return@EndTick
+            MarketState.serverTickLoop(server)
 
-            if (server.getTickCount() % 360 == 0) ShopManager.serverTickLoop(server);
-            if (server.getTickCount() % 15 == 0) NPCManager.serverTickLoop(server);
-            if (server.getTickCount() % 1200 != 0) return;
-            MarketState.serverTickLoop(server);
-
-            Scoreboard scoreboard = server.getScoreboard();
-            Objective objective = scoreboard.getObjective("play_time");
+            val scoreboard: Scoreboard = server.scoreboard
+            var objective = scoreboard.getObjective("play_time")
             if (objective == null) {
                 objective = scoreboard.addObjective(
-                        "play_time",
-                        ObjectiveCriteria.DUMMY,
-                        Component.literal("hours").withStyle(ChatFormatting.GOLD),
-                        ObjectiveCriteria.RenderType.INTEGER,
-                        false,
-                        null
-                );
-                scoreboard.setDisplayObjective(DisplaySlot.BELOW_NAME, objective);
+                    "play_time",
+                    ObjectiveCriteria.DUMMY,
+                    Component.literal("hours").withStyle(ChatFormatting.GOLD),
+                    ObjectiveCriteria.RenderType.INTEGER,
+                    false,
+                    null
+                )
+                scoreboard.setDisplayObjective(DisplaySlot.BELOW_NAME, objective)
             }
+            for (player in server.playerList.players) {
+                val playTime = player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
+                if (playTime > 0) EconomyData.get().changeBalance(player.getUUID(), 1.2)
 
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                int playTime = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
-                if (playTime > 0) EconomyData.get().changeBalance(player.getUUID(), 1.2);
+                val totalHours = playTime / 72000
+                val scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective)
+                scoreAccess.set(totalHours)
 
-                int totalHours = playTime / 72000;
-                ScoreAccess scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective);
-                scoreAccess.set(totalHours);
-
-                QuestManager.get().checkAndResetRotations(player);
+                QuestManager.get().checkAndResetRotations(player)
             }
-        });
+        })
 
-        ServerLifecycleEvents.SERVER_STOPPED.register((_) -> {
-            messageChannel.sendMessage("Server shutting down...").queue();
-            bot.shutdown();
-        });
+        ServerLifecycleEvents.SERVER_STOPPED.register(ServerStopped { _: MinecraftServer ->
+            messageChannel!!.sendMessage("Server shutting down...").queue()
+            bot!!.shutdown()
+        })
 
-        PlayerBlockBreakEvents.AFTER.register(TreasureEvents::onBlockBreak);
-        ServerEntityEvents.ENTITY_LOAD.register(ServerMobSpawner::onEntityJoin);
-        UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss);
+        PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level?, player: Player?, pos: BlockPos?, state: BlockState?, ignoredBlockEntity: BlockEntity? ->
+            TreasureEvents.onBlockBreak(
+                world,
+                player,
+                pos,
+                state,
+                ignoredBlockEntity
+            )
+        })
+        ServerEntityEvents.ENTITY_LOAD.register(ServerEntityEvents.Load { entity: Entity, level: ServerLevel -> ServerMobEvents.onEntityJoin(entity, level) })
+        UseBlockCallback.EVENT.register(UseBlockCallback { player: Player, world: Level, hand: InteractionHand, hitResult: BlockHitResult? -> CrystalBoss.eventSpawnBoss(player, world, hand, hitResult) })
 
         // proof of concept, TODO: make it better
-        PlayerBlockBreakEvents.AFTER.register((world, _, pos, state, _) -> {
-            if (world.isClientSide()) return;
-
-            if (state.is(Blocks.SHORT_GRASS) || state.is(Blocks.TALL_GRASS)) {
-                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, new ItemStack(PlantRegistry.SEEDS.get("wheat")));
+        PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level, _: Player, pos: BlockPos, state: BlockState, _: BlockEntity? ->
+            if (world.isClientSide) return@After
+            if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
+                if (world.getRandom().nextFloat() < 0.08f) Block.popResource(
+                    world,
+                    pos,
+                    ItemStack(PlantRegistry.SEEDS.get("wheat"))
+                )
             }
-        });
+        })
+    }
+
+    companion object {
+        @JvmField val modLogger: Logger = LoggerFactory.getLogger("SMPMod")
+        var bot: JDA? = null
+        @JvmField var messageChannel: TextChannel? = null
+        @JvmField var minecraftServer: MinecraftServer? = null
     }
 }

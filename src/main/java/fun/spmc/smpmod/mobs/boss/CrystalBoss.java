@@ -37,7 +37,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         return Warden.createAttributes()
                 .add(Attributes.MAX_HEALTH, 1250)
                 .add(Attributes.MOVEMENT_SPEED, .3)
-                .add(Attributes.ATTACK_DAMAGE, 30);
+                .add(Attributes.ATTACK_DAMAGE, 25);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         super.tick();
 
         if (!this.level().isClientSide()) {
-            //if (tickCount % 10 == 0) updateOrbitingCrystals();
+            //if (tickCount % 10 == 0) updateOrbitingCrystals(); TODO: fix code
 
             if (this.roarAbilityCooldown > 0) this.roarAbilityCooldown--;
             if (this.roarAnimationState.isStarted() && this.roarAbilityCooldown <= 0) {

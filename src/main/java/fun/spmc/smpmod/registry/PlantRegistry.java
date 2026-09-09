@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.registry;
 
-import fun.spmc.smpmod.misc.ItemRarity;
+import fun.spmc.smpmod.core.ItemRarity;
 import fun.spmc.smpmod.plant.CropItem;
 import fun.spmc.smpmod.plant.SeedBlock;
 import fun.spmc.smpmod.plant.SeedItem;

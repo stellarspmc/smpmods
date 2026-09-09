@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.fishing;
 
-import fun.spmc.smpmod.misc.ItemModifier;
-import fun.spmc.smpmod.misc.ItemRarity;
+import fun.spmc.smpmod.core.ItemModifier;
+import fun.spmc.smpmod.core.ItemRarity;
 import fun.spmc.smpmod.utils.BasePolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -11,7 +11,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -52,12 +51,12 @@ public class FishItem extends BasePolymerItem {
             int quality = getQuality(tag);
 
             MutableComponent title = Component.empty();
-            for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.getColor()));
-            title.append(Component.literal(this.fishName).withStyle(rarity.getColor()));
+            for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.color));
+            title.append(Component.literal(this.fishName).withColor(rarity.color));
             if (quality > 0) title.append(Component.literal(" " + "★".repeat(quality)).withStyle(ChatFormatting.YELLOW));
             return title.withStyle(style -> style.withItalic(false));
         }
-        return Component.literal(this.fishName).withStyle(rarity.getColor()).withStyle(style -> style.withItalic(false));
+        return Component.literal(this.fishName).withColor(rarity.color).withStyle(style -> style.withItalic(false));
     }
 
     @Override
@@ -102,7 +101,7 @@ public class FishItem extends BasePolymerItem {
             int quality = getQuality(tag);
             Map<ItemModifier, Integer> modifiers = getModifiers(tag);
             double price = ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
-            for (Map.Entry<ItemModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().getPriceMultiplier() * Math.min(1, entry.getValue());
+            for (Map.Entry<ItemModifier, Integer> entry : modifiers.entrySet()) price *= entry.getKey().priceMultiplier * Math.min(1, entry.getValue());
             return Math.round(price * (quality * .15 + 1) * 100) / 100d;
         } return ((FishItem) (stack.getItem())).getBasePrice() * stack.getCount();
     }

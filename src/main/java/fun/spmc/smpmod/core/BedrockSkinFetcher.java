@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.misc;
+package fun.spmc.smpmod.core;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -32,9 +32,6 @@ import static fun.spmc.smpmod.SMPMod.modLogger;
 
 public class BedrockSkinFetcher {
     private static final Duration SKIN_REQUEST_TIMEOUT = Duration.ofSeconds(8L);
-    private static final int MAX_FETCH_RETRIES = 5;
-    private static final long RETRY_DELAY_MS = 850L;
-
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public static void restoreSkin(MinecraftServer server, ServerPlayer player) {
@@ -59,17 +56,15 @@ public class BedrockSkinFetcher {
     }
 
     private static void scheduleRetry(MinecraftServer server, UUID playerId, String playerName, String xuid, int attempt) {
-        if (attempt >= MAX_FETCH_RETRIES) {
+        if (attempt >= 5) {
             modLogger.info("No converted Bedrock skin available for {} after max attempts.", playerName);
             return;
         }
 
         scheduler.schedule(() -> server.execute(() -> {
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-            if (player != null && player.connection.isAcceptingMessages()) {
-                fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
-            }
-        }), RETRY_DELAY_MS, TimeUnit.MILLISECONDS);
+            if (player != null && player.connection.isAcceptingMessages()) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1);
+        }), 850L, TimeUnit.MILLISECONDS);
     }
 
     private static void applySkin(MinecraftServer server, UUID playerId, SkinProperty skin) {
@@ -78,29 +73,15 @@ public class BedrockSkinFetcher {
 
         GameProfile profile = player.getGameProfile();
         PropertyMap currentProperties = profile.properties();
-
         Multimap<String, Property> map = LinkedHashMultimap.create();
 
-        for (Map.Entry<String, Property> entry : currentProperties.entries()) {
-            if (!entry.getKey().equals("textures")) map.put(entry.getKey(), entry.getValue());
-        }
+        for (Map.Entry<String, Property> entry : currentProperties.entries()) if (!entry.getKey().equals("textures")) map.put(entry.getKey(), entry.getValue());
 
         map.put("textures", new Property("textures", skin.value(), skin.signature()));
-
         PropertyMap newProperties = new PropertyMap(map);
-
         ((AccessorGameProfile) (Object) profile).setProperties(newProperties);
-
-        resyncPlayerSkinToClients(server, player);
-        modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
-    }
-
-    private static void resyncPlayerSkinToClients(MinecraftServer server, ServerPlayer player) {
         ClientboundPlayerInfoRemovePacket removePacket = new ClientboundPlayerInfoRemovePacket(List.of(player.getUUID()));
-        ClientboundPlayerInfoUpdatePacket addPacket = new ClientboundPlayerInfoUpdatePacket(
-                EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED),
-                List.of(player)
-        );
+        ClientboundPlayerInfoUpdatePacket addPacket = new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), List.of(player));
 
         for (ServerPlayer other : server.getPlayerList().getPlayers()) {
             other.connection.send(removePacket);
@@ -112,37 +93,26 @@ public class BedrockSkinFetcher {
             chunkMap.removeEntity(player);
             chunkMap.addEntity(player);
 
-            player.connection.send(new ClientboundRespawnPacket(
-                    player.createCommonSpawnInfo(serverLevel),
-                    ClientboundRespawnPacket.KEEP_ALL_DATA
-            ));
-
+            player.connection.send(new ClientboundRespawnPacket(player.createCommonSpawnInfo(serverLevel), ClientboundRespawnPacket.KEEP_ALL_DATA));
             player.connection.send(new ClientboundPlayerPositionPacket(0, PositionMoveRotation.of(player), Set.of()));
             server.getPlayerList().sendAllPlayerInfo(player);
             player.onUpdateAbilities();
             player.inventoryMenu.sendAllDataToRemote();
         }
+
+        modLogger.info("Successfully restored Bedrock skin for {}", player.getScoreboardName());
     }
+
 
     private record SkinProperty(String value, String signature) {}
 
     private static class GeyserSkinClient {
-        private static final HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(SKIN_REQUEST_TIMEOUT)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        private static final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(SKIN_REQUEST_TIMEOUT).followRedirects(HttpClient.Redirect.NORMAL).build();
 
         public static CompletableFuture<Optional<SkinProperty>> fetchSkin(String xuid) {
             if (xuid == null || xuid.isBlank()) return CompletableFuture.completedFuture(Optional.empty());
-
-            HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.geysermc.org/v2/skin/" + xuid))
-                    .timeout(SKIN_REQUEST_TIMEOUT)
-                    .header("Accept", "application/json")
-                    .GET()
-                    .build();
-
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(GeyserSkinClient::parseSkinResponse);
+            HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.geysermc.org/v2/skin/" + xuid)).timeout(SKIN_REQUEST_TIMEOUT).header("Accept", "application/json").GET().build();
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(GeyserSkinClient::parseSkinResponse);
         }
 
         private static Optional<SkinProperty> parseSkinResponse(HttpResponse<String> response) {

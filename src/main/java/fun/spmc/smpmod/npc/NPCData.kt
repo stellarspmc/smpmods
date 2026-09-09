@@ -1,88 +1,75 @@
-package fun.spmc.smpmod.npc;
+package `fun`.spmc.smpmod.npc
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.ChatFormatting;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.decoration.Mannequin;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
-import org.jetbrains.annotations.Nullable;
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
+import com.mojang.authlib.GameProfile
+import com.mojang.authlib.properties.Property
+import com.mojang.authlib.properties.PropertyMap
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
+import `fun`.spmc.smpmod.SMPMod
+import net.minecraft.ChatFormatting
+import net.minecraft.core.UUIDUtil
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.datafix.DataFixTypes
+import net.minecraft.world.entity.decoration.Mannequin
+import net.minecraft.world.item.component.ResolvableProfile
+import net.minecraft.world.level.saveddata.SavedData
+import net.minecraft.world.level.saveddata.SavedDataType
+import java.util.*
+import java.util.function.Function
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+class NPCData : SavedData {
+    constructor()
+    constructor(npcs: MutableMap<String, UUID>) { npcMap.putAll(npcs) }
 
-import static fun.spmc.smpmod.SMPMod.minecraftServer;
+    val npcMap: MutableMap<String?, UUID?>field: BiMap<String?, UUID?> = HashBiMap.create<String?, UUID?>()
+    fun removeNpc(id: String) { if (npcMap.remove(id) != null) this.setDirty() }
+    fun getUuid(id: String): UUID? { return npcMap[id] }
+    fun hasNpc(id: String): Boolean { return npcMap.containsKey(id) }
+    fun getNpcId(uuid: UUID): String? { return npcMap.inverse()[uuid] }
 
-public class NPCData extends SavedData {
-    public static final Codec<NPCData> CODEC = RecordCodecBuilder.create(instance -> instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", Map.of()).forGetter(NPCData::getNpcMap)).apply(instance, NPCData::new));
-    public static final SavedDataType<NPCData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), NPCData::new, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
-    private final BiMap<String, UUID> npcs = HashBiMap.create();
-
-    public NPCData() {}
-    public NPCData(Map<String, UUID> npcs) { this.npcs.putAll(npcs); }
-    public Map<String, UUID> getNpcMap() { return this.npcs; }
-    public static NPCData get() { return minecraftServer.overworld().getDataStorage().computeIfAbsent(TYPE); }
-    public void removeNpc(String id) { if (this.npcs.remove(id) != null) this.setDirty(); }
-    public @Nullable UUID getUuid(String id) { return this.npcs.get(id); }
-    public boolean hasNpc(String id) { return this.npcs.containsKey(id); }
-    public @Nullable String getNpcId(UUID uuid) { return this.npcs.inverse().get(uuid); }
-
-    public void registerNpc(String id, UUID uuid) {
-        this.npcs.put(id, uuid);
-        this.setDirty();
+    fun registerNpc(id: String?, uuid: UUID?) {
+        npcMap[id] = uuid
+        this.setDirty()
     }
 
-    public @Nullable Mannequin getMannequin(ServerLevel level, String id) {
-        UUID uuid = getUuid(id);
-        if (uuid == null) return null;
+    fun getMannequin(level: ServerLevel, id: String): Mannequin? {
+        val uuid = getUuid(id) ?: return null
 
-        Entity entity = level.getEntity(uuid);
-        if (entity instanceof Mannequin mannequin) return mannequin;
-        return null;
+        val entity = level.getEntity(uuid)
+        if (entity is Mannequin) return entity
+        return null
     }
 
-    public static ResolvableProfile createCustomProfile(String name, int[] uuidIntArray, String textureValue) {
-       return createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue);
-    }
+    companion object {
+        val CODEC: Codec<NPCData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<NPCData> ->
+                instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", mapOf()).forGetter { obj: NPCData -> obj.npcMap }).apply(instance) { npcs: MutableMap<String, UUID> -> NPCData(npcs) } })
+        val TYPE: SavedDataType<NPCData> = SavedDataType(
+            Identifier.fromNamespaceAndPath("smpmod", "npc_data"),
+            { NPCData() },
+            CODEC,
+            DataFixTypes.SAVED_DATA_COMMAND_STORAGE
+        )
 
-    public static ResolvableProfile createCustomProfile(String name, UUID uuid, String textureValue) {
-        Multimap<String, Property> map = HashMultimap.create();
-        map.put("textures", new Property("textures", textureValue));
+        @JvmStatic fun get(): NPCData { return SMPMod.minecraftServer.overworld().dataStorage.computeIfAbsent(TYPE) }
+        @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String?): ResolvableProfile { return createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue) }
+        @JvmStatic fun talkAsMannequin(mannequin: Mannequin, message: Component, player: ServerPlayer) { player.sendSystemMessage(Component.empty().append(mannequin.customName ?: mannequin.name).append(Component.literal(": ").withStyle(ChatFormatting.WHITE)).append(message.copy().withStyle(ChatFormatting.WHITE))) }
 
-        PropertyMap properties = new PropertyMap(map);
-        GameProfile profile = new GameProfile(uuid, name, properties);
+        @JvmStatic
+        fun createCustomProfile(name: String, uuid: UUID, textureValue: String?): ResolvableProfile {
+            val map: Multimap<String?, Property?> = HashMultimap.create()
+            map.put("textures", Property("textures", textureValue))
 
-        return ResolvableProfile.createResolved(profile);
-    }
+            val properties = PropertyMap(map)
+            val profile = GameProfile(uuid, name, properties)
 
-    public static void talkAsMannequin(Mannequin mannequin, Component message, ServerPlayer player) {
-        Component name = mannequin.getCustomName() != null ? mannequin.getCustomName() : mannequin.getName();
-        MutableComponent finalMessage = Component.empty()
-                .append(name)
-                .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
-                .append(message.copy().withStyle(ChatFormatting.WHITE));
-        player.sendSystemMessage(finalMessage);
+            return ResolvableProfile.createResolved(profile)
+        }
     }
 }

@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.misc;
+package fun.spmc.smpmod.core;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -105,7 +105,7 @@ public class ChunkLoaderSavedData extends SavedData {
 
                 if (!data.isLoader(pos)) {
                     data.addLoader(serverLevel, pos);
-                    MessageUtils.sendSuccessMessage((ServerPlayer) player, "Chunk loader activated.");
+                    MessageUtils.INSTANCE.sendSuccess((ServerPlayer) player, "Chunk loader activated.", 1);
                 }
             }
             return InteractionResult.PASS;
@@ -118,7 +118,7 @@ public class ChunkLoaderSavedData extends SavedData {
 
                 if (data.isLoader(pos)) {
                     data.removeLoader(serverLevel, pos);
-                    MessageUtils.sendErrorMessage((ServerPlayer) player, "Chunk loader deactivated.");
+                    MessageUtils.INSTANCE.sendError((ServerPlayer) player, "Chunk loader deactivated.", 0);
                 }
             }
             return true;

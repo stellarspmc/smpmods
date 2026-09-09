@@ -2,8 +2,8 @@ package fun.spmc.smpmod.fishing.mechanic;
 
 import fun.spmc.smpmod.fishing.BiomeCategory;
 import fun.spmc.smpmod.fishing.FishTracker;
-import fun.spmc.smpmod.misc.ItemModifier;
-import fun.spmc.smpmod.misc.ItemRarity;
+import fun.spmc.smpmod.core.ItemModifier;
+import fun.spmc.smpmod.core.ItemRarity;
 import fun.spmc.smpmod.fishing.FishItem;
 import fun.spmc.smpmod.fishing.RodTiers;
 import fun.spmc.smpmod.quest.QuestManager;
@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -49,10 +50,10 @@ public class FishingLoot {
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1, 1.2f);
         player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(caughtFish.getFishName()).withStyle(caughtFish.getRarity().getColor()))
+                .append(Component.literal(caughtFish.getFishName()).withColor(caughtFish.getRarity().color))
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
         FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
-        if (caughtFish.getRarity().shouldAnnounce()) announceLoot(caughtFish.getRarity().toString().toUpperCase(), caughtFish.getFishName(), caughtFish.getRarity().getColor(), player);
+        if (caughtFish.getRarity().shouldAnnounce()) announceLoot(caughtFish.getRarity().toString().toUpperCase(), caughtFish.getFishName(), caughtFish.getRarity().color, player);
         QuestManager.getQuests(player).getActiveQuests().forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
     }
 
@@ -126,13 +127,13 @@ public class FishingLoot {
         return 0;
     }
 
-    private static void announceLoot(String rarityName, String fishName, ChatFormatting color, ServerPlayer player) {
-        Component chatAnnouncement = Component.literal("★ ").withStyle(color, ChatFormatting.BOLD)
+    private static void announceLoot(String rarityName, String fishName, TextColor color, ServerPlayer player) {
+        Component chatAnnouncement = Component.literal("★ ").withColor(color).withStyle(ChatFormatting.BOLD)
                 .append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
                 .append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(rarityName).withStyle(color, ChatFormatting.BOLD))
-                .append(Component.literal(fishName)).withStyle(color)
-                .append(Component.literal("! ★").withStyle(color, ChatFormatting.BOLD));
+                .append(Component.literal(rarityName).withColor(color).withStyle(ChatFormatting.BOLD))
+                .append(Component.literal(fishName)).withColor(color)
+                .append(Component.literal("! ★").withColor(color).withStyle(ChatFormatting.BOLD));
 
         minecraftServer.getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
         messageChannel.sendMessage("**" + MarkdownSanitizer.escape(player.getScoreboardName()) + "** just reeled up a **" + rarityName + "** " + fishName +"!").queue();

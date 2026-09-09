@@ -1,65 +1,54 @@
-package fun.spmc.smpmod.utils;
+package `fun`.spmc.smpmod.utils
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerPlayer
+import java.util.regex.Pattern
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class MessageUtils {
-    public static <T> T sendError(ServerPlayer player, String message, T returnValue) {
-        player.sendSystemMessage(Component.literal("✖: " + message).withStyle(ChatFormatting.RED));
-        return returnValue;
+object MessageUtils {
+    fun <T> sendError(player: ServerPlayer, message: String, returnValue: T): T {
+        player.sendSystemMessage(Component.literal("✖: $message").withStyle(ChatFormatting.RED))
+        return returnValue
     }
 
-    public static <T> T sendSuccess(ServerPlayer player, String message, T returnValue) {
-        player.sendSystemMessage(Component.literal("✔: " + message).withStyle(ChatFormatting.GREEN));
-        return returnValue;
+    fun <T> sendSuccess(player: ServerPlayer, message: String, returnValue: T): T {
+        player.sendSystemMessage(Component.literal("✔: $message").withStyle(ChatFormatting.GREEN))
+        return returnValue
     }
 
-    public static String parseMarkdown(String message) {
-        message = replaceWith(message, "(?<!\\\\)\\*\\*", ChatFormatting.BOLD.toString(), ChatFormatting.RESET.toString());
-        message = replaceWith(message, "(?<!\\\\)\\*", ChatFormatting.ITALIC.toString(), ChatFormatting.RESET.toString());
-        message = replaceWith(message, "(?<!\\\\)__", ChatFormatting.UNDERLINE.toString(), ChatFormatting.RESET.toString());
-        message = replaceWith(message, "(?<!\\\\)_", ChatFormatting.ITALIC.toString(), ChatFormatting.RESET.toString());
-        message = replaceWith(message, "(?<!\\\\)~~", ChatFormatting.STRIKETHROUGH.toString(), ChatFormatting.RESET.toString());
+    @JvmStatic
+    fun parseMarkdown(message: String): String {
+        var message = message
+        message = replaceWith(message, "(?<!\\\\)\\*\\*", ChatFormatting.BOLD.toString(), ChatFormatting.RESET.toString())
+        message = replaceWith(message, "(?<!\\\\)\\*", ChatFormatting.ITALIC.toString(), ChatFormatting.RESET.toString())
+        message = replaceWith(message, "(?<!\\\\)__", ChatFormatting.UNDERLINE.toString(), ChatFormatting.RESET.toString())
+        message = replaceWith(message, "(?<!\\\\)_", ChatFormatting.ITALIC.toString(), ChatFormatting.RESET.toString())
+        message = replaceWith(message, "(?<!\\\\)~~", ChatFormatting.STRIKETHROUGH.toString(), ChatFormatting.RESET.toString())
 
-        message = message.replaceAll("\\\\\\*", "*").replaceAll("\\\\_", "_").replaceAll("\\\\~", "~");
-        message = message.replaceAll("\"", "\\\\\"");
-        return message;
+        message = message.replace("\\\\\\*".toRegex(), "*").replace("\\\\_".toRegex(), "_").replace("\\\\~".toRegex(), "~")
+        return message.replace("\"".toRegex(), "\\\\\"")
     }
 
-    private static String replaceWith(String message, String quot, String pre, String suf) {
-        String part = message;
-        for (String str : getMatches(message, quot + "(.+?)" + quot))
-            part = part.replaceFirst(quot + Pattern.quote(str) + quot, pre + str + suf);
-
-        return part;
+    private fun replaceWith(message: String, quot: String, pre: String, suf: String): String {
+        var part = message
+        for (str in getMatches(message, "$quot(.+?)$quot")) part = part.replaceFirst((quot + Pattern.quote(str) + quot).toRegex(), pre + str + suf)
+        return part
     }
 
-    private static List<String> getMatches(String string, String regex) {
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(string);
-        List<String> matches = new ArrayList<>();
+    private fun getMatches(string: String, regex: String): MutableList<String> {
+        val pattern = Pattern.compile(regex)
+        val matcher = pattern.matcher(string)
+        val matches: MutableList<String> = ArrayList()
 
-        while (matcher.find()) matches.add(matcher.group(1));
-        return matches;
+        while (matcher.find()) matches.add(matcher.group(1))
+        return matches
     }
 
-    public static String formatName(String id) {
-        String[] words = id.split("_");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                sb.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1))
-                        .append(" ");
-            }
-        }
-        return sb.toString().trim();
+    @JvmStatic
+    fun formatName(id: String): String {
+        val words = id.split("_".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val sb = StringBuilder()
+        for (word in words) if (word.isNotEmpty()) sb.append(word[0].uppercaseChar()).append(word.substring(1)).append(" ")
+        return sb.toString().trim { it <= ' ' }
     }
 }

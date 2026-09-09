@@ -1,6 +1,6 @@
 package fun.spmc.smpmod.fishing;
 
-import fun.spmc.smpmod.misc.ItemModifier;
+import fun.spmc.smpmod.core.ItemModifier;
 import fun.spmc.smpmod.registry.FishingRegistry;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.Item;

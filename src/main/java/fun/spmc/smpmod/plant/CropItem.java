@@ -1,7 +1,7 @@
 package fun.spmc.smpmod.plant;
 
-import fun.spmc.smpmod.misc.ItemModifier;
-import fun.spmc.smpmod.misc.ItemRarity;
+import fun.spmc.smpmod.core.ItemModifier;
+import fun.spmc.smpmod.core.ItemRarity;
 import fun.spmc.smpmod.utils.BasePolymerItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -35,8 +35,8 @@ public class CropItem extends BasePolymerItem {
         int quality = getQuality(getCropTag(stack));
         Set<ItemModifier> traits = getModifiers(getCropTag(stack)).keySet();
         MutableComponent title = Component.empty();
-        for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.getColor()));
-        title.append(Component.literal(this.cropName).withStyle(rarity.getColor()));
+        for (ItemModifier trait : traits) title.append(Component.literal(trait.toString() + " ").withColor(trait.color));
+        title.append(Component.literal(this.cropName).withColor(rarity.color));
         if (quality != 0) title.append(Component.literal(" " + (quality > 0 ? "★".repeat(quality) : "\uD83D\uDC80".repeat(-quality))).withStyle(quality > 0 ? ChatFormatting.YELLOW: ChatFormatting.DARK_RED));
         return title.withStyle(style -> style.withItalic(false));
     }

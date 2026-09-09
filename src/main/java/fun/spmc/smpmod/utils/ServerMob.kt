@@ -1,35 +1,35 @@
-package fun.spmc.smpmod.utils;
+package `fun`.spmc.smpmod.utils
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 
-public interface ServerMob {
-    EntityType<? extends LivingEntity> getEntityType();
-    double entitySpawnRate();
-    Component getEntityName();
+interface ServerMob {
+    val entityType: EntityType<out LivingEntity>
+    fun entitySpawnRate(): Double
+    val entityName: Component?
 
-    void setHead(LivingEntity entity);
-    void setChest(LivingEntity entity);
-    void setLegs(LivingEntity entity);
-    void setBoots(LivingEntity entity);
+    fun setHead(entity: LivingEntity?)
+    fun setChest(entity: LivingEntity?)
+    fun setLegs(entity: LivingEntity?)
+    fun setBoots(entity: LivingEntity?)
 
-    void setItems(LivingEntity entity);
+    fun setItems(entity: LivingEntity?)
 
-    void setEffects(LivingEntity entity);
-    void setAttributes(LivingEntity entity);
+    fun setEffects(entity: LivingEntity?)
+    fun setAttributes(entity: LivingEntity?)
 
-    default void setEntity(LivingEntity entity) {
-        entity.setCustomName(getEntityName());
+    fun setEntity(entity: LivingEntity) {
+        entity.customName = this.entityName
 
-        setHead(entity);
-        setChest(entity);
-        setLegs(entity);
-        setBoots(entity);
+        setHead(entity)
+        setChest(entity)
+        setLegs(entity)
+        setBoots(entity)
 
-        setItems(entity);
+        setItems(entity)
 
-        setEffects(entity);
-        setAttributes(entity);
+        setEffects(entity)
+        setAttributes(entity)
     }
 }

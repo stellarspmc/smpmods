@@ -1,4 +1,4 @@
-package fun.spmc.smpmod.misc;
+package fun.spmc.smpmod.cosmetics;
 
 import eu.pb4.placeholders.api.PlaceholderResult;
 import eu.pb4.placeholders.api.Placeholders;

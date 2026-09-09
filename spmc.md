@@ -100,6 +100,8 @@ Full cross-platform support is included for both Java and Bedrock (Geyser/Floodg
 
 ## Industrial Crafting (7.3)
 
+stub: rewrite recipe tab
+
 ### Compressor Recipes
 
 Refine raw carbon and nether materials into high-tier industrial components inside the Compressor.
@@ -110,16 +112,17 @@ Refine raw carbon and nether materials into high-tier industrial components insi
 | Carbon             | 12x      | Compressed Carbon       | 1x       |                                            |
 | Compressed Carbon  | 4x       | Carbon Chunk            | 1x       |                                            |
 | Nether Brick       | 32x      | Compressed Nether Brick | 1x       |                                            |
-| Different Raw Ores | Varying  | Compressed Ore          | Varying  | Raw Gold is the best ore, 1x -> 2x ore     |
 | Gold Dust          | 16x      | 4-Karat Gold Ingot      | 1x       | Karat Gold could scale up to 24K           |
 
 ### Smeltery Recipes
 
 The smeltery is used to create alloy materials.
 
-| Input Material       | Quantity | Output Material         | Quantity |
-|----------------------|----------|-------------------------|----------|
-| Iron Ingot + Silicon | 1x       | Ferrosilicon            | 1x       |
+| Input Material                 | Quantity | Output Material | Quantity |
+|--------------------------------|----------|-----------------|----------|
+| Iron Ingot + Silicon           | 1x       | Ferrosilicon    | 1x       |
+| Iron Ingot + Compressed Carbon | 1x       | Steel Dust      | 3x       |
+| 6K Gold Ingot + Copper Ingot   | 1x       | Electrum Dust   | 2x       |
 
 ### Other Recipes
 
