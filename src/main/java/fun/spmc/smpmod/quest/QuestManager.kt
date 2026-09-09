@@ -2,6 +2,7 @@ package `fun`.spmc.smpmod.quest
 
 import com.mojang.serialization.Codec
 import `fun`.spmc.smpmod.SMPMod
+import `fun`.spmc.smpmod.SMPMod.Companion.minecraftServer
 import `fun`.spmc.smpmod.registry.QuestRegistry
 import net.minecraft.core.UUIDUtil
 import net.minecraft.resources.Identifier
@@ -70,7 +71,7 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
         val CODEC: Codec<QuestManager> = Codec.unboundedMap(UUIDUtil.CODEC, PlayerQuestData.CODEC).xmap(Function { questData: MutableMap<UUID, PlayerQuestData> -> QuestManager(questData) }, Function { manager: QuestManager -> manager.playerQuests })
         val TYPE: SavedDataType<QuestManager> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "questing"), { QuestManager() }, CODEC, DataFixTypes.LEVEL)
 
-        @JvmStatic fun get(): QuestManager { return SMPMod.minecraftServer!!.overworld().dataStorage.computeIfAbsent(TYPE) }
-        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData { return get().playerQuests.computeIfAbsent(player.getUUID()) { _: UUID? -> PlayerQuestData() } }
+        @JvmStatic fun get(): QuestManager? { return minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE) }
+        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData { return (get()?: return PlayerQuestData()).playerQuests.computeIfAbsent(player.getUUID()) { _: UUID -> PlayerQuestData() } }
     }
 }

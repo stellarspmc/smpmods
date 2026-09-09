@@ -10,10 +10,9 @@ import net.minecraft.world.level.saveddata.SavedData
 
 object CosmeticSavedData : SavedData() {
     fun register() {
-        Placeholders.registerServer<Any?>(
-            Identifier.fromNamespaceAndPath("smpmod", "prefix")
-        ) { context: ServerPlaceholderContext?, _: String? ->
-            if (context!!.hasPlayer()) {
+        Placeholders.registerServer<Any?>(Identifier.fromNamespaceAndPath("smpmod", "prefix")
+        ) { context: ServerPlaceholderContext, _: String ->
+            if (context.hasPlayer()) {
                 val prefix = getEquippedPrefix(context.player() as ServerPlayer?)
                 if (prefix.string.isNotBlank()) return@registerServer PlaceholderResult.value(prefix)
             }

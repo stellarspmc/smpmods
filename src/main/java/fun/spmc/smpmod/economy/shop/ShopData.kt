@@ -47,7 +47,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
     fun getPrice(): Double { return price }
     fun openOwnerMenu(owner: ServerPlayer) { ShopOwnerMenu.open(owner, this) }
 
-    val level: ServerLevel? get() = SMPMod.minecraftServer!!.getLevel(dimension)
+    val level: ServerLevel? get() = SMPMod.minecraftServer?.getLevel(dimension)
 
     fun recordReceipt(receipt: ShopReceipt) {
         this.receipts.addFirst(receipt)
@@ -153,7 +153,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
 
     fun updateItemDisplay() { ((this.level?: return).getEntity(itemDisplayUuid) as? ItemDisplay)?.itemStack = itemSold.copy() }
     fun updateHologram() { ((this.level?: return).getEntity(textDisplayUuid) as? Display.TextDisplay)?.text = Component.literal(String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", stack, itemSold.hoverName.string, price, if (this.isCreative) "∞" else this.availableStock.toString())) }
-    private fun safelyRemoveEntity(entityUuid: UUID?) { ((this.level?: return).getEntity(entityUuid!!))?.discard() }
+    private fun safelyRemoveEntity(entityUuid: UUID) { ((this.level?: return).getEntity(entityUuid))?.discard() }
 
     fun destroyShop() {
         safelyRemoveEntity(interactionEntityUuid)

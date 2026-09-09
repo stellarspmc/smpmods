@@ -27,7 +27,7 @@ object ServerMobEvents {
         else if (entity.type === EntityTypes.HORSE && level.getRandom().nextFloat() > .75f) replaceMob(entity, EntityTypes.ZOMBIE_HORSE, level)
         if (entity.type === EntityTypes.CAMEL && level.getRandom().nextFloat() > .75f) replaceMob(entity, EntityTypes.CAMEL_HUSK, level)
 
-        if (entity.type === EntityTypes.HAPPY_GHAST) Objects.requireNonNull((entity as HappyGhast).getAttribute(Attributes.FLYING_SPEED))!!.baseValue = .15
+        if (entity.type === EntityTypes.HAPPY_GHAST) (entity as HappyGhast).getAttribute(Attributes.FLYING_SPEED)?.baseValue = .15
         if (entity.type === EntityTypes.CREEPER && level.getRandom().nextFloat() > .7f) entity.getEntityData().set(Creeper.DATA_IS_POWERED, true)
         if (entity.type === EntityTypes.SHEEP) (entity as Sheep).color = DyeColor.byId(level.getRandom().nextInt(15))
         if (entity.type === EntityTypes.SHULKER) (entity as Shulker).variant = Optional.of<DyeColor>(DyeColor.byId(level.getRandom().nextInt(15)))

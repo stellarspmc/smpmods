@@ -23,7 +23,7 @@ object UtilityFunctions {
 
     fun streamToSuggestion(itemStream: Stream<Item>): SuggestionProvider<CommandSourceStack> {
         return SuggestionProvider { _: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder ->
-            SharedSuggestionProvider.suggestResource(itemStream.distinct().map { thing: Item? -> BuiltInRegistries.ITEM.getKey(thing!!) }, builder)
+            SharedSuggestionProvider.suggestResource(itemStream.distinct().map { thing: Item -> BuiltInRegistries.ITEM.getKey(thing) }, builder)
         }
     }
 }

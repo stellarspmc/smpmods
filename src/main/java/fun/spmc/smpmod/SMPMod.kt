@@ -86,6 +86,8 @@ class SMPMod : DedicatedServerModInitializer {
             exitProcess(1)
         }
 
+        PolymerRegistry.init()
+
         ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
             try {
                 ConfigLoader.checkConfigs()
@@ -98,16 +100,16 @@ class SMPMod : DedicatedServerModInitializer {
                         GatewayIntent.MESSAGE_CONTENT,
                         GatewayIntent.GUILD_VOICE_STATES
                     ).build()
-                bot!!.awaitReady()
-                messageChannel = bot!!.getTextChannelById(ConfigLoader.CONFIG.messageChannelId)
-                bot!!.presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"))
-                messageChannel!!.sendMessage("Server has opened!").queue()
-                bot!!.updateCommands().addCommands(
+                bot?.awaitReady()
+                messageChannel = bot?.getTextChannelById(ConfigLoader.CONFIG.messageChannelId)
+                bot?.presence?.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"))
+                messageChannel?.sendMessage("Server has opened!")?.queue()
+                bot?.updateCommands()?.addCommands(
                     Commands.slash("players", "Get the number of players."),
                     Commands.slash("market", "Get the market inside the server."),
                     Commands.slash("top", "Get the economy leaderboard.")
                         .addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false)
-                ).queue()
+                )?.queue()
 
                 FishingManager.register()
                 MarketState.register()
@@ -122,28 +124,23 @@ class SMPMod : DedicatedServerModInitializer {
         ShopManager.register()
         ChunkLoaderSavedData.register()
         ServerMobEvents.registerMobs()
-        QuestRegistry.init()
-        NPCRegistry.init()
 
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerGamePacketListenerImpl, _: PacketSender, server: MinecraftServer ->
             val player = handler.getPlayer()
             BedrockSkinFetcher.restoreSkin(server, player)
-            QuestManager.get().checkAndResetRotations(player)
+            QuestManager.get()?.checkAndResetRotations(player)
             EconomyData.get().registerPlayer(player.getUUID(), player.gameProfile.name())
-            player.awardRecipes(
-                server.recipeManager.recipes.stream().distinct()
-                    .filter { a: RecipeHolder<*>? -> a!!.id().identifier().namespace == "smpmod" }.toList()
-            )
+            player.awardRecipes(server.recipeManager.recipes.stream().distinct().filter { a: RecipeHolder<*> -> a.id().identifier().namespace == "smpmod" }.toList())
             if (messageChannel != null) messageChannel!!.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string)).queue()
         })
 
-        ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerGamePacketListenerImpl?, _: MinecraftServer? ->
-            val player = handler!!.getPlayer()
-            if (messageChannel != null) messageChannel!!.sendMessage(
+        ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerGamePacketListenerImpl, _: MinecraftServer ->
+            val player = handler.getPlayer()
+            if (messageChannel != null) messageChannel?.sendMessage(
                 "[-] " + MarkdownSanitizer.escape(
                     player.name.string
                 )
-            ).queue()
+            )?.queue()
         })
 
         ServerMessageEvents.CHAT_MESSAGE.register(ChatMessage { message: PlayerChatMessage, sender: ServerPlayer, _: ChatType.Bound ->
@@ -158,7 +155,7 @@ class SMPMod : DedicatedServerModInitializer {
                 val deathMessage = damageSource.getLocalizedDeathMessage(entity).string
                 val fullMessage = "☠ " + deathMessage + " at (" + entity.x.toInt() + ", " + entity.y
                     .toInt() + ", " + entity.z.toInt() + ")"
-                messageChannel!!.sendMessage(MarkdownSanitizer.escape(fullMessage)).queue()
+                messageChannel?.sendMessage(MarkdownSanitizer.escape(fullMessage))?.queue()
 
                 val eco: EconomyData = EconomyData.get()
                 val victimBalance: Double = eco.getBalance(entity.getUUID())
@@ -169,15 +166,7 @@ class SMPMod : DedicatedServerModInitializer {
 
                     if (totalLost > 0) {
                         eco.changeBalance(entity.getUUID(), -totalLost)
-                        MessageUtils.sendError(
-                            entity,
-                            String.format(
-                                "You died and lost $%.2f (%.1f%% of your balance)!",
-                                totalLost,
-                                lossPercent * 100
-                            ),
-                            0
-                        )
+                        MessageUtils.sendError(entity, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100), 0)
 
                         if (damageSource.entity is ServerPlayer && damageSource.entity?.getUUID() != entity.getUUID()) {
                             val killer: ServerPlayer = damageSource.entity as ServerPlayer
@@ -187,12 +176,13 @@ class SMPMod : DedicatedServerModInitializer {
                             MessageUtils.sendSuccess(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", entity.scoreboardName, bountyReward), 1)
                         }
                     }
+                    TODO("create new bounty system")
                 }
             }
         })
 
-        ServerTickEvents.END_SERVER_TICK.register(ServerTickEvents.EndTick { server: MinecraftServer? ->
-            if (server!!.playerList.players.isEmpty()) return@EndTick
+        ServerTickEvents.END_SERVER_TICK.register(ServerTickEvents.EndTick { server: MinecraftServer ->
+            if (server.playerList.players.isEmpty()) return@EndTick
             if (server.tickCount % 360 == 0) ShopManager.serverTickLoop(server)
             if (server.tickCount % 15 == 0) NPCManager.serverTickLoop(server)
             if (server.tickCount % 50 == 0) ChunkPool.serverTickLoop()
@@ -220,13 +210,13 @@ class SMPMod : DedicatedServerModInitializer {
                 val scoreAccess = scoreboard.getOrCreatePlayerScore(player, objective)
                 scoreAccess.set(totalHours)
 
-                QuestManager.get().checkAndResetRotations(player)
+                QuestManager.get()?.checkAndResetRotations(player)
             }
         })
 
         ServerLifecycleEvents.SERVER_STOPPED.register(ServerStopped { _: MinecraftServer ->
-            messageChannel!!.sendMessage("Server shutting down...").queue()
-            bot!!.shutdown()
+            messageChannel?.sendMessage("Server shutting down...")?.queue()
+            bot?.shutdown()
         })
 
         PlayerBlockBreakEvents.AFTER.register(PlayerBlockBreakEvents.After { world: Level, player: Player, pos: BlockPos, state: BlockState, _: BlockEntity? -> TreasureEvents.onBlockBreak(world, player, pos, state) })

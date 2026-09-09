@@ -46,7 +46,7 @@ class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<B
         if (activeLoaders.remove(pos)) {
             this.setDirty()
             val chunkPos = ChunkPos.containing(pos)
-            val hasOtherLoadersInChunk = activeLoaders.stream().anyMatch { p: BlockPos? -> ChunkPos.containing(p!!) == chunkPos }
+            val hasOtherLoadersInChunk = activeLoaders.stream().anyMatch { p: BlockPos -> ChunkPos.containing(p) == chunkPos }
 
             if (!hasOtherLoadersInChunk) level.setChunkForced(chunkPos.x(), chunkPos.z(), false)
         }

@@ -9,7 +9,6 @@ import net.minecraft.world.level.Level
 import org.checkerframework.checker.units.qual.m
 
 class TreasureEntry private constructor(builder: Builder) {
-    private val id: String = builder.id
     private val item: Item = builder.item
     private val minCount: Int
     private val maxCount: Int
@@ -32,10 +31,10 @@ class TreasureEntry private constructor(builder: Builder) {
         return allowedBiomes.contains(biome) || allowedBiomes.isEmpty()
     }
 
-    fun createStack(): ItemStack { return ItemStack(item, minecraftServer!!.overworld().random.nextIntBetweenInclusive(minCount, maxCount)) }
+    fun createStack(): ItemStack { return ItemStack(item, (minecraftServer?: return ItemStack(item)).overworld().random.nextIntBetweenInclusive(minCount, maxCount)) }
     fun getRarity(): ItemRarity { return rarity }
 
-    class Builder(val id: String, val item: Item) {
+    class Builder(val item: Item) {
         var minCount = 1
         var maxCount = 1
         var rarity: ItemRarity = ItemRarity.COMMON
