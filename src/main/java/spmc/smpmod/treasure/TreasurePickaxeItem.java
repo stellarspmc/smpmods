@@ -23,7 +23,7 @@ public class TreasurePickaxeItem extends BasePolymerItem {
 
     @Override
     public List<Component> buildLore(ItemStack stack) {
-        return List.of();
+        return List.<Component>of();
     }
 
     @Override

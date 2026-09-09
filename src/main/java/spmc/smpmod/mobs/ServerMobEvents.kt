@@ -13,7 +13,7 @@ import net.minecraft.world.item.DyeColor
 import java.util.*
 
 object ServerMobEvents {
-    private val mobList: ArrayList<ServerMob> = ArrayList<ServerMob>()
+    private val mobList: ArrayList<ServerMob> = ArrayList()
 
     @JvmStatic
     fun onEntityJoin(entity: Entity, level: ServerLevel) {
@@ -30,7 +30,7 @@ object ServerMobEvents {
         if (entity.type === EntityTypes.HAPPY_GHAST) (entity as HappyGhast).getAttribute(Attributes.FLYING_SPEED)?.baseValue = .15
         if (entity.type === EntityTypes.CREEPER && level.getRandom().nextFloat() > .7f) entity.getEntityData().set(Creeper.DATA_IS_POWERED, true)
         if (entity.type === EntityTypes.SHEEP) (entity as Sheep).color = DyeColor.byId(level.getRandom().nextInt(15))
-        if (entity.type === EntityTypes.SHULKER) (entity as Shulker).variant = Optional.of<DyeColor>(DyeColor.byId(level.getRandom().nextInt(15)))
+        if (entity.type === EntityTypes.SHULKER) (entity as Shulker).variant = Optional.of(DyeColor.byId(level.getRandom().nextInt(15)))
         if (entity.type === EntityTypes.MOOSHROOM && level.getRandom().nextFloat() > .5f) (entity as MushroomCow).variant = MushroomCow.Variant.BROWN
 
         for (mob in mobList) {

@@ -128,12 +128,12 @@ object TreasureSpawner {
     }
 
     private fun announceLoot(world: ServerLevel, rarity: ItemRarity, player: Player) {
-        val eco: EconomyData = EconomyData.get()
+        val eco = EconomyData.get() ?: return
         val balance: Double = eco.getBalance(player.getUUID())
         val balanceScale = if (balance <= 0) 1.0 else Math.clamp(1000 / balance, 0.0, 1.0)
         eco.changeBalance(player.getUUID(), 3 * balanceScale)
 
-        val chatAnnouncement: Component = Component.literal("★ ").withStyle(ChatFormatting.BOLD).withColor(rarity.color)
+        val chatAnnouncement = Component.literal("★ ").withStyle(ChatFormatting.BOLD).withColor(rarity.color)
             .append(Component.literal(player.scoreboardName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
             .append(Component.literal(" found a ").withStyle(ChatFormatting.GRAY))
             .append(Component.literal(rarity.name + " Drop").withStyle(ChatFormatting.BOLD).withColor(rarity.color))

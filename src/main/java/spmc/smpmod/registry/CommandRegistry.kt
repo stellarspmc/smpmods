@@ -7,7 +7,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
-import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData
 import spmc.smpmod.economy.fluctuate.FluctuationData
@@ -29,7 +28,6 @@ import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.commands.arguments.GameProfileArgument
 import net.minecraft.commands.arguments.item.ItemArgument
-import net.minecraft.commands.arguments.item.ItemInput
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
@@ -62,63 +60,63 @@ object CommandRegistry {
         dispatcher.register(buildBalanceNode("bal"))
         dispatcher.register(buildBalanceNode("balance"))
         dispatcher.register(Commands.literal("baltop")
-            .executes { ctx: CommandContext<CommandSourceStack> -> executeTop(ctx, 1) }
+            .executes { ctx -> executeTop(ctx, 1) }
             .then(Commands.argument<Int>("page", IntegerArgumentType.integer(1))
-                .executes { ctx: CommandContext<CommandSourceStack> -> executeTop(ctx, IntegerArgumentType.getInteger(ctx, "page")) }))
+				.executes { ctx -> executeTop(ctx, IntegerArgumentType.getInteger(ctx, "page")) }))
 
         dispatcher.register(Commands.literal("send")
-            .then(Commands.argument<GameProfileArgument.Result>("player", GameProfileArgument.gameProfile())
+            .then(Commands.argument("player", GameProfileArgument.gameProfile())
                 .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.1))
-                    .executes { ctx: CommandContext<CommandSourceStack> -> executeSend(ctx) })))
+                    .executes { ctx -> executeSend(ctx) })))
 
         dispatcher.register(Commands.literal("deposit")
-            .executes { ctx: CommandContext<CommandSourceStack> -> executeDepositHand(ctx) }
+            .executes { ctx -> executeDepositHand(ctx) }
             .then(Commands.literal("all")
-                .executes { ctx: CommandContext<CommandSourceStack> -> executeDepositAll(ctx) }))
+                .executes { ctx -> executeDepositAll(ctx) }))
 
         dispatcher.register(Commands.literal("market")
-            .executes { ctx: CommandContext<CommandSourceStack> -> executeMarketAll(ctx) }
+            .executes { ctx -> executeMarketAll(ctx) } // TODO: stream optimization
             .then(Commands.argument("item", ItemArgument.item(context)).suggests(streamToSuggestion(MarketState.getState().getAll().keys.stream())))
-            .executes { ctx: CommandContext<CommandSourceStack> -> executeMarketItem(ctx) })
+            .executes { ctx -> executeMarketItem(ctx) })
 
         dispatcher.register(Commands.literal("withdraw")
-            .then(Commands.argument<ItemInput>("item", ItemArgument.item(context))
+            .then(Commands.argument("item", ItemArgument.item(context)) // TODO: stream optimization
                 .suggests(streamToSuggestion(Stream.concat(MarketState.getState().getAll().keys.stream(), Stream.of(Items.DIAMOND))))
-                .executes { ctx: CommandContext<CommandSourceStack> -> executeWithdraw(ctx, 1) }
-                .then(Commands.argument<Int>("count", IntegerArgumentType.integer(1))
-                    .executes { ctx: CommandContext<CommandSourceStack> -> executeWithdraw(ctx, IntegerArgumentType.getInteger(ctx, "count")) })))
+                .executes { ctx -> executeWithdraw(ctx, 1) }
+                .then(Commands.argument("count", IntegerArgumentType.integer(1))
+                    .executes { ctx -> executeWithdraw(ctx, IntegerArgumentType.getInteger(ctx, "count")) })))
 
         dispatcher.register(Commands.literal("mapart")
-            .then(Commands.argument<String>("url", StringArgumentType.greedyString())
-                .executes { ctx: CommandContext<CommandSourceStack> -> executeMapArt(ctx) }))
+            .then(Commands.argument("url", StringArgumentType.greedyString())
+                .executes { ctx -> executeMapArt(ctx) }))
 
         dispatcher.register(Commands.literal("npc")
             .then(Commands.literal("kill")
-                .then(Commands.argument<String>("id", StringArgumentType.greedyString())
-                    .requires { source: CommandSourceStack -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
-                    .suggests { _: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
-                    .executes { ctx: CommandContext<CommandSourceStack> -> executeNpcKill(ctx) }))
+                .then(Commands.argument("id", StringArgumentType.greedyString())
+                    .requires { source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
+                    .suggests { _, builder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
+                    .executes { ctx -> executeNpcKill(ctx) }))
             .then(Commands.literal("setup")
                 .then(Commands.argument<String>("id", StringArgumentType.greedyString())
-                    .requires { source: CommandSourceStack -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
-                    .suggests { _: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
-                    .executes { ctx: CommandContext<CommandSourceStack> -> executeNpcSetup(ctx) })))
+                    .requires { source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
+                    .suggests { _, builder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
+                    .executes { ctx -> executeNpcSetup(ctx) })))
 
-        dispatcher.register(Commands.literal("fishing").executes { ctx: CommandContext<CommandSourceStack> -> FishTracker.openFishIndexMenu(ctx.getSource().playerOrException) })
-        dispatcher.register(Commands.literal("vault").executes { ctx: CommandContext<CommandSourceStack> -> VaultData.sendVaultMessage(ctx.getSource().playerOrException) })
-        dispatcher.register(Commands.literal("quests").executes { ctx: CommandContext<CommandSourceStack> -> executeQuests(ctx) })
-        dispatcher.register(Commands.literal("surface").executes { ctx: CommandContext<CommandSourceStack> -> executeSurface(ctx) })
-        dispatcher.register(Commands.literal("enderchest") .executes { ctx: CommandContext<CommandSourceStack> -> executeEnderChest(ctx) })
+        dispatcher.register(Commands.literal("fishing").executes { ctx -> FishTracker.openFishIndexMenu(ctx.getSource().playerOrException) })
+        dispatcher.register(Commands.literal("vault").executes { ctx -> VaultData.sendVaultMessage(ctx.getSource().playerOrException) })
+        dispatcher.register(Commands.literal("quests").executes { ctx -> executeQuests(ctx) })
+        dispatcher.register(Commands.literal("surface").executes { ctx -> executeSurface(ctx) })
+        dispatcher.register(Commands.literal("enderchest") .executes { ctx -> executeEnderChest(ctx) })
     }
 
     private fun buildBalanceNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
-        return Commands.literal(name).executes { ctx: CommandContext<CommandSourceStack> -> executeBalance(ctx, NameAndId(ctx.getSource().playerOrException.gameProfile)) }
-            .then(Commands.argument<GameProfileArgument.Result>("player", GameProfileArgument.gameProfile())
-            .executes { ctx: CommandContext<CommandSourceStack> -> executeBalance(ctx, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()) })
+        return Commands.literal(name).executes { ctx -> executeBalance(ctx, NameAndId(ctx.getSource().playerOrException.gameProfile)) }
+            .then(Commands.argument("player", GameProfileArgument.gameProfile())
+            .executes { ctx -> executeBalance(ctx, GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()) })
     }
 
     private fun executeBalance(ctx: CommandContext<CommandSourceStack>, target: NameAndId): Int {
-        val eco: EconomyData = EconomyData.get()
+        val eco: EconomyData = EconomyData.get() ?: return -1
         ctx.getSource().sendSuccess({ Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(target.name() + " has ").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(String.format("$%.2f", eco.getBalance(target.id()))).withStyle(ChatFormatting.RED))
@@ -128,7 +126,7 @@ object CommandRegistry {
     }
 
     private fun executeTop(ctx: CommandContext<CommandSourceStack>, page: Int): Int {
-        val eco: EconomyData = EconomyData.get()
+        val eco: EconomyData = EconomyData.get() ?: return -1
         ctx.getSource().sendSuccess({ Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD).append("\n").append(eco.getMinecraftTop(page)) }, false)
         return 1
     }
@@ -138,9 +136,9 @@ object CommandRegistry {
         val target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()
         val sender = ctx.getSource().playerOrException
         val amount = ((DoubleArgumentType.getDouble(ctx, "amount") * 100f).roundToInt() / 100f).toDouble()
-        if (sender.getUUID() == target.id()) return sendError(sender, "You cannot send money to yourself.", 0)
+        if (sender.getUUID() == target.id()) return sendError(sender, "You cannot send money to yourself.")
 
-        val eco: EconomyData = EconomyData.get()
+        val eco: EconomyData = EconomyData.get() ?: return -1
         if (eco.changeBalance(sender.getUUID(), -amount)) {
             eco.changeBalance(target.id(), amount)
 
@@ -151,10 +149,10 @@ object CommandRegistry {
                 .append(Component.literal(sender.name.string).withStyle(ChatFormatting.RED))
             )
 
-            return sendSuccess(sender, String.format("Sent $%.2f to %s.", amount, target.name()), 1)
+            return sendSuccess(sender, String.format("Sent $%.2f to %s.", amount, target.name()))
         }
 
-        return sendError(sender, "Insufficient funds.", 0)
+        return sendError(sender, "Insufficient funds.")
     }
 
     @Throws(CommandSyntaxException::class)
@@ -253,14 +251,12 @@ object CommandRegistry {
         val player = ctx.getSource().playerOrException
         val url = StringArgumentType.getString(ctx, "url")
 
-        if (!url.startsWith("http://") && !url.startsWith("https://")) return sendError(player, "Invalid URL! Must start with http:// or https://", 0)
+        if (!url.startsWith("http://") && !url.startsWith("https://")) return sendError(player, "Invalid URL! Must start with http:// or https://")
         CompletableFuture.runAsync {
             try {
-                val imageUrl = URI(url).toURL()
-                val img = ImageIO.read(imageUrl)
-
+                val img = ImageIO.read(URI(url).toURL())
                 if (img == null) {
-                    sendError(player, "Could not load image from the provided URL.", 0)
+                    sendError<Int>(player, "Could not load image from the provided URL.")
                     return@runAsync
                 }
 
@@ -269,18 +265,18 @@ object CommandRegistry {
                 val cost = (300 * mapW * mapH).toDouble()
 
                 SMPMod.minecraftServer?.execute {
-                    val eco: EconomyData = EconomyData.get()
+                    val eco: EconomyData = EconomyData.get() ?: return@execute
                     if (eco.getBalance(player.getUUID()) < cost) {
-                        sendError(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH), 0)
+                        sendError<Int>(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH))
                         return@execute
                     }
                     if (eco.changeBalance(player.getUUID(), -cost)) {
                         SMPMod.minecraftServer?.commands?.performPrefixedCommand(player.createCommandSourceStack().withPermission(PermissionSet.ALL_PERMISSIONS), String.format("image2map create %s %s", "none", url))
-                        sendSuccess(player, String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost), 1)
+                        sendSuccess<Int>(player, String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost))
                     }
                 }
             } catch (e: Exception) {
-                sendError(player, "Failed to process image URL: " + e.message, 0)
+                sendError<Int>(player, "Failed to process image URL: " + e.message)
             }
         }
         return 1
@@ -288,7 +284,7 @@ object CommandRegistry {
 
     @Throws(CommandSyntaxException::class)
     private fun executeSurface(ctx: CommandContext<CommandSourceStack>): Int {
-        val player: Player = ctx.getSource().playerOrException
+        val player = ctx.getSource().playerOrException
         player.teleportTo(player.x, ctx.source.level.getHeight(Heightmap.Types.WORLD_SURFACE, floor(player.x).toInt(), floor(player.z).toInt()).toDouble(), player.z)
         player.playSound(SoundEvents.WITHER_SHOOT, 3f, .5f)
         return 1

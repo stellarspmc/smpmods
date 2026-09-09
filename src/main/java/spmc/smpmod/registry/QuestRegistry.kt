@@ -21,7 +21,7 @@ import spmc.smpmod.quest.QuestManager.Companion.getQuests
 import java.util.*
 
 object QuestRegistry {
-	private val QUESTS: MutableMap<String?, Quest?> = HashMap<String?, Quest?>()
+	private val QUESTS: MutableMap<String, Quest> = mutableMapOf()
 
 	fun init() {
 		initDaily()
@@ -51,16 +51,14 @@ object QuestRegistry {
 		 * Optional.of("blacksmith_1")
 		 * )); */
 
-		PlayerBlockBreakEvents.AFTER.register { _: Level, player: Player, _: BlockPos, state: BlockState, _: BlockEntity? ->
-			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest: ActiveQuest ->
-				val quest = activeQuest.getQuest() ?: return@register
+		PlayerBlockBreakEvents.AFTER.register { _, player, _, state, _ ->
+			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) activeQuest.increment(1)
 			}
 		}
 
-		ServerLivingEntityEvents.AFTER_DEATH.register { entity: LivingEntity, damageSource: DamageSource ->
-			getQuests(damageSource.entity as ServerPlayer).activeQuests.forEach { activeQuest: ActiveQuest ->
-				val quest = activeQuest.getQuest() ?: return@register
+		ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
+			getQuests(damageSource.entity as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.KILL_MOB && quest.target == BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)) activeQuest.increment(1)
 			}
 		}
@@ -72,9 +70,9 @@ object QuestRegistry {
 		register(Quest("daily_kill_zombie", "Zombie Killer", "Kill 15 Zombies", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("zombie"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
 		register(Quest("daily_kill_creeper", "Creeper Killer", "Kill 15 Creepers", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("creeper"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
 		register(Quest("daily_kill_skeleton", "Skeleton Killer", "Kill 15 Skeletons", Quest.QuestType.KILL_MOB, Identifier.withDefaultNamespace("skeleton"), 15, Quest.QuestCategory.DAILY, QuestReward(4555.0, 120, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
-		register(Quest("daily_fish_1", "Fishing Newbie", "Fish 15 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 15, Quest.QuestCategory.DAILY, QuestReward(1550.0, 45, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
-		register(Quest("daily_fish_2", "Fishing Amateur", "Fish 35 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 35, Quest.QuestCategory.DAILY, QuestReward(3750.0, 65, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
-		register(Quest("daily_fish_3", "Fishing Master", "Fish 75 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY, QuestReward(5900.0, 85, mutableListOf<ItemStack?>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_1", "Fishing Newbie", "Fish 15 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 15, Quest.QuestCategory.DAILY, QuestReward(1550.0, 45, mutableListOf()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_2", "Fishing Amateur", "Fish 35 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 35, Quest.QuestCategory.DAILY, QuestReward(3750.0, 65, mutableListOf<ItemStack>()), Optional.empty<String?>(), Optional.empty<String?>()))
+		register(Quest("daily_fish_3", "Fishing Master", "Fish 75 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY, QuestReward(5900.0, 85, mutableListOf<ItemStack>()), Optional.empty<String?>(), Optional.empty<String?>()))
 	}
 
 	private fun initWeekly() {/*register(new Quest(
@@ -84,11 +82,10 @@ object QuestRegistry {
         ));*/
 	}
 
-	val allForWeekly: List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.questType == Quest.QuestCategory.WEEKLY }.toList()
-	val allForDaily: List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.questType == Quest.QuestCategory.DAILY }.toList()
+	val allForWeekly = QUESTS.values.filter { q -> q.questType == Quest.QuestCategory.WEEKLY }
+	val allForDaily = QUESTS.values.filter { q -> q.questType == Quest.QuestCategory.DAILY }
 
-	private fun register(quest: Quest) = apply { QUESTS[quest.id] = quest }
+	private fun register(quest: Quest) { QUESTS[quest.id] = quest }
 	fun get(id: String): Quest? = QUESTS[id]
-	fun getAllForNpc(npcId: String): List<Quest?> = QUESTS.values.stream().filter { q: Quest? -> q?.npcId?.map { id: String -> id == npcId }?.orElse(false)!! }.toList()
-
+	fun getAllForNpc(npcId: String): List<Quest?> = QUESTS.values.filter { q -> q.npcId.map { id -> id == npcId }.orElse(false)!! }
 }

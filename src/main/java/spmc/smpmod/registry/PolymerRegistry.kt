@@ -46,7 +46,7 @@ object PolymerRegistry {
 	}
 
 	fun <T : Item> createItem(id: String, factory: Function<Item.Properties, T>): T {
-		val key: ResourceKey<Item> = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id))
+		val key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id))
 		return Registry.register(BuiltInRegistries.ITEM, key, factory.apply(Item.Properties().setId(key)))
 	}
 
@@ -69,14 +69,14 @@ object PolymerRegistry {
 		val block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)))
 		Registry.register(BuiltInRegistries.BLOCK, identifier, block)
 		Registry.register(BuiltInRegistries.ITEM, blockId.item(), BaseImplementedItem(block, Item.Properties().useBlockDescriptionPrefix().setId(blockId.item()), item, id))
-		val type: BlockEntityType<T> = Registry.register<BlockEntityType<*>, BlockEntityType<T>>(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.create(entityFactory, block).build())
+		val type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, FabricBlockEntityTypeBuilder.create(entityFactory, block).build())
 		PolymerBlockUtils.registerBlockEntity(type)
 		return type
 	}
 
 	fun <T : Recipe<*>> registerRecipeType(id: String): RecipeType<T> {
 		val identifier = Identifier.fromNamespaceAndPath("smpmod", id)
-		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object : RecipeType<T> { override fun toString(): String { return identifier.toString() } })
+		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object : RecipeType<T> { override fun toString(): String = identifier.toString() })
 	}
 
 	// recipe serializer

@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
 
 class TreasureEntry private constructor(builder: Builder) {
-    private val item: Item = builder.item
+    private val item = builder.item
     private val minCount: Int
     private val maxCount: Int
     private val rarity: ItemRarity
@@ -36,9 +36,9 @@ class TreasureEntry private constructor(builder: Builder) {
         return allowedBiomes.contains(biome) || allowedBiomes.isEmpty()
     }
 
-	fun getRarity(): ItemRarity { return rarity }
+	fun getRarity(): ItemRarity = rarity
     fun createStack(level: ServerLevel): ItemStack {
-		val stack = ItemStack(item, (minecraftServer?: return ItemStack(item)).overworld().random.nextIntBetweenInclusive(minCount, maxCount))
+		val stack = ItemStack(item, (minecraftServer?: return ItemStack(item, (minCount + maxCount) / 2)).overworld().random.nextIntBetweenInclusive(minCount, maxCount))
 	    modifiers.forEach { modify -> stack.modify(level) }
 	    name?.let { customName -> stack.set(DataComponents.CUSTOM_NAME, customName) }
 	    if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore))
@@ -54,13 +54,12 @@ class TreasureEntry private constructor(builder: Builder) {
 	    var name: Component? = null
 	    var lore: MutableList<Component> = mutableListOf()
 
-        fun count(min: Int, max: Int): Builder { minCount = min; maxCount = max; return this }
-        fun count(max: Int): Builder { maxCount = max; return this }
-        fun rarity(rarity: ItemRarity): Builder { this.rarity = rarity; return this }
-        fun biome(biome: TreasureHelper.Biomes): Builder { this.allowedBiomes.add(biome); return this }
-        fun biomes(biomes: List<TreasureHelper.Biomes>): Builder { this.allowedBiomes.addAll(biomes); return this }
+        fun count(min: Int, max: Int) = apply { minCount = min; maxCount = max }
+        fun count(max: Int) = apply { maxCount = max }
+        fun rarity(rarity: ItemRarity) = apply { this.rarity = rarity }
+        fun biome(biome: TreasureHelper.Biomes) = apply { this.allowedBiomes.add(biome) }
+        fun biome(biomes: List<TreasureHelper.Biomes>) = apply { this.allowedBiomes.addAll(biomes) }
 	    fun modify(modifier: ItemStack.(ServerLevel) -> Unit) = apply { this.modifiers.add(modifier) }
-
 	    fun name(name: Component) = apply { this.name = name }
 	    fun lore(line: Component) = apply { this.lore.add(line) }
 	    fun lore(vararg lines: Component) = apply { this.lore.addAll(lines) }

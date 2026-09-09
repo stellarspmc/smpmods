@@ -25,9 +25,9 @@ object PlantRegistry {
 
     private fun registerPlant(cropId: String, baseCrop: Item, basePrice: Double, rarity: ItemRarity) {
         val baseSeed = getBaseSeed(baseCrop)
-        val cropItem: CropItem = PolymerRegistry.createItem(cropId) { properties -> CropItem(properties, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity) }
-        val seedBlock: SeedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { properties -> SeedBlock(properties) { cropItem } }, BlockBehaviour.Properties.of()) as SeedBlock
-        val seedItem: SeedItem = PolymerRegistry.createItem(cropId + "_seeds") { properties -> SeedItem(seedBlock, properties, baseSeed, MessageUtils.formatName(cropId + "_seeds")) }
+        val cropItem = PolymerRegistry.createItem(cropId) { properties -> CropItem(properties, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity) }
+        val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { properties -> SeedBlock(properties) { cropItem } }, BlockBehaviour.Properties.of()) as SeedBlock
+        val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { properties -> SeedItem(seedBlock, properties, baseSeed, MessageUtils.formatName(cropId + "_seeds")) }
         SEEDS.putIfAbsent(cropId, seedItem)
     }
 

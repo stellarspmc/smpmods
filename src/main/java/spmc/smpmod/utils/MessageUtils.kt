@@ -6,12 +6,12 @@ import net.minecraft.server.level.ServerPlayer
 import java.util.regex.Pattern
 
 object MessageUtils {
-    fun <T> sendError(player: ServerPlayer, message: String, returnValue: T): T {
+    fun <T> sendError(player: ServerPlayer, message: String, returnValue: T = -1 as T): T {
         player.sendSystemMessage(Component.literal("✖: $message").withStyle(ChatFormatting.RED))
         return returnValue
     }
 
-    fun <T> sendSuccess(player: ServerPlayer, message: String, returnValue: T): T {
+    fun <T> sendSuccess(player: ServerPlayer, message: String, returnValue: T = 1 as T): T {
         player.sendSystemMessage(Component.literal("✔: $message").withStyle(ChatFormatting.GREEN))
         return returnValue
     }

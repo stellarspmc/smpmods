@@ -75,8 +75,7 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
             }
         }
 
-        return bar.append(Component.literal(" ] ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-            .append(Component.literal("Jump").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+        return bar.append(Component.literal(" ] ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)).append(Component.literal("Jump").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
     }
 
     private fun onSuccess() {

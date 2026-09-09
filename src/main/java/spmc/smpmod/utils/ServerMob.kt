@@ -9,15 +9,15 @@ interface ServerMob {
     fun entitySpawnRate(): Double
     val entityName: Component?
 
-    fun setHead(entity: LivingEntity?)
-    fun setChest(entity: LivingEntity?)
-    fun setLegs(entity: LivingEntity?)
-    fun setBoots(entity: LivingEntity?)
+    fun setHead(entity: LivingEntity)
+    fun setChest(entity: LivingEntity)
+    fun setLegs(entity: LivingEntity)
+    fun setBoots(entity: LivingEntity)
 
-    fun setItems(entity: LivingEntity?)
+    fun setItems(entity: LivingEntity)
 
-    fun setEffects(entity: LivingEntity?)
-    fun setAttributes(entity: LivingEntity?)
+    fun setEffects(entity: LivingEntity)
+    fun setAttributes(entity: LivingEntity)
 
     fun setEntity(entity: LivingEntity) {
         entity.customName = this.entityName

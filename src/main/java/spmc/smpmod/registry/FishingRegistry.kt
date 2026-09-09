@@ -9,7 +9,6 @@ import spmc.smpmod.utils.MessageUtils.formatName
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import java.util.Locale
-import java.util.stream.Stream
 
 object FishingRegistry {
     private val FISH_REGISTRY: MutableMap<String, Item> = HashMap()
@@ -23,11 +22,11 @@ object FishingRegistry {
     @JvmField val END: MutableList<Item> = ArrayList()
     @JvmField val SKY: MutableList<Item> = ArrayList()
 
-    val allFish: List<Item> get() = Stream.of(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY).flatMap { obj: MutableList<Item> -> obj.stream() }.distinct().toList() // immutable bruv
-    private fun registerRod(tier: RodTiers) = apply { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { properties: Item.Properties -> RodItem(properties, tier) } }
+    val allFish: List<Item> get() = listOf(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY).flatten().distinct()
+    private fun registerRod(tier: RodTiers) { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { properties -> RodItem(properties, tier) } }
 
     private fun registerFish(id: String, vanillaModel: Item, basePrice: Double, rarity: ItemRarity, listToBeAdded: MutableList<Item>) {
-        val item: Item = PolymerRegistry.createItem(id) { properties: Item.Properties -> FishItem(properties, vanillaModel, formatName(id), basePrice, rarity) }
+        val item = PolymerRegistry.createItem(id) { properties -> FishItem(properties, vanillaModel, formatName(id), basePrice, rarity) }
         listToBeAdded.add(item)
         FISH_REGISTRY[id] = item
     }
@@ -56,7 +55,7 @@ object FishingRegistry {
     }
 
     internal fun registerFishes() {
-        PolymerRegistry.createItem("corgravian") { properties: Item.Properties -> FishItem(properties, Items.SALMON, "Corgravian", 1000000.0, ItemRarity.ASTRAL) }
+        PolymerRegistry.createItem("corgravian") { properties -> FishItem(properties, Items.SALMON, "Corgravian", 1000000.0, ItemRarity.ASTRAL) }
         registerDefault()
         registerPlains()
         registerTropical()

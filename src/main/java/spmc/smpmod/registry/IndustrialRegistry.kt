@@ -27,10 +27,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 
 object IndustrialRegistry {
-    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
-    private fun registerMineral(id: String, vanillaModel: Item, name: Component) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, name) } }
-    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) } }
-    private fun registerHead(id: String, texture: String, textColor: TextColor) = apply { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
+    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
+    private fun registerMineral(id: String, vanillaModel: Item, name: Component) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, name) } }
+    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) } }
+    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
 
     @JvmField var COMPRESSOR_TYPE: RecipeType<CompressorRecipe>? = null
     @JvmField var COMPRESSOR_SERIALIZER: RecipeSerializer<CompressorRecipe>? = null
@@ -74,22 +74,9 @@ object IndustrialRegistry {
         registerMineral("redstone_alloy", Items.BRICK, TextColor.fromRgb(0xE63946))
         registerMineral("nickel_ingot", Items.IRON_INGOT, TextColor.fromRgb(0xA8B2A2))
         registerMineral("cobalt_ingot", Items.IRON_INGOT, TextColor.fromRgb(0x2B6CB0))
-        registerMineral(
-            "gilded_iron",
-            Items.GOLD_INGOT,
-            Component.literal("Gilded Iron").withColor(TextColor.fromRgb(0xD4AF37)).withStyle(ChatFormatting.BOLD)
-        )
-        registerMineral(
-            "hardened_metal_ingot",
-            Items.IRON_INGOT,
-            Component.literal("Hardened Metal").withColor(TextColor.fromRgb(0x2E3440)).withStyle(ChatFormatting.BOLD)
-        )
-        registerMineral(
-            "reinforced_alloy_ingot",
-            Items.IRON_INGOT,
-            Component.literal("Reinforced Alloy Ingot").withColor(TextColor.fromRgb(0x434C5E))
-                .withStyle(ChatFormatting.BOLD)
-        )
+        registerMineral("gilded_iron", Items.GOLD_INGOT, Component.literal("Gilded Iron").withColor(TextColor.fromRgb(0xD4AF37)).withStyle(ChatFormatting.BOLD))
+        registerMineral("hardened_metal_ingot", Items.IRON_INGOT, Component.literal("Hardened Metal").withColor(TextColor.fromRgb(0x2E3440)).withStyle(ChatFormatting.BOLD))
+        registerMineral("reinforced_alloy_ingot", Items.IRON_INGOT, Component.literal("Reinforced Alloy Ingot").withColor(TextColor.fromRgb(0x434C5E)).withStyle(ChatFormatting.BOLD))
 
         registerMineral("compressed_nether_star", Items.NETHER_STAR, TextColor.GREEN)
 
@@ -106,60 +93,25 @@ object IndustrialRegistry {
         registerKarat("gold_24k", 24, TextColor.fromRgb(0xFFB700))
 
         registerMineral("compressed_nether_brick", Items.BRICK, TextColor.DARK_RED)
-        registerHead(
-            "carbon",
-            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmNlZTQ2NTQwZjhhOTczMmJmY2Q2MjY1ZGFjNzNiNTA5YmZlNGYwMDk1Zjk1NWQ0ODNmZGEwOTNhZmY3MWQzNSJ9fX0=",
-            TextColor.fromRgb(0x3E424B)
-        )
-        registerHead(
-            "compressed_carbon",
-            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=",
-            TextColor.fromRgb(0x22252A)
-        )
-        registerHead(
-            "carbon_chunk",
-            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=",
-            TextColor.fromRgb(0x111317)
-        )
-        registerHead(
-            "nether_core",
-            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyNDEyMjhhZWY4NGUzNTY3MWNjMzEwMTE2ZDExYjhkMGYwODc2MjIwNTM1NTNjMGRjNGU0YTVkYWMzYzQwNSJ9fX0=",
-            TextColor.DARK_RED
-        )
+        registerHead("carbon", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmNlZTQ2NTQwZjhhOTczMmJmY2Q2MjY1ZGFjNzNiNTA5YmZlNGYwMDk1Zjk1NWQ0ODNmZGEwOTNhZmY3MWQzNSJ9fX0=", TextColor.fromRgb(0x3E424B))
+        registerHead("compressed_carbon", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x22252A))
+        registerHead("carbon_chunk", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x111317))
+        registerHead("nether_core", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyNDEyMjhhZWY4NGUzNTY3MWNjMzEwMTE2ZDExYjhkMGYwODc2MjIwNTM1NTNjMGRjNGU0YTVkYWMzYzQwNSJ9fX0=", TextColor.DARK_RED)
     }
 
     internal fun registerBlocks() {
-        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", { properties: BlockBehaviour.Properties -> SculkCompressorBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SculkCompressorEntity(pos, state) }, Items.SCULK_CATALYST)
-        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", { properties: BlockBehaviour.Properties -> SmelteryBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SmelteryEntity(pos, state) }, Items.SMOKER)
+        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", { properties -> SculkCompressorBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SculkCompressorEntity(pos, state) }, Items.SCULK_CATALYST)
+        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", { properties -> SmelteryBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SmelteryEntity(pos, state) }, Items.SMOKER)
     }
 
     internal fun registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing")
         COMPRESSOR_SERIALIZER = PolymerRegistry.registerRecipeSerializer("compressing",
-            RecordCodecBuilder.mapCodec { instance: RecordCodecBuilder.Instance<CompressorRecipe> -> instance.group(
-                Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count),
-                ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
+            RecordCodecBuilder.mapCodec { instance -> instance.group(Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient), Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
                 Codec.INT.optionalFieldOf("process_time", 200).forGetter(CompressorRecipe::processTime) // Default 10 sec (200 ticks)
-            ).apply(instance) { ingredient, count, result, processTime -> CompressorRecipe(ingredient, count, result, processTime) } }, StreamCodec.composite(
-                Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient,
-                ByteBufCodecs.VAR_INT, CompressorRecipe::count,
-                ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result,
-                ByteBufCodecs.VAR_INT, CompressorRecipe::processTime
-            ) { ingredient, count, result, processTime -> CompressorRecipe(ingredient, count, result, processTime) })
+            ).apply(instance, ::CompressorRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient, ByteBufCodecs.VAR_INT, CompressorRecipe::count, ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result, ByteBufCodecs.VAR_INT, CompressorRecipe::processTime, ::CompressorRecipe))
 
         SMELTERY_TYPE = PolymerRegistry.registerRecipeType("smelting")
-        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting",
-            RecordCodecBuilder.mapCodec { instance: RecordCodecBuilder.Instance<SmelterRecipe> -> instance.group(
-                Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients),
-                Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count),
-                ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result),
-                Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)
-            ).apply(instance) { ingredients, count, result, processTime -> SmelterRecipe(ingredients, count, result, processTime) } }, StreamCodec.composite(
-                Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients,
-                ByteBufCodecs.VAR_INT, SmelterRecipe::count,
-                ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result,
-                ByteBufCodecs.VAR_INT, SmelterRecipe::processTime
-			) { ingredients, count, result, processTime -> SmelterRecipe(ingredients, count, result, processTime) })
+        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting", RecordCodecBuilder.mapCodec { instance -> instance.group(Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients), Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result), Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)).apply(instance, ::SmelterRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients, ByteBufCodecs.VAR_INT, SmelterRecipe::count, ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result, ByteBufCodecs.VAR_INT, SmelterRecipe::processTime, ::SmelterRecipe))
     }
 }

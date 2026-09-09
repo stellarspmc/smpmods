@@ -2,12 +2,8 @@ package spmc.smpmod.economy.shop
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import eu.pb4.sgui.api.ClickType
 import eu.pb4.sgui.api.elements.GuiElementBuilder
 import eu.pb4.sgui.api.gui.SimpleGui
-import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData
-import spmc.smpmod.utils.MessageUtils.sendError
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.UUIDUtil
@@ -28,11 +24,11 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import org.geysermc.cumulus.form.CustomForm
 import org.geysermc.cumulus.form.SimpleForm
-import org.geysermc.cumulus.response.CustomFormResponse
-import org.geysermc.cumulus.response.SimpleFormResponse
 import org.geysermc.floodgate.api.FloodgateApi
+import spmc.smpmod.SMPMod
+import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.utils.MessageUtils.sendError
 import java.util.*
-import java.util.function.Function
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -88,7 +84,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         val availableBatches = this.availableStock
         if (availableBatches < 1) return sendError(buyer, "This shop is out of stock!", 0)
 
-        val eco: EconomyData = EconomyData.get()
+        val eco: EconomyData = EconomyData.get() ?: return 0
         if (eco.getBalance(buyer.getUUID()) < price) return sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0)
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
@@ -168,11 +164,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         }
 
         private fun openJavaGui(player: ServerPlayer, shopData: ShopData) {
-            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) {
-                override fun onOpen() {
-                    refreshGui(this, player, shopData)
-                }
-            }
+            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player, shopData) } }
             gui.setTitle(Component.literal("Shop Settings"))
             refreshGui(gui, player, shopData)
             gui.open()
@@ -183,7 +175,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
             for (i in 0..26) gui.setSlot(i, filler)
             gui.setSlot(10, GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
                     .setName(Component.literal("- $1.00").withStyle(ChatFormatting.RED).append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback { type: ClickType ->
+                    .setCallback { type ->
                         val step = if (type.isRight) 0.1 else 1.0
                         shopData.setPrice(max(0.0, shopData.getPrice() - step))
                         refreshGui(gui, player, shopData)
@@ -192,7 +184,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
             gui.setSlot(11, GuiElementBuilder(Items.GOLD_INGOT).setName(Component.literal(String.format("Current Price: $%.2f", shopData.getPrice())).withStyle(ChatFormatting.GOLD)))
             gui.setSlot(12, GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
                     .setName(Component.literal("+ $1.00").withStyle(ChatFormatting.GREEN).append(Component.literal(" (Right-click: + $0.10)").withStyle(ChatFormatting.GRAY)))
-                    .setCallback { type: ClickType ->
+                    .setCallback { type ->
                         val step = if (type.isRight) 0.1 else 1.0
                         shopData.setPrice(shopData.getPrice() + step)
                         refreshGui(gui, player, shopData)
@@ -205,7 +197,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                 .append(Component.literal("\n\nClick with an item on your cursor to swap!").withStyle(ChatFormatting.DARK_GRAY))
             )
             gui.setSlot(13, GuiElementBuilder.from(soldDisplay)
-                .setCallback { _: ClickType -> val carried = gui.getPlayer().containerMenu.carried
+                .setCallback { _ -> val carried = gui.getPlayer().containerMenu.carried
                     if (!carried.isEmpty) {
                         shopData.setItemSold(carried.copy())
                         refreshGui(gui, player, shopData)
@@ -214,7 +206,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
             )
             gui.setSlot(14, GuiElementBuilder(Items.STAINED_GLASS_PANE.red())
                 .setName(Component.literal("- 1 Batch Size").withStyle(ChatFormatting.RED).append(Component.literal(" (Right-click: - 5)").withStyle(ChatFormatting.GRAY)))
-                .setCallback { type: ClickType ->
+                .setCallback { type ->
                     shopData.setStack(max(1, shopData.getStack() - if (type.isRight) 5 else 1))
                     refreshGui(gui, player, shopData)
                 }
@@ -222,14 +214,14 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
             gui.setSlot(15, GuiElementBuilder(Items.BARREL).setName(Component.literal("Batch Size: " + shopData.getStack()).withStyle(ChatFormatting.AQUA)))
             gui.setSlot(16, GuiElementBuilder(Items.STAINED_GLASS_PANE.lime())
                 .setName(Component.literal("+ 1 Batch Size").withStyle(ChatFormatting.GREEN).append(Component.literal(" (Right-click: + 5)").withStyle(ChatFormatting.GRAY)))
-                .setCallback { type: ClickType ->
+                .setCallback { type ->
                     shopData.setStack(shopData.getStack() + if (type.isRight) 5 else 1)
                     refreshGui(gui, player, shopData)
                 }
             )
             gui.setSlot(22, GuiElementBuilder(Items.PAPER)
                 .setName(Component.literal("📜 View Sales Receipts").withStyle(ChatFormatting.GOLD).append(Component.literal("\n\nClick to inspect transaction history!").withStyle(ChatFormatting.GRAY)))
-                .setCallback { _: ClickType -> openReceiptsGui(player, shopData) }
+                .setCallback { _ -> openReceiptsGui(player, shopData) }
             )
         }
 
@@ -239,7 +231,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                 .input("Price ($)", "Enter new price", String.format("%.2f", shopData.getPrice()))
                 .input("Batch Size", "Enter batch size", shopData.getStack().toString())
                 .label("💡 To swap the item sold, hold the new item in your main hand before submitting!")
-                .validResultHandler { response: CustomFormResponse ->
+                .validResultHandler { response ->
                     val priceStr = response.next<String>()
                     val stackStr = response.next<String>()
                     try {
@@ -293,7 +285,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
 
             gui.setSlot(22, GuiElementBuilder(Items.BARRIER)
                 .setName(Component.literal("⬅ Back to Settings").withStyle(ChatFormatting.RED))
-                .setCallback { _: ClickType -> open(player, shopData) }
+                .setCallback { _ -> open(player, shopData) }
             )
 
             gui.open()
@@ -313,39 +305,18 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                 }
                 form.content(content.toString())
             }
-            form.button("Back to Settings").validResultHandler { _: SimpleFormResponse -> open(player, shopData) }
+            form.button("Back to Settings").validResultHandler { _ -> open(player, shopData) }
             FloodgateApi.getInstance().sendForm(player.getUUID(), form.build())
         }
     }
 
     @JvmRecord data class ShopReceipt(val buyerUuid: UUID, val buyerName: String, val stack: Int, val price: Double, val timestamp: Long) {
         companion object {
-            val CODEC: Codec<ShopReceipt> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<ShopReceipt> ->
-                instance.group(
-                    UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid),
-                    Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName),
-                    Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack),
-                    Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price),
-                    Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)
-                ).apply(instance) { buyerUuid: UUID, buyerName: String, stack: Int, price: Double, timestamp: Long -> ShopReceipt(buyerUuid, buyerName, stack, price, timestamp) }
-            }
+            val CODEC: Codec<ShopReceipt> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<ShopReceipt> -> instance.group(UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid), Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName), Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack), Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price), Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)).apply(instance, ::ShopReceipt) }
         }
     }
 
     companion object {
-        val CODEC: Codec<ShopData> = RecordCodecBuilder.create(Function { instance: RecordCodecBuilder.Instance<ShopData> -> instance.group(
-            UUIDUtil.CODEC.fieldOf("shop_id").forGetter { obj: ShopData -> obj.shopId },
-            UUIDUtil.CODEC.fieldOf("owner_id").forGetter { obj: ShopData -> obj.ownerUuid },
-            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter { obj: ShopData -> obj.dimension },
-            BlockPos.CODEC.fieldOf("barrel_pos").forGetter { obj: ShopData -> obj.barrelPos },
-            UUIDUtil.CODEC.fieldOf("interaction_id").forGetter { obj: ShopData -> obj.interactionEntityUuid },
-            UUIDUtil.CODEC.fieldOf("item_display_id").forGetter { obj: ShopData -> obj.itemDisplayUuid },
-            UUIDUtil.CODEC.fieldOf("text_display_id").forGetter { obj: ShopData -> obj.textDisplayUuid },
-            ItemStack.CODEC.fieldOf("item_sold").forGetter { obj: ShopData -> obj.getItemSold() },
-            Codec.INT.fieldOf("stack").forGetter { obj: ShopData -> obj.getStack() },
-            Codec.DOUBLE.fieldOf("price").forGetter { obj: ShopData -> obj.getPrice() },
-            Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", mutableListOf<ShopReceipt>()).forGetter { obj: ShopData -> obj.receipts },
-            Codec.BOOL.optionalFieldOf("is_creative", false).forGetter { obj: ShopData -> obj.isCreative }
-        ).apply(instance) { shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, receipts: MutableList<ShopReceipt>, creative: Boolean -> ShopData(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, receipts, creative) } })
+        val CODEC: Codec<ShopData> = RecordCodecBuilder.create { instance -> instance.group(UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::shopId), UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::ownerUuid), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(ShopData::dimension), BlockPos.CODEC.fieldOf("barrel_pos").forGetter(ShopData::barrelPos), UUIDUtil.CODEC.fieldOf("interaction_id").forGetter(ShopData::interactionEntityUuid), UUIDUtil.CODEC.fieldOf("item_display_id").forGetter(ShopData::itemDisplayUuid), UUIDUtil.CODEC.fieldOf("text_display_id").forGetter(ShopData::textDisplayUuid), ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold), Codec.INT.fieldOf("stack").forGetter(ShopData::getStack), Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice), Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", mutableListOf()).forGetter(ShopData::receipts), Codec.BOOL.optionalFieldOf("is_creative", false).forGetter(ShopData::isCreative)).apply(instance, ::ShopData) }
     }
 }
