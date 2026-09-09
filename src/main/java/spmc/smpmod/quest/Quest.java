@@ -1,8 +1,8 @@
-package fun.spmc.smpmod.quest;
+package spmc.smpmod.quest;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fun.spmc.smpmod.economy.EconomyData;
+import spmc.smpmod.economy.EconomyData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;

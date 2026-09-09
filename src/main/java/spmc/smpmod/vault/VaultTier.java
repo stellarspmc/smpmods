@@ -1,8 +1,8 @@
-package fun.spmc.smpmod.vault;
+package spmc.smpmod.vault;
 
 import com.mojang.serialization.Codec;
-import fun.spmc.smpmod.vault.entries.ActivePerk;
-import fun.spmc.smpmod.vault.entries.ConfiguredEvent;
+import spmc.smpmod.vault.entries.ActivePerk;
+import spmc.smpmod.vault.entries.ConfiguredEvent;
 import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.NonNull;
 
