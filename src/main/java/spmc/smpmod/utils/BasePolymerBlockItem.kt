@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.Block
 
 abstract class BasePolymerBlockItem(block: Block, properties: Properties, private val vanillaItem: Item) : BlockItem(block, properties), PolymerItem {
     override fun getPolymerItem(itemStack: ItemStack, context: PacketContext): Item = vanillaItem
-    override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider): Identifier? = BuiltInRegistries.ITEM.getKey(vanillaItem)
+    override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider): Identifier = BuiltInRegistries.ITEM.getKey(vanillaItem)
     override fun getName(itemStack: ItemStack): Component = buildName(itemStack)
 
     override fun modifyBasePolymerItemStack(out: ItemStack, stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider) {

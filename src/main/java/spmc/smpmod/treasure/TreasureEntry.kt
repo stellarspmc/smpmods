@@ -36,7 +36,7 @@ class TreasureEntry private constructor(builder: Builder) {
         return allowedBiomes.contains(biome) || allowedBiomes.isEmpty()
     }
 
-	fun getRarity(): ItemRarity = rarity
+	fun getRarity() = rarity
     fun createStack(level: ServerLevel): ItemStack {
 		val stack = ItemStack(item, (minecraftServer?: return ItemStack(item, (minCount + maxCount) / 2)).overworld().random.nextIntBetweenInclusive(minCount, maxCount))
 	    modifiers.forEach { modify -> stack.modify(level) }
@@ -64,6 +64,6 @@ class TreasureEntry private constructor(builder: Builder) {
 	    fun lore(line: Component) = apply { this.lore.add(line) }
 	    fun lore(vararg lines: Component) = apply { this.lore.addAll(lines) }
 
-        fun build(): TreasureEntry = TreasureEntry(this)
+        fun build() = TreasureEntry(this)
     }
 }

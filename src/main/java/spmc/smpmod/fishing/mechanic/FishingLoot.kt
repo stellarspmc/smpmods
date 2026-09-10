@@ -1,141 +1,121 @@
-package spmc.smpmod.fishing.mechanic;
+package spmc.smpmod.fishing.mechanic
 
-import spmc.smpmod.fishing.BiomeCategory;
-import spmc.smpmod.fishing.FishTracker;
-import spmc.smpmod.core.ItemModifier;
-import spmc.smpmod.core.ItemRarity;
-import spmc.smpmod.fishing.FishItem;
-import spmc.smpmod.fishing.RodTiers;
-import spmc.smpmod.quest.QuestManager;
-import spmc.smpmod.quest.Quest;
-import net.dv8tion.jda.api.utils.MarkdownSanitizer;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import net.minecraft.ChatFormatting
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
+import net.minecraft.util.RandomSource
+import spmc.smpmod.SMPMod
+import spmc.smpmod.core.ItemModifier
+import spmc.smpmod.core.ItemRarity
+import spmc.smpmod.fishing.BiomeCategory
+import spmc.smpmod.fishing.FishItem
+import spmc.smpmod.fishing.FishTracker.Companion.get
+import spmc.smpmod.fishing.RodTiers
+import spmc.smpmod.quest.PlayerQuestData.ActiveQuest
+import spmc.smpmod.quest.Quest
+import spmc.smpmod.quest.QuestManager.Companion.getQuests
+import java.util.*
+import java.util.function.Consumer
+import kotlin.math.max
+import kotlin.math.pow
 
-import java.util.*;
+object FishingLoot {
+	fun rewardFish(player: ServerPlayer, tier: RodTiers, streak: Int) {
+		val random = SMPMod.minecraftServer?.overworld()?.getRandom() ?: return
 
-import static spmc.smpmod.SMPMod.messageChannel;
-import static spmc.smpmod.SMPMod.minecraftServer;
+		if (streak > 3) TODO("fish mob to kill (like the new game)")
 
-public class FishingLoot {
-    public static void rewardFish(ServerPlayer player, RodTiers tier, int streak) {
-        RandomSource random = minecraftServer.overworld().getRandom();
+		val caughtFish = getRandomFishForTier(player, tier)
+		val modMap = mutableMapOf<ItemModifier, Int>()
+		var traitChance = max(.5, (((tier.ordinal + 1).toDouble() / RodTiers.entries.size) * streak) * .2 * tier.catchLuckBonus)
 
-        if (streak > 3) {
-            // TODO: fish mob to kill (like the new game)
-        }
+		val mods = ItemModifier.entries.filter(ItemModifier::isNotLocked) as MutableList<ItemModifier>
+		mods.addAll(Arrays.stream(tier.obtainable).toList())
+		while (mods.isNotEmpty() && random.nextDouble() < traitChance) {
+			val index = random.nextInt(mods.size)
+			modMap[mods.removeAt(index)] = random.nextInt(5) + 1
+			traitChance *= max(.4, .2 * tier.catchLuckBonus / 1.8)
+		}
 
-        FishItem caughtFish = getRandomFishForTier(player, tier);
-        Map<ItemModifier, Integer> modMap = new HashMap<>();
-        double traitChance = Math.max(.5, (((double) (tier.ordinal() + 1) / RodTiers.values().length) * streak) * .2 * tier.catchLuckBonus);
+		val fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1 / tier.catchLuckBonus), modMap)
+		if (!player.inventory.add(fishStack)) player.drop(fishStack, false)
+		player.level().playSound(null, player.x, player.y, player.z, SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1f, 1.2f)
+		player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN).append(Component.literal(caughtFish.fishName).withColor(caughtFish.rarity.color)).append(Component.literal(".").withStyle(ChatFormatting.GREEN)))
+		get()?.addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).path)
+		if (caughtFish.rarity.shouldAnnounce()) announceLoot(caughtFish.rarity.toString().uppercase(Locale.getDefault()), caughtFish.fishName, caughtFish.rarity.color, player)
+		getQuests(player).activeQuests.forEach(Consumer { activeQuest: ActiveQuest -> if (activeQuest.getQuest()?.type == Quest.QuestType.FISHING) activeQuest.increment(1) })
+	}
 
-        List<ItemModifier> mods = new ArrayList<>(Arrays.stream(ItemModifier.values()).filter(ItemModifier::isNotLocked).toList());
-        mods.addAll(Arrays.stream(tier.obtainable).toList());
-        while (!mods.isEmpty() && random.nextDouble() < traitChance) {
-            int index = random.nextInt(mods.size());
-            modMap.put(mods.remove(index), random.nextInt(5) + 1);
-            traitChance *= Math.max(.4, .2 * tier.catchLuckBonus / 1.8);
-        }
+	private fun getRandomFishForTier(player: ServerPlayer, tier: RodTiers): FishItem {
+		val pool = BiomeCategory.getAvailableFish(player)
+		check(pool.isNotEmpty()) { "Fish pool is empty!" }
+		val weights = tier.rates
+		val roll = (SMPMod.minecraftServer?: return pool[0] as FishItem).overworld().getRandom().nextDouble() * 100
+		var current = .0
+		var selectedRarity = ItemRarity.COMMON
 
-        ItemStack fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1/ tier.catchLuckBonus), modMap);
-        if (!player.getInventory().add(fishStack)) player.drop(fishStack, false);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1, 1.2f);
-        player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(caughtFish.getFishName()).withColor(caughtFish.getRarity().color))
-                .append(Component.literal(".").withStyle(ChatFormatting.GREEN)));
-        FishTracker.get().addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).getPath());
-        if (caughtFish.getRarity().shouldAnnounce()) announceLoot(caughtFish.getRarity().toString().toUpperCase(), caughtFish.getFishName(), caughtFish.getRarity().color, player);
-        QuestManager.getQuests(player).activeQuests.forEach(activeQuest -> { if (activeQuest.getQuest().type() == Quest.QuestType.FISHING) activeQuest.increment(1); });
-    }
+		val rarities = ItemRarity.entries
+		for (i in weights.indices) {
+			current += weights[i]
+			if (roll <= current) {
+				selectedRarity = rarities[i]
+				break
+			}
+		}
 
-    private static FishItem getRandomFishForTier(ServerPlayer player, RodTiers tier) {
-        List<Item> pool = BiomeCategory.getAvailableFish(player);
-        if (pool.isEmpty()) throw new IllegalStateException("Fish pool is empty!");
-        double[] weights = tier.rates;
-        double roll = minecraftServer.overworld().getRandom().nextDouble() * 100;
-        double current = 0;
-        ItemRarity selectedRarity = ItemRarity.COMMON;
+		val finalRarity = selectedRarity
+		val matchingFish = ArrayList(pool.map { it as FishItem }.filter { it.rarity == finalRarity }).ifEmpty { return pool[0] as FishItem }
+		var tierTotalWeight = 0.0
+		val fishWeights = DoubleArray(matchingFish.size)
 
-        ItemRarity[] rarities = ItemRarity.values();
-        for (int i = 0; i < weights.length; i++) {
-            current += weights[i];
-            if (roll <= current) {
-                selectedRarity = rarities[i];
-                break;
-            }
-        }
+		for (i in matchingFish.indices) {
+			val weight = matchingFish[i].basePrice.pow(-1 + (tier.ordinal * .2))
+			fishWeights[i] = weight
+			tierTotalWeight += weight
+		}
 
-        ItemRarity finalRarity = selectedRarity;
-        List<FishItem> matchingFish = pool.stream()
-                .filter(item -> item instanceof FishItem fish && fish.getRarity() == finalRarity)
-                .map(item -> (FishItem) item)
-                .toList();
+		val fishRoll = (SMPMod.minecraftServer?: return matchingFish[0]).overworld().getRandom().nextDouble() * tierTotalWeight
+		var fishWeight = 0.0
 
-        if (matchingFish.isEmpty()) return (FishItem) pool.getFirst();
+		for (i in matchingFish.indices) {
+			fishWeight += fishWeights[i]
+			if (fishRoll <= fishWeight) return matchingFish[i]
+		}
 
-        double exponent = -1 + (tier.ordinal() * .2);
+		return matchingFish[0]
+	}
 
-        double tierTotalWeight = 0;
-        double[] fishWeights = new double[matchingFish.size()];
+	private val BASE_STAR_WEIGHTS = doubleArrayOf(1000.0, 600.0, 300.0, 120.0, 35.0, 6.0)
+	private fun rollStarQuality(random: RandomSource, luckBonus: Float): Int {
+		val adjustedWeights = DoubleArray(BASE_STAR_WEIGHTS.size)
+		var totalWeight = 0.0
 
-        for (int i = 0; i < matchingFish.size(); i++) {
-            double weight = Math.pow(matchingFish.get(i).getBasePrice(), exponent);
-            fishWeights[i] = weight;
-            tierTotalWeight += weight;
-        }
+		for (star in BASE_STAR_WEIGHTS.indices) {
+			val weight = BASE_STAR_WEIGHTS[star] * luckBonus.toDouble().pow(star.toDouble())
+			adjustedWeights[star] = weight
+			totalWeight += weight
+		}
 
-        double fishRoll = minecraftServer.overworld().getRandom().nextDouble() * tierTotalWeight;
-        double fishWeight = 0;
+		val roll = random.nextDouble() * totalWeight
+		var cumulative = 0.0
 
-        for (int i = 0; i < matchingFish.size(); i++) {
-            fishWeight += fishWeights[i];
-            if (fishRoll <= fishWeight) return matchingFish.get(i);
-        }
+		for (star in adjustedWeights.indices) {
+			cumulative += adjustedWeights[star]
+			if (roll < cumulative) return star
+		}
 
-        return matchingFish.getFirst();
-    }
+		return 0
+	}
 
-    private static final double[] BASE_STAR_WEIGHTS = { 1000, 600, 300, 120, 35, 6 };
+	private fun announceLoot(rarityName: String, fishName: String, color: TextColor, player: ServerPlayer) {
+		val chatAnnouncement: Component = Component.literal("★ ").withColor(color).withStyle(ChatFormatting.BOLD).append(Component.literal(player.scoreboardName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)).append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY)).append(Component.literal(rarityName).withColor(color).withStyle(ChatFormatting.BOLD)).append(Component.literal(fishName)).withColor(color).append(Component.literal("! ★").withColor(color).withStyle(ChatFormatting.BOLD))
 
-    private static int rollStarQuality(RandomSource random, float luckBonus) {
-        double[] adjustedWeights = new double[BASE_STAR_WEIGHTS.length];
-        double totalWeight = 0;
-
-        for (int star = 0; star < BASE_STAR_WEIGHTS.length; star++) {
-            double weight = BASE_STAR_WEIGHTS[star] * Math.pow(luckBonus, star);
-            adjustedWeights[star] = weight;
-            totalWeight += weight;
-        }
-
-        double roll = random.nextDouble() * totalWeight;
-        double cumulative = 0;
-
-        for (int star = 0; star < adjustedWeights.length; star++) {
-            cumulative += adjustedWeights[star];
-            if (roll < cumulative) return star;
-        }
-
-        return 0;
-    }
-
-    private static void announceLoot(String rarityName, String fishName, TextColor color, ServerPlayer player) {
-        Component chatAnnouncement = Component.literal("★ ").withColor(color).withStyle(ChatFormatting.BOLD)
-                .append(Component.literal(player.getScoreboardName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                .append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(rarityName).withColor(color).withStyle(ChatFormatting.BOLD))
-                .append(Component.literal(fishName)).withColor(color)
-                .append(Component.literal("! ★").withColor(color).withStyle(ChatFormatting.BOLD));
-
-        minecraftServer.getPlayerList().broadcastSystemMessage(chatAnnouncement, false);
-        messageChannel.sendMessage("**" + MarkdownSanitizer.escape(player.getScoreboardName()) + "** just reeled up a **" + rarityName + "** " + fishName +"!").queue();
-    }
+		SMPMod.minecraftServer?.playerList?.broadcastSystemMessage(chatAnnouncement, false)
+		SMPMod.messageChannel?.sendMessage("**" + MarkdownSanitizer.escape(player.scoreboardName) + "** just reeled up a **" + rarityName + "** " + fishName + "!")?.queue()
+	}
 }

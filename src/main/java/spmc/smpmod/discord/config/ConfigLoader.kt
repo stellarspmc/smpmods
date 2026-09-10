@@ -1,49 +1,31 @@
-package spmc.smpmod.discord.config;
+package spmc.smpmod.discord.config
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
+import com.google.gson.GsonBuilder
+import net.fabricmc.loader.api.FabricLoader
+import spmc.smpmod.SMPMod
+import java.nio.file.Files
 
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
+object ConfigLoader {
+	private val GSON = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create()
+	private val CONFIG_FILE = FabricLoader.getInstance().configDir.resolve("smpmod_discord.json")
 
-import static spmc.smpmod.SMPMod.modLogger;
+	var CONFIG: DiscordConfig? = DiscordConfig()
 
-public class ConfigLoader {
+	fun saveConfig() { try { Files.newBufferedWriter(CONFIG_FILE).use { writer -> GSON.toJson(CONFIG, writer) } } catch (e: Exception) { SMPMod.modLogger.error("Failed to save Discord config!", e) } }
+	fun checkConfigs() {
+		if (Files.exists(CONFIG_FILE)) loadConfig()
+		else {
+			saveConfig()
+			SMPMod.modLogger.warn("Created default Discord config file. Please fill in your Bot Token and Channel IDs at: {}", CONFIG_FILE.fileName)
+		}
+	}
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .disableHtmlEscaping()
-            .create();
-
-    private static final Path CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("smpmod_discord.json");
-
-    public static DiscordConfig CONFIG = new DiscordConfig();
-
-    public static void checkConfigs() {
-        if (Files.exists(CONFIG_FILE)) loadConfig();
-        else {
-            saveConfig();
-            modLogger.warn("Created default Discord config file. Please fill in your Bot Token and Channel IDs at: {}", CONFIG_FILE.getFileName());
-        }
-    }
-
-    private static void loadConfig() {
-        try (Reader reader = Files.newBufferedReader(CONFIG_FILE)) {
-            CONFIG = GSON.fromJson(reader, DiscordConfig.class);
-            if (CONFIG == null) CONFIG = new DiscordConfig();
-        } catch (Exception e) {
-            modLogger.error("Failed to load Discord config! Reverting to defaults.", e);
-        }
-    }
-
-    public static void saveConfig() {
-        try (Writer writer = Files.newBufferedWriter(CONFIG_FILE)) {
-            GSON.toJson(CONFIG, writer);
-        } catch (Exception e) {
-            modLogger.error("Failed to save Discord config!", e);
-        }
-    }
+	private fun loadConfig() {
+		try {
+			Files.newBufferedReader(CONFIG_FILE).use { reader ->
+				CONFIG = GSON.fromJson<DiscordConfig?>(reader, DiscordConfig::class.java)
+				if (CONFIG == null) CONFIG = DiscordConfig()
+			}
+		} catch (e: Exception) { SMPMod.modLogger.error("Failed to load Discord config! Reverting to defaults.", e) }
+	}
 }

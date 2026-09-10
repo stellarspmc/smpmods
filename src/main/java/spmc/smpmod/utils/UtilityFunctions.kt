@@ -4,7 +4,10 @@ import com.mojang.brigadier.suggestion.SuggestionProvider
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.permissions.PermissionLevel
 import net.minecraft.world.item.Item
 import spmc.smpmod.SMPMod
 import java.util.*
@@ -18,6 +21,6 @@ object UtilityFunctions {
 	    return level.get()
     }
 
-	// TODO: could be further optimized using kt functions
-    fun streamToSuggestion(itemStream: Stream<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(itemStream.distinct().map { thing -> BuiltInRegistries.ITEM.getKey(thing) }, builder)}
+    fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { thing -> BuiltInRegistries.ITEM.getKey(thing) }, builder)}
+	fun isAdmin(player: ServerPlayer) = player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
 }

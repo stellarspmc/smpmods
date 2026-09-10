@@ -13,7 +13,7 @@ import net.minecraft.world.item.component.ItemLore
 
 abstract class BasePolymerItem(properties: Properties, private val vanillaItem: Item) : Item(properties), PolymerItem {
     override fun getPolymerItem(itemStack: ItemStack, context: PacketContext): Item = vanillaItem
-    override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider): Identifier? = BuiltInRegistries.ITEM.getKey(vanillaItem)
+    override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider): Identifier = BuiltInRegistries.ITEM.getKey(vanillaItem)
     override fun getName(itemStack: ItemStack): Component = buildName(itemStack)
 
     override fun modifyBasePolymerItemStack(out: ItemStack, stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider) {

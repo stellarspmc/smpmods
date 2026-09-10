@@ -84,7 +84,7 @@ object TreasureSpawner {
             }
 
             ItemRarity.MYTHIC -> {
-                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, -0xaa01), x, y, z, 2, 0.0, 0.0, 0.0, 0.0)
+                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, -0xaa01), x, y, z, 2, .0, .0, .0, .0)
                 world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 200, .8, .8, .8, .5)
                 world.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 80, .5, .5, .5, .2)
                 world.sendParticles(ParticleTypes.END_ROD, x, y, z, 60, .5, .5, .5, .1)
@@ -97,7 +97,7 @@ object TreasureSpawner {
             }
 
             ItemRarity.CHROMATIC -> {
-                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFF0000), x, y, z, 2, 0.0, 0.0, 0.0, 0.0)
+                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFF0000), x, y, z, 2, .0, .0, .0, .0)
                 world.sendParticles(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, x, y, z, 50, .4, .4, .4, .1)
                 world.sendParticles(ParticleTypes.SCULK_CHARGE_POP, x, y, z, 40, .5, .5, .5, .05)
                 world.sendParticles(ParticleTypes.LAVA, x, y, z, 20, .3, .3, .3, .2)
@@ -110,7 +110,7 @@ object TreasureSpawner {
             }
 
             ItemRarity.ASTRAL -> {
-                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xAD39D6), x, y, z, 4, 0.0, 0.0, 0.0, 0.0)
+                world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xAD39D6), x, y, z, 4, .0, .0, .0, .0)
                 world.sendParticles(ParticleTypes.REVERSE_PORTAL, x, y + 0.5, z, 160, .6, .6, .6, .3)
                 world.sendParticles(ParticleTypes.GLOW_SQUID_INK, x, y, z, 50, .5, .5, .5, .1)
 
@@ -130,7 +130,7 @@ object TreasureSpawner {
     private fun announceLoot(world: ServerLevel, rarity: ItemRarity, player: Player) {
         val eco = EconomyData.get() ?: return
         val balance: Double = eco.getBalance(player.getUUID())
-        val balanceScale = if (balance <= 0) 1.0 else Math.clamp(1000 / balance, 0.0, 1.0)
+        val balanceScale = if (balance <= 0) 1.0 else Math.clamp(1000 / balance, .0, 1.0)
         eco.changeBalance(player.getUUID(), 3 * balanceScale)
 
         val chatAnnouncement = Component.literal("★ ").withStyle(ChatFormatting.BOLD).withColor(rarity.color)

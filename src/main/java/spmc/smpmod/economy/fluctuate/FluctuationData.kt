@@ -1,118 +1,82 @@
-package spmc.smpmod.economy.fluctuate;
+package spmc.smpmod.economy.fluctuate
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.Item;
+import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.util.RandomSource
+import net.minecraft.world.item.Item
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToLong
 
-public class FluctuationData {
-    public static final Codec<FluctuationData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            BuiltInRegistries.ITEM.byNameCodec().fieldOf("mineral").forGetter(FluctuationData::getMineral),
-            Codec.DOUBLE.fieldOf("default_price").forGetter(FluctuationData::getDefaultPrice),
-            Codec.DOUBLE.fieldOf("fluctuation").forGetter(FluctuationData::getFluctuation),
-            Codec.LONG.fieldOf("amount_deposit").forGetter(FluctuationData::getAmountDeposited),
-            Codec.LONG.fieldOf("amount_withdraw").forGetter(FluctuationData::getAmountWithdrawn)
-    ).apply(instance, FluctuationData::new));
+class FluctuationData @JvmOverloads constructor(val mineral: Item, @JvmField var defaultPrice: Double, var fluctuation: Double, var amountDeposited: Long = 0, var amountWithdrawn: Long = 0) {
+	private var lastTransactionTime = System.currentTimeMillis()
 
-    private final Item mineral;
-    protected double defaultPrice;
-    protected double fluctuation;
-    private long amountDeposited;
-    private long amountWithdrawn;
-    private long lastTransactionTime = System.currentTimeMillis();
+	fun getBasePriceAt(netDemand: Long) = (max(defaultPrice * (1 + ((netDemand / SATURATION_VOLUME) * fluctuation)), .0) * 100.0).roundToLong() / 100.0
+	val currentPrice: Double get() = getBasePriceAt(amountWithdrawn - amountDeposited)
 
-    private static final double SATURATION_VOLUME = 1000;
-    private static double BUY_MARGIN = 1.15;
-    private static double SELL_MARGIN = .85;
+	fun getBulkBuyCost(amount: Int): Double {
+		val currentNet = amountWithdrawn - amountDeposited
+		return (((getBasePriceAt(currentNet) * BUY_MARGIN + getBasePriceAt(currentNet + amount) * BUY_MARGIN) / 2) * amount * 100.0).roundToLong() / 100.0
+	}
 
-    public FluctuationData(Item mineral, double defaultPrice, double fluctuation, long amountDeposited, long amountWithdrawn) {
-        this.mineral = mineral;
-        this.defaultPrice = defaultPrice;
-        this.fluctuation = fluctuation;
-        this.amountDeposited = amountDeposited;
-        this.amountWithdrawn = amountWithdrawn;
-    }
+	fun getBulkSellPayout(amount: Int): Double {
+		val currentNet = amountWithdrawn - amountDeposited
+		val startPrice: Double = getBasePriceAt(currentNet) * SELL_MARGIN
+		val endPrice: Double = getBasePriceAt(currentNet - amount) * SELL_MARGIN
 
-    public FluctuationData(Item mineral, double defaultPrice, double fluctuation) {
-        this(mineral, defaultPrice, fluctuation, 0, 0);
-    }
+		val avgPrice = (startPrice + endPrice) / 2
+		return (avgPrice * amount * 100.0).roundToLong() / 100.0
+	}
 
-    public Item getMineral() { return mineral; }
-    public double getDefaultPrice() { return defaultPrice; }
-    public double getFluctuation() { return fluctuation; }
-    public long getAmountDeposited() { return amountDeposited; }
-    public long getAmountWithdrawn() { return amountWithdrawn; }
+	fun deposit(amount: Long) {
+		if (amount <= 0) return
+		this.amountDeposited = Math.addExact(this.amountDeposited, amount)
+		this.lastTransactionTime = System.currentTimeMillis()
+	}
 
-    public double getBasePriceAt(long netDemand) {
-        double priceShift = (netDemand / SATURATION_VOLUME) * fluctuation;
-        double calculatedPrice = defaultPrice * (1 + priceShift);
+	fun withdraw(amount: Long) {
+		if (amount <= 0) return
+		this.amountWithdrawn = Math.addExact(this.amountWithdrawn, amount)
+		this.lastTransactionTime = System.currentTimeMillis()
+	}
 
-        double finalPrice = Math.max(calculatedPrice, 0);
-        return Math.round(finalPrice * 100.0) / 100.0;
-    }
+	fun applyMarketDecay(source: RandomSource): Boolean {
+		if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited >= 0 || amountWithdrawn >= 0)) {
+			amountDeposited = processFluctuation(amountDeposited, source.nextFloat() < 0.60f)
+			amountWithdrawn = processFluctuation(amountWithdrawn, source.nextFloat() < 0.60f)
+			return true
+		}
+		return false
+	}
 
-    public double getCurrentPrice() {
-        return getBasePriceAt(amountWithdrawn - amountDeposited);
-    }
+	private fun processFluctuation(currentAmount: Long, moveTowardsBase: Boolean): Long {
+		if (currentAmount < 0) return 0
+		var newAmount: Long
+		if (moveTowardsBase) {
+			if (currentAmount <= 30) return currentAmount + 15
+			newAmount = (currentAmount * 0.99).toLong()
+			if (newAmount == currentAmount) newAmount--
+		} else {
+			newAmount = (currentAmount * 1.01).toLong()
+			if (newAmount == currentAmount) newAmount++
+			newAmount = min(100000L, newAmount)
+		}
 
-    public double getBulkBuyCost(int amount) {
-        long currentNet = amountWithdrawn - amountDeposited;
-        double startPrice = getBasePriceAt(currentNet) * BUY_MARGIN;
-        double endPrice = getBasePriceAt(currentNet + amount) * BUY_MARGIN;
+		return max(0, newAmount)
+	}
 
-        double avgPrice = (startPrice + endPrice) / 2;
-        return Math.round(avgPrice * amount * 100.0) / 100.0;
-    }
+	companion object {
+		val CODEC: Codec<FluctuationData> = RecordCodecBuilder.create { instance -> instance.group(BuiltInRegistries.ITEM.byNameCodec().fieldOf("mineral").forGetter(FluctuationData::mineral), Codec.DOUBLE.fieldOf("default_price").forGetter(FluctuationData::defaultPrice), Codec.DOUBLE.fieldOf("fluctuation").forGetter(FluctuationData::fluctuation), Codec.LONG.fieldOf("amount_deposit").forGetter(FluctuationData::amountDeposited), Codec.LONG.fieldOf("amount_withdraw").forGetter(FluctuationData::amountWithdrawn)).apply(instance, ::FluctuationData) }
 
-    public double getBulkSellPayout(int amount) {
-        long currentNet = amountWithdrawn - amountDeposited;
-        double startPrice = getBasePriceAt(currentNet) * SELL_MARGIN;
-        double endPrice = getBasePriceAt(currentNet - amount) * SELL_MARGIN;
+		private const val SATURATION_VOLUME = 1000.0
+		private var BUY_MARGIN = 1.15
+		private var SELL_MARGIN = .85
 
-        double avgPrice = (startPrice + endPrice) / 2;
-        return Math.round(avgPrice * amount * 100.0) / 100.0;
-    }
-
-    public void deposit(long amount) {
-        if (amount <= 0) return;
-        this.amountDeposited = Math.addExact(this.amountDeposited, amount);
-        this.lastTransactionTime = System.currentTimeMillis();
-    }
-
-    public void withdraw(long amount) {
-        if (amount <= 0) return;
-        this.amountWithdrawn = Math.addExact(this.amountWithdrawn, amount);
-        this.lastTransactionTime = System.currentTimeMillis();
-    }
-
-    public boolean applyMarketDecay(RandomSource source) {
-        if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited >= 0 || amountWithdrawn >= 0)) {
-            amountDeposited = processFluctuation(amountDeposited, source.nextFloat() < 0.60f);
-            amountWithdrawn = processFluctuation(amountWithdrawn, source.nextFloat() < 0.60f);
-            return true;
-        }
-        return false;
-    }
-
-    private long processFluctuation(long currentAmount, boolean moveTowardsBase) {
-        if (currentAmount < 0) return 0;
-        long newAmount;
-        if (moveTowardsBase) {
-            if (currentAmount <= 30) return currentAmount + 15;
-            newAmount = (long) (currentAmount * 0.99);
-            if (newAmount == currentAmount) newAmount--;
-        } else {
-            newAmount = (long) (currentAmount * 1.01);
-            if (newAmount == currentAmount) newAmount++;
-            newAmount = Math.min(100000L, newAmount);
-        }
-
-        return Math.max(0, newAmount);
-    }
-
-    public static void changeMargin(double percentage) {
-        BUY_MARGIN = 1.15 * percentage;
-        SELL_MARGIN = .85 / percentage;
-    }
+		@JvmStatic
+		fun changeMargin(percentage: Double) {
+			BUY_MARGIN = 1.15 * percentage
+			SELL_MARGIN = .85 / percentage
+		}
+	}
 }

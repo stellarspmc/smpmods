@@ -28,32 +28,28 @@ import org.geysermc.floodgate.api.FloodgateApi
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData
 import spmc.smpmod.utils.MessageUtils.sendError
+import spmc.smpmod.utils.UtilityFunctions.isAdmin
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey<Level>, val barrelPos: BlockPos, val interactionEntityUuid: UUID, val itemDisplayUuid: UUID, val textDisplayUuid: UUID, private var itemSold: ItemStack, private var stack: Int, private var price: Double, receipts: MutableList<ShopReceipt>, val isCreative: Boolean) {
-    val receipts: MutableList<ShopReceipt>
-    init { this.receipts = ArrayList<ShopReceipt>(receipts) }
+    val receipts: MutableList<ShopReceipt> = ArrayList<ShopReceipt>(receipts)
 
     constructor(shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, creative: Boolean) : this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, ArrayList<ShopReceipt>(), creative)
-    fun getItemSold(): ItemStack { return itemSold }
-    fun getStack(): Int { return stack }
-    fun getPrice(): Double { return price }
+    fun getItemSold() = itemSold
+    fun getStack() = stack
+    fun getPrice() = price
     fun openOwnerMenu(owner: ServerPlayer) { ShopOwnerMenu.open(owner, this) }
+	fun isOwner(player: ServerPlayer) = (this.isCreative && isAdmin(player)) || player.getUUID() == ownerUuid
 
-    val level: ServerLevel? get() = SMPMod.minecraftServer?.getLevel(dimension)
+	val level: ServerLevel? get() = SMPMod.minecraftServer?.getLevel(dimension)
 
     fun recordReceipt(receipt: ShopReceipt) {
         this.receipts.addFirst(receipt)
         while (this.receipts.size > 27) this.receipts.removeLast()
         ShopManager.get(this.level?: return).setDirty()
-    }
-
-    fun isOwner(player: ServerPlayer): Boolean {
-        if (this.isCreative) return player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
-        return player.getUUID() == ownerUuid
     }
 
     val availableStock: Int get() {
@@ -129,7 +125,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
     }
 
     fun setPrice(price: Double) {
-        this.price = (max(0.0, price) * 100.0).roundToInt() / 100.0
+        this.price = (max(.0, price) * 100.0).roundToInt() / 100.0
         updateHologram()
         ShopManager.get(this.level?: return).setDirty()
     }
@@ -177,7 +173,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                     .setName(Component.literal("- $1.00").withStyle(ChatFormatting.RED).append(Component.literal(" (Right-click: - $0.10)").withStyle(ChatFormatting.GRAY)))
                     .setCallback { type ->
                         val step = if (type.isRight) 0.1 else 1.0
-                        shopData.setPrice(max(0.0, shopData.getPrice() - step))
+                        shopData.setPrice(max(.0, shopData.getPrice() - step))
                         refreshGui(gui, player, shopData)
                     }
             )
@@ -236,7 +232,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                     val stackStr = response.next<String>()
                     try {
                         checkNotNull(priceStr)
-                        val price = max(0.0, priceStr.toDouble())
+                        val price = max(.0, priceStr.toDouble())
                         checkNotNull(stackStr)
                         val stack = max(1, stackStr.toInt())
 
@@ -300,8 +296,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
                 val content = StringBuilder()
                 for ((_, buyerName, stack, price, timestamp) in receipts) {
                     val mins = max(0, System.currentTimeMillis() - timestamp) / 60000
-                    val timeAgo = if (mins < 1) "Just now" else if (mins < 60) mins.toString() + "m ago" else (mins / 60).toString() + "h ago"
-                    content.append(String.format("• %s bought %dx for $%.2f (%s)\n", buyerName, stack, price, timeAgo))
+                    content.append(String.format("• %s bought %dx for $%.2f (%s)\n", buyerName, stack, price, if (mins < 1) "Just now" else if (mins < 60) mins.toString() + "m ago" else (mins / 60).toString() + "h ago"))
                 }
                 form.content(content.toString())
             }
@@ -312,7 +307,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
 
     @JvmRecord data class ShopReceipt(val buyerUuid: UUID, val buyerName: String, val stack: Int, val price: Double, val timestamp: Long) {
         companion object {
-            val CODEC: Codec<ShopReceipt> = RecordCodecBuilder.create { instance: RecordCodecBuilder.Instance<ShopReceipt> -> instance.group(UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid), Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName), Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack), Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price), Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)).apply(instance, ::ShopReceipt) }
+            val CODEC: Codec<ShopReceipt> = RecordCodecBuilder.create { instance -> instance.group(UUIDUtil.CODEC.fieldOf("buyer_id").forGetter(ShopReceipt::buyerUuid), Codec.STRING.fieldOf("buyer_name").forGetter(ShopReceipt::buyerName), Codec.INT.fieldOf("stack").forGetter(ShopReceipt::stack), Codec.DOUBLE.fieldOf("price").forGetter(ShopReceipt::price), Codec.LONG.fieldOf("timestamp").forGetter(ShopReceipt::timestamp)).apply(instance, ::ShopReceipt) }
         }
     }
 

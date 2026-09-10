@@ -1,42 +1,32 @@
-package spmc.smpmod.discord;
+package spmc.smpmod.discord
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import spmc.smpmod.discord.config.ConfigLoader;
-import okhttp3.*;
-import org.jspecify.annotations.NonNull;
-import java.io.IOException;
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import spmc.smpmod.SMPMod
+import spmc.smpmod.discord.config.ConfigLoader
+import java.io.IOException
 
-import static spmc.smpmod.SMPMod.modLogger;
+object DiscordWebhook {
+	private val HTTP_CLIENT = OkHttpClient()
 
-public class DiscordWebhook {
+	fun sendChatMessage(message: String, playerName: String, playerUUID: String) {
+		val webhookUrl = ConfigLoader.CONFIG?.webhook?.ifEmpty{ return } ?: return
 
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+		val allowedMentions = JsonObject()
+		allowedMentions.add("parse", JsonArray())
 
-    public static void sendChatMessage(String message, String playerName, String playerUUID) {
-        String webhookUrl = ConfigLoader.CONFIG.webhook();
-        if (webhookUrl.isEmpty()) return;
+		val body = JsonObject()
+		body.addProperty("content", message)
+		body.addProperty("username", playerName)
+		body.addProperty("avatar_url", "https://mc-heads.net/head/$playerUUID/512.png")
+		body.add("allowed_mentions", allowedMentions)
 
-        JsonObject allowedMentions = new JsonObject();
-        allowedMentions.add("parse", new JsonArray());
-
-        JsonObject body = new JsonObject();
-        body.addProperty("content", message);
-        body.addProperty("username", playerName);
-        body.addProperty("avatar_url", "https://mc-heads.net/head/" + playerUUID + "/512.png");
-        body.add("allowed_mentions", allowedMentions);
-
-        Request request = new Request.Builder().url(webhookUrl).post(RequestBody.create(body.toString(), MediaType.get("application/json"))).build();
-        HTTP_CLIENT.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                modLogger.error("Failed to send Discord webhook message", e);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) {
-                response.close();
-            }
-        });
-    }
+		HTTP_CLIENT.newCall(Request.Builder().url(webhookUrl).post(body.toString().toRequestBody("application/json".toMediaType())).build()).enqueue(object: Callback {
+			override fun onFailure(call: Call, e: IOException) { SMPMod.modLogger.error("Failed to send Discord webhook message", e) }
+			override fun onResponse(call: Call, response: Response) { response.close() }
+		})
+	}
 }

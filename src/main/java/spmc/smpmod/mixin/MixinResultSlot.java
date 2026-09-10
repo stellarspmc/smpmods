@@ -20,7 +20,7 @@ public class MixinResultSlot {
         if (player instanceof ServerPlayer serverPlayer) {
             QuestManager.getQuests(serverPlayer).activeQuests.forEach(activeQuest -> {
                 Quest quest = activeQuest.getQuest();
-                if (quest.type() == Quest.QuestType.CRAFTING && quest.target().equals(BuiltInRegistries.ITEM.getKey(carried.getItem()))) activeQuest.increment(1);
+                if (quest.type == Quest.QuestType.CRAFTING && quest.target.equals(BuiltInRegistries.ITEM.getKey(carried.getItem()))) activeQuest.increment(1);
             });
         }
     }

@@ -45,7 +45,7 @@ class NPCData : SavedData {
 	    val TYPE: SavedDataType<NPCData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), { NPCData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
         @JvmStatic fun get() = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
-        @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String): ResolvableProfile = createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue)
+        @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String) = createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue)
         @JvmStatic fun talkAsMannequin(mannequin: Mannequin, message: Component, player: ServerPlayer) { player.sendSystemMessage(Component.empty().append(mannequin.customName ?: mannequin.name).append(Component.literal(": ").withStyle(ChatFormatting.WHITE)).append(message.copy().withStyle(ChatFormatting.WHITE))) }
 
         @JvmStatic
@@ -53,8 +53,7 @@ class NPCData : SavedData {
             val map: Multimap<String, Property> = HashMultimap.create()
             map.put("textures", Property("textures", textureValue))
 
-            val properties = PropertyMap(map)
-            return ResolvableProfile.createResolved(GameProfile(uuid, name, properties))
+            return ResolvableProfile.createResolved(GameProfile(uuid, name, PropertyMap(map)))
         }
     }
 }

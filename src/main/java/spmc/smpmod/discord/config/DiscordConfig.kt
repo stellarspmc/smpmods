@@ -1,11 +1,7 @@
-package spmc.smpmod.discord.config;
+package spmc.smpmod.discord.config
 
-public record DiscordConfig(String webhook, String token, String messageChannelId) {
-    public DiscordConfig {
-        if (webhook == null) webhook = "";
-        if (token == null) token = "";
-        if (messageChannelId == null) messageChannelId = "";
-    }
-
-    public DiscordConfig() { this(null, null, null); }
+class DiscordConfig @JvmOverloads constructor(webhook: String? = null, token: String? = null, messageChannelId: String? = null) {
+	val webhook: String = webhook?: ""
+	val token: String = token?: ""
+	val messageChannelId = messageChannelId?: ""
 }

@@ -9,7 +9,6 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData
-import spmc.smpmod.economy.fluctuate.FluctuationData
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.fishing.FishTracker
 import spmc.smpmod.npc.NPCData
@@ -30,9 +29,7 @@ import net.minecraft.commands.arguments.GameProfileArgument
 import net.minecraft.commands.arguments.item.ItemArgument
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.permissions.PermissionLevel
 import net.minecraft.server.permissions.PermissionSet
 import net.minecraft.server.players.NameAndId
 import net.minecraft.sounds.SoundEvents
@@ -43,12 +40,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import net.minecraft.world.level.levelgen.Heightmap
+import spmc.smpmod.utils.UtilityFunctions.isAdmin
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.stream.Stream
 import javax.imageio.ImageIO
 import kotlin.math.floor
 import kotlin.math.max
@@ -75,13 +71,13 @@ object CommandRegistry {
                 .executes { ctx -> executeDepositAll(ctx) }))
 
         dispatcher.register(Commands.literal("market")
-            .executes { ctx -> executeMarketAll(ctx) } // TODO: stream optimization
-            .then(Commands.argument("item", ItemArgument.item(context)).suggests(streamToSuggestion(MarketState.getState().getAll().keys.stream())))
+            .executes { ctx -> executeMarketAll(ctx) }
+            .then(Commands.argument("item", ItemArgument.item(context)).suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf())))
             .executes { ctx -> executeMarketItem(ctx) })
 
         dispatcher.register(Commands.literal("withdraw")
-            .then(Commands.argument("item", ItemArgument.item(context)) // TODO: stream optimization
-                .suggests(streamToSuggestion(Stream.concat(MarketState.getState().getAll().keys.stream(), Stream.of(Items.DIAMOND))))
+            .then(Commands.argument("item", ItemArgument.item(context))
+                .suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf())) // TODO: add diamonds
                 .executes { ctx -> executeWithdraw(ctx, 1) }
                 .then(Commands.argument("count", IntegerArgumentType.integer(1))
                     .executes { ctx -> executeWithdraw(ctx, IntegerArgumentType.getInteger(ctx, "count")) })))
@@ -93,12 +89,12 @@ object CommandRegistry {
         dispatcher.register(Commands.literal("npc")
             .then(Commands.literal("kill")
                 .then(Commands.argument("id", StringArgumentType.greedyString())
-                    .requires { source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
+                    .requires { source -> isAdmin(source.playerOrException) }
                     .suggests { _, builder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
                     .executes { ctx -> executeNpcKill(ctx) }))
             .then(Commands.literal("setup")
                 .then(Commands.argument<String>("id", StringArgumentType.greedyString())
-                    .requires { source -> source.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS) }
+                    .requires { source -> isAdmin(source.playerOrException) }
                     .suggests { _, builder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
                     .executes { ctx -> executeNpcSetup(ctx) })))
 
@@ -170,7 +166,7 @@ object CommandRegistry {
     @Throws(CommandSyntaxException::class)
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().playerOrException
-        var totalPayout = 0.0
+        var totalPayout = .0
 
         for (i in 0..<player.inventory.containerSize) {
             val stack = player.inventory.getItem(i)
@@ -300,19 +296,16 @@ object CommandRegistry {
 
     private fun executeMarketAll(ctx: CommandContext<CommandSourceStack>): Int {
         ctx.getSource().sendSuccess({ Component.literal("Market Prices").withStyle(ChatFormatting.GOLD) }, false)
-        MarketState.getState().getAll().values.stream()
-            .sorted { e1: FluctuationData, e2: FluctuationData -> e2.getDefaultPrice().compareTo(e1.getDefaultPrice()) }
-            .forEach { data: FluctuationData ->
-                val buyUnit: Double = data.getBulkBuyCost(1)
-                val sellUnit: Double = data.getBulkSellPayout(1)
-                val ratio: Double = (data.currentPrice / data.getDefaultPrice() - 1) * 100.0
+	    (MarketState.state?: return -1).all.values.sortedBy { it.defaultPrice }.asReversed()
+            .forEach { data ->
+                val ratio = (data.currentPrice / data.defaultPrice - 1) * 100.0
 
                 val trend = if (ratio > 0) String.format(" (+%.1f%%)", ratio) else String.format(" (%.1f%%)", ratio)
-                val trendColor = if (ratio >= 0) (if (ratio == 0.0) ChatFormatting.GRAY else ChatFormatting.RED) else ChatFormatting.GREEN
+                val trendColor = if (ratio >= 0) (if (ratio == .0) ChatFormatting.GRAY else ChatFormatting.RED) else ChatFormatting.GREEN
 
-                val message: Component = Component.literal("• ").withStyle(ChatFormatting.GRAY)
+                val message = Component.literal("• ").withStyle(ChatFormatting.GRAY)
                     .append(Component.translatable(data.mineral.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
-                    .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", buyUnit, sellUnit)).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal(trend).withStyle(trendColor))
                 ctx.getSource().sendSuccess({ message }, false)
             }
@@ -323,11 +316,10 @@ object CommandRegistry {
     @Throws(CommandSyntaxException::class)
     private fun executeMarketItem(ctx: CommandContext<CommandSourceStack>): Int {
         val targetItem = ItemArgument.getItem(ctx, "item").item().value()
-        val market: MarketState = MarketState.getState()
+        val market = MarketState.state?: return -1
+        val data = market.get(targetItem) ?: return sendError(ctx.getSource().playerOrException, "This item is not tracked by the market.", 0)
 
-        val data: FluctuationData = market.get(targetItem) ?: return sendError(ctx.getSource().playerOrException, "This item is not tracked by the market.", 0)
-
-        ctx.getSource().sendSuccess({ Component.literal(String.format(" Base Price: $%.2f", data.getDefaultPrice())).withStyle(ChatFormatting.GRAY) }, false)
+        ctx.getSource().sendSuccess({ Component.literal(String.format(" Base Price: $%.2f", data.defaultPrice)).withStyle(ChatFormatting.GRAY) }, false)
         ctx.getSource().sendSuccess({ Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE) }, false)
         ctx.getSource().sendSuccess({ Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE) }, false)
         return 1
@@ -337,12 +329,12 @@ object CommandRegistry {
     private fun executeWithdraw(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
         val item = ItemArgument.getItem(ctx, "item").item().value()
         val player = ctx.getSource().playerOrException
-        val totalCost: Double = MarketState.buyMineral(player, item, count)
+        val totalCost = MarketState.buyMineral(player, item, count)
         if (totalCost == -2.0) {
             player.sendSystemMessage(Component.literal("✖: ").append(Component.translatable(item.getDescriptionId())).append(" is not a tradeable market item.").withStyle(ChatFormatting.RED))
             return -1
         } else if (totalCost == -1.0) {
-            player.sendSystemMessage(Component.literal(String.format("✖: Insufficient balance. You need $%.2f to withdraw %dx ", MarketState.getState().get(item)?.getBulkBuyCost(count) ?: 0.0, count)).append(Component.translatable(item.getDescriptionId())).append(".").withStyle(ChatFormatting.RED))
+            player.sendSystemMessage(Component.literal(String.format("✖: Insufficient balance. You need $%.2f to withdraw %dx ", (MarketState.state?: return -1).get(item)?.getBulkBuyCost(count) ?: .0, count)).append(Component.translatable(item.getDescriptionId())).append(".").withStyle(ChatFormatting.RED))
             return -1
         }
 

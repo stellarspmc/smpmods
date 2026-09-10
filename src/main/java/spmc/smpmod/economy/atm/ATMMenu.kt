@@ -36,7 +36,7 @@ object ATMMenu {
 		gui.setSlot(11, GuiElementBuilder(Items.REDSTONE_BLOCK).setName(Component.literal("Withdraw $100.00").withStyle(ChatFormatting.DARK_RED).append(Component.literal(" (Right-click: Withdraw All)").withStyle(ChatFormatting.GRAY))).setCallback { type ->
 			if (type.isRight) {
 				val current = ((eco.getBalance(player.getUUID()) * 100f).roundToInt() / 100f).toDouble()
-				if (current > 0 && current % 100 == 0.0) {
+				if (current > 0 && current % 100 == .0) {
 					eco.changeBalance(player.getUUID(), -current)
 					giveExactItems(player, (current / 100).toInt())
 				}
@@ -85,7 +85,7 @@ object ATMMenu {
 	}
 
 	private fun getDepositItems(player: ServerPlayer): Double {
-		var totalPayout = 0.0
+		var totalPayout = .0
 
 		for (i in 0 ..< player.inventory.containerSize) {
 			val stack = player.inventory.getItem(i)

@@ -27,7 +27,7 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 	}
 
 	fun resolveName(uuid: UUID): String = names.getOrDefault(uuid, uuid.toString().substring(0, 8))
-	fun getBalance(uuid: UUID): Double = balances.getOrDefault(uuid, 0.0)
+	fun getBalance(uuid: UUID): Double = balances.getOrDefault(uuid, .0)
 
 	fun setBalance(uuid: UUID, money: Double) {
 		if (money >= 0 && money < Double.MAX_VALUE) {

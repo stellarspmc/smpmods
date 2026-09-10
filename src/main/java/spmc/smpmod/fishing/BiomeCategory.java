@@ -13,7 +13,7 @@ import net.minecraft.world.level.biome.Biome;
 
 import java.util.*;
 
-public enum BiomeCategory {
+public enum BiomeCategory { // TODO: merge with Treasures.Biomes
     LAVA(FishingRegistry.LAVA),
     VOID(FishingRegistry.END),
     DEEP(FishingRegistry.DEEP),

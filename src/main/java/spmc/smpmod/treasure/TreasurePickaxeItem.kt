@@ -1,33 +1,15 @@
-package spmc.smpmod.treasure;
+package spmc.smpmod.treasure
 
-import spmc.smpmod.utils.BasePolymerItem;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import java.util.List;
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import spmc.smpmod.utils.BasePolymerItem
 
-public class TreasurePickaxeItem extends BasePolymerItem {
-    private final PickaxeTiers tier;
-    private final Item vanillaItem;
+class TreasurePickaxeItem(properties: Properties, private val vanillaItem: Item, private val tier: PickaxeTiers, private val durability: Int): BasePolymerItem(properties.stacksTo(1).durability(durability), vanillaItem) {
+	override fun buildName(stack: ItemStack): Component { TODO("Not yet implemented") }
+	override fun buildLore(stack: ItemStack): MutableList<Component> { TODO("Not yet implemented") }
 
-    public TreasurePickaxeItem(Properties properties, Item vanillaItem, PickaxeTiers tier) {
-        super(properties, vanillaItem);
-        this.tier = tier;
-        this.vanillaItem = vanillaItem;
-    }
-
-    @Override
-    public Component buildName(ItemStack stack) {
-        return null;
-    }
-
-    @Override
-    public List<Component> buildLore(ItemStack stack) {
-        return List.<Component>of();
-    }
-
-    @Override
-    public void modifyItem(ItemStack stack, ItemStack stackData) {
-
-    }
+	override fun modifyItem(stack: ItemStack, stackData: ItemStack) {
+		TODO("Not yet implemented")
+	}
 }

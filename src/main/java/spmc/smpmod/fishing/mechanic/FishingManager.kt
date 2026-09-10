@@ -1,30 +1,23 @@
-package spmc.smpmod.fishing.mechanic;
+package spmc.smpmod.fishing.mechanic
 
-import spmc.smpmod.fishing.RodItem;
-import spmc.smpmod.fishing.RodTiers;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.projectile.FishingHook;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.projectile.FishingHook
+import spmc.smpmod.fishing.RodItem
+import spmc.smpmod.fishing.RodTiers
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+object FishingManager {
+	private val ACTIVE_SESSIONS: MutableMap<UUID, FishingSession> = mutableMapOf()
+	fun register() { ServerTickEvents.END_SERVER_TICK.register(ServerTickEvents.EndTick { _ -> ACTIVE_SESSIONS.entries.removeIf { entry -> entry.value.tick() } }) }
 
-public class FishingManager {
-    private static final Map<UUID, FishingSession> ACTIVE_SESSIONS = new HashMap<>();
+	@JvmStatic
+	fun startMinigame(player: ServerPlayer, hook: FishingHook) {
+		if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return
+		ACTIVE_SESSIONS[player.getUUID()] = FishingSession(player, hook, (player.mainHandItem.item as? RodItem)?.tier ?: RodTiers.NORMAL)
+	}
 
-    public static void register() {
-        ServerTickEvents.END_SERVER_TICK.register(_ -> ACTIVE_SESSIONS.entrySet().removeIf(entry -> entry.getValue().tick()));
-    }
-
-    public static void startMinigame(ServerPlayer player, FishingHook hook) {
-        if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return;
-
-        RodTiers tier = RodTiers.NORMAL;
-        if (player.getMainHandItem().getItem() instanceof RodItem customRod) tier = customRod.getTier();
-        ACTIVE_SESSIONS.put(player.getUUID(), new FishingSession(player, hook, tier));
-    }
-
-    public static boolean isFishing(UUID playerUuid) { return ACTIVE_SESSIONS.containsKey(playerUuid); }
-    public static void cancelMinigame(UUID playerUuid) { ACTIVE_SESSIONS.remove(playerUuid); }
+	fun isFishing(playerUuid: UUID) = ACTIVE_SESSIONS.containsKey(playerUuid)
+	fun cancelMinigame(playerUuid: UUID) = ACTIVE_SESSIONS.remove(playerUuid)
 }
