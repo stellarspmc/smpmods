@@ -48,6 +48,11 @@
 * Combat tagged state timer & event listener
 * Disconnect penalty & combat-pawn handler
 
+### Display Cases
+* **Core Idea:** display cases
+* **Technical Requirements:**
+* item/block displays for different types of cases (jar? / glass? / stuff like that)
+
 ## v7.3-rc1
 
 ### Bazaar Economy System
@@ -62,14 +67,8 @@
 * Physical ATM block/entity UI interface
 * Currency item deposit and withdrawal transaction handler
 
-### Cosmetics & Customization
-* **Core Idea:** Unlockable player cosmetics, custom particle trails, and visual cosmetic wearables.
-* **Technical Requirements:**
-* Cosmetic wardrobe GUI & unlock state storage
-* Particle effect renderer & visibility toggles
-
 # SpaceMC Future Proposals
-### Pets
+### Cosmetics & Customization
 * **Core Idea:** Unlockable player cosmetics, custom particle trails, and visual cosmetic wearables.
 * **Technical Requirements:**
 * Cosmetic wardrobe GUI & unlock state storage

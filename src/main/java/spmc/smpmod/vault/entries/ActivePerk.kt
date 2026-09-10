@@ -37,7 +37,7 @@ data class ActivePerk(val type: PerkType, val level: Int): VaultEntry {
 		BONUS_PROTECTION({ tierLevel, player ->
 			player.getAttribute(Attributes.ARMOR)?.addOrReplacePermanentModifier(AttributeModifier(Identifier.fromNamespaceAndPath("smpmod", "perk_bonus_protection"), tierLevel * 2.0, AttributeModifier.Operation.ADD_VALUE))
 		}),
-		MAX_HOMES({ tierLevel, player -> }), GATHERING_INCOME({ tierLevel, player -> });
+		MAX_HOMES({ _, _ -> TODO() }), GATHERING_INCOME({ _, _ -> TODO() });
 
 		fun trigger(tierLevel: Int, player: ServerPlayer) { applyCallback.accept(tierLevel, player) }
 		override fun getSerializedName() = this.name

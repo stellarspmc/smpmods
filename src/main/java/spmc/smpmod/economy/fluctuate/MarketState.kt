@@ -1,17 +1,32 @@
 package spmc.smpmod.economy.fluctuate
 
+import com.mojang.math.Transformation
 import com.mojang.serialization.Codec
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Brightness
 import net.minecraft.util.datafix.DataFixTypes
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntitySpawnReason
+import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.CrossCollisionBlock
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
+import org.joml.Quaternionf
+import org.joml.Vector3f
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData.Companion.get
+import java.util.UUID
+import kotlin.collections.forEach
 import kotlin.math.roundToInt
 
 class MarketState: SavedData() {
@@ -34,8 +49,9 @@ class MarketState: SavedData() {
 
 	@JvmRecord data class FluctuationExpiry(val data: FluctuationData, val expiryTick: Int)
 	companion object {
-		private val permanentMarketMap: MutableMap<Item, FluctuationData> = HashMap()
-		private val temporaryMarketMap: MutableMap<Item, FluctuationExpiry> = HashMap()
+		private val permanentMarketMap: MutableMap<Item, FluctuationData> = mutableMapOf()
+		private val temporaryMarketMap: MutableMap<Item, FluctuationExpiry> = mutableMapOf()
+		private val displayList: MutableList<UUID> = mutableListOf()
 		private var rotationTick = 144000
 		val CODEC: Codec<MarketState> = FluctuationData.CODEC.listOf().xmap( { datum: MutableList<FluctuationData> -> val market = MarketState()
 			for (data in datum) market.registerMineral(data.mineral, data.defaultPrice, data.fluctuation)
@@ -105,6 +121,60 @@ class MarketState: SavedData() {
 			if (chosenItems.isEmpty()) return
 			val template: FluctuationData = chosenItems[server.overworld().getRandom().nextInt(chosenItems.size)]
 			temporaryMarketMap[template.mineral] = FluctuationExpiry(FluctuationData(template.mineral, template.defaultPrice, template.fluctuation), server.tickCount + server.overworld().getRandom().nextInt(144000) + 144000)
+		}
+
+		fun addScreenMonitor(level: ServerLevel, pos: BlockPos): Boolean { // TODO: saved data again...
+			if (displayList.isNotEmpty()) return false // this line is for
+			repeat(3) { createScreen(level, pos, it) } // maybe more than 1 screen? 1 screen holds 5 data
+			return true
+		} // TODO: actually, why not merge the functions and put the stuff in repeat?
+
+		private fun createScreen(level: ServerLevel, pos: BlockPos, index: Int): Boolean {
+			val worldIndex = index - 2 // TODO: allow for dynamic ODD indices
+			val canvas = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.TRIGGERED) ?: return false
+			canvas.blockState = Blocks.STAINED_GLASS_PANE.black.defaultBlockState()
+			canvas.blockState.setValue(CrossCollisionBlock.NORTH, true) // TODO: set direction by player orientation? -> e/w then n/s (inverse)
+			canvas.setTransformation(Transformation(
+				Vector3f(-.1f ,0f, -2f), // translation TODO: x and z
+				Quaternionf(0f, 0f, 0f, 1f),
+				Vector3f(1f, 3f, 4f),
+				Quaternionf(0f, 0f, 0f, 1f))) // TODO: check -> quaternion needed to be changed?
+			canvas.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
+			canvas.brightnessOverride = Brightness(15, 15)
+			level.addFreshEntity(canvas)
+
+			repeat(5) { repeatedValue ->
+				val item = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
+				val text = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
+				if (item == null || text == null) {
+					listOfNotNull(canvas, item, text).forEach(Entity::discard)
+					return false
+				}
+
+				item.itemStack = Items.HEART_OF_THE_SEA.defaultInstance // TODO: actually get top 5 items instead of
+				item.setTransformation(Transformation(
+					Vector3f(.3f, 2.5f - (5 - repeatedValue) * .5f, -1.4f), // translation TODO: x and z
+					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // TODO: translate radians (provided is 270deg)
+					Vector3f(.5f, .5f, .5f),
+					Quaternionf(0f, 0f, 0f, 1f)))
+				item.itemTransform = ItemDisplayContext.GUI
+
+				text.text = Component.empty() // TODO: change according to item / stats rn
+				text.backgroundColor = 0
+				text.setTransformation(Transformation(
+					Vector3f(.3f, 2.4f - (5 - repeatedValue) * .4f, 2.5f), // translation TODO: x,y and z
+					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // TODO: translate radians (provided is 270deg)
+					Vector3f(0.65f, 0.65f, 0.65f),
+					Quaternionf(0f, 0f, 0f, 1f)))
+
+				listOfNotNull(canvas, item, text).forEach { it.brightnessOverride = Brightness(15, 15) }
+				listOfNotNull(item, text).forEach { it.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble()) } // TODO: use worldIndex
+				listOfNotNull(canvas, item, text).forEach(level::addFreshEntity)
+				listOfNotNull(item, text).forEach { displayList.add(it.uuid) } // TODO: get text (to update value)
+			}
+
+			displayList.add(canvas.uuid)
+			return true
 		}
 
 		fun serverTickLoop(server: MinecraftServer) {

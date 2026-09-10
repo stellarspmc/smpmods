@@ -17,30 +17,6 @@ object QuestRegistry {
 		initDaily()
 		initWeekly()
 
-		// demo npc quests
-		/**
-		 * register(new Quest(
-		 * "blacksmith_1", "Gathering Supplies", "Bring 10 Coal to the Blacksmith",
-		 * QuestCategory.NPC,
-		 * QuestType.GATHER_ITEM,
-		 * Identifier.withDefaultNamespace("coal"),
-		 * 10,
-		 * new QuestReward(50.0, 20, List.of(new ItemStack(Items.IRON_INGOT, 3))),
-		 * Optional.of("blacksmith"),
-		 * Optional.empty()
-		 * ));
-		 * 
-		 * register(new Quest(
-		 * "blacksmith_2", "First Blade", "Craft an Iron Sword",
-		 * QuestCategory.NPC,
-		 * QuestType.CRAFTING,
-		 * Identifier.withDefaultNamespace("iron_sword"),
-		 * 1,
-		 * new QuestReward(200.0, 100, List.of(new ItemStack(Items.DIAMOND, 1))),
-		 * Optional.of("blacksmith"),
-		 * Optional.of("blacksmith_1")
-		 * )); */
-
 		PlayerBlockBreakEvents.AFTER.register { _, player, _, state, _ ->
 			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) activeQuest.increment(1)
@@ -48,7 +24,7 @@ object QuestRegistry {
 		}
 
 		ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
-			getQuests(damageSource.entity as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
+			getQuests(damageSource.entity as? ServerPlayer?: return@register).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.KILL_MOB && quest.target == BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)) activeQuest.increment(1)
 			}
 		}
@@ -65,10 +41,11 @@ object QuestRegistry {
 		register(Quest("daily_fish_3", "Fishing Master", "Fish 75 Times", Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 75, Quest.QuestCategory.DAILY, QuestReward(5900.0, 85, mutableListOf()), Optional.empty(), Optional.empty()))
 	}
 
-	private fun initWeekly() {/*register(new Quest(
+	private fun initWeekly() {
+		/*register(Quest(
                 "weekly_fish_1", "Fishing Master", "Fish 125 Times",
                 Quest.QuestType.FISHING, Identifier.withDefaultNamespace("fishing"), 125, Quest.QuestCategory.WEEKLY,
-                new Quest.QuestReward(5900, 85, List.of()), Optional.empty(), Optional.empty()
+                Quest.QuestReward(5900, 85, List.of()), Optional.empty(), Optional.empty()
         ));*/
 	}
 
