@@ -55,7 +55,7 @@ public class SculkCompressorBlock extends BaseMachineBlock<SculkCompressorEntity
 
             for (int i = 0; i < 27; i++) this.setSlot(i, new GuiElementBuilder(Items.STAINED_GLASS_PANE.black()).setName(Component.literal("")));
             this.setSlot(INPUT_SLOT, new Slot(blockEntity, 0, 0, 0));
-            this.setSlot(OUTPUT_SLOT, new Slot(blockEntity, 1, 0, 0) { @Override public boolean mayPlace(@NonNull ItemStack stack) { return false; } });
+            this.setSlot(OUTPUT_SLOT, new Slot(blockEntity, 1, 0, 0) { @Override public boolean mayPlace(@NonNull ItemStack stack) { return false; }});
             setLockPlayerInventory(false);
         }
 

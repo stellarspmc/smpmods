@@ -35,12 +35,12 @@ class EventHandler: ListenerAdapter() {
 			"market" -> {
 				val market = state?: return
 				val description = StringBuilder()
-				market.all.entries.sortedBy { it.value.currentPrice }.asReversed().forEach { entry ->
-					val data = entry.value
+				market.all.entries.sortedBy { it.value.currentPrice }.asReversed().forEach {
+					val data = it.value
 					val buyUnit = data.getBulkBuyCost(1)
 					val sellUnit = data.getBulkSellPayout(1)
 					val ratio = (data.currentPrice / data.defaultPrice - 1) * 100.0
-					description.append(String.format("• **%s** | Buy: **$%.2f** | Sell: **$%.2f** `%s`\n", Component.translatable(entry.key.getDescriptionId()).string, buyUnit, sellUnit, if (ratio >= 0) String.format("(+%.1f%%)", ratio) else String.format(" (%.1f%%)", ratio)))
+					description.append(String.format("• **%s** | Buy: **$%.2f** | Sell: **$%.2f** `%s`\n", Component.translatable(it.key.getDescriptionId()).string, buyUnit, sellUnit, if (ratio >= 0) String.format("(+%.1f%%)", ratio) else String.format(" (%.1f%%)", ratio)))
 				}
 				var resultText = if (description.isNotEmpty()) description.toString() else "*No items listed on the market.*"
 				if (resultText.length > 4096) resultText = resultText.substring(0, 4090) + "..."

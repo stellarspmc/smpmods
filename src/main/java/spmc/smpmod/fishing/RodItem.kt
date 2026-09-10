@@ -27,7 +27,7 @@ import kotlin.math.min
 class RodItem(properties: Properties, @JvmField val tier: RodTiers): FishingRodItem(properties.stacksTo(1).durability(tier.durability).repairable(tier.getStack())), PolymerItem {
 	override fun getPolymerItem(itemStack: ItemStack, context: PacketContext) = Items.FISHING_ROD
 	override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider?) = BuiltInRegistries.ITEM.getKey(Items.FISHING_ROD)
-	override fun getName(itemStack: ItemStack) = Component.literal("$tier Rod").withColor(tier.color).withStyle { style -> style.withItalic(false) }
+	override fun getName(itemStack: ItemStack) = Component.literal("$tier Rod").withColor(tier.color).withStyle { it.withItalic(false) }
 
 
 	fun canVoidFish() = this.tier.ordinal >= RodTiers.CELESTIAL.ordinal || this.tier == RodTiers.AIR // TODO: make fishing better by limiting
@@ -55,9 +55,9 @@ class RodItem(properties: Properties, @JvmField val tier: RodTiers): FishingRodI
 	}
 
 	private fun buildLore(): MutableList<Component> {
-		val list: MutableList<Component> = mutableListOf(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.catchLuckBonus - 1.0f) * 100)).withStyle(ChatFormatting.GREEN).withStyle { style -> style.withItalic(false) }, Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.greenZoneSize * 100)).withStyle(ChatFormatting.AQUA).withStyle{ style -> style.withItalic(false) })
-		if (canLavaFish()) list.add(Component.literal("This rod can be used to fish in lava!").withStyle(ChatFormatting.RED).withStyle { style -> style.withItalic(false) })
-		if (canVoidFish()) list.add(Component.literal("This rod can be used to fish in the void!").withStyle(ChatFormatting.DARK_GRAY).withStyle { style -> style.withItalic(false) })
+		val list: MutableList<Component> = mutableListOf(Component.literal(String.format("Luck Bonus: +%.0f%%", (tier.catchLuckBonus - 1.0f) * 100)).withStyle(ChatFormatting.GREEN).withStyle { it.withItalic(false) }, Component.literal(String.format("Easy Reel Zone: %.0f%%", tier.greenZoneSize * 100)).withStyle(ChatFormatting.AQUA).withStyle{ it.withItalic(false) })
+		if (canLavaFish()) list.add(Component.literal("This rod can be used to fish in lava!").withStyle(ChatFormatting.RED).withStyle { it.withItalic(false) })
+		if (canVoidFish()) list.add(Component.literal("This rod can be used to fish in the void!").withStyle(ChatFormatting.DARK_GRAY).withStyle { it.withItalic(false) })
 		list.add(Component.empty())
 		list.add(Component.literal("Use in water to start fishing!").withStyle(ChatFormatting.DARK_GRAY))
 		return list

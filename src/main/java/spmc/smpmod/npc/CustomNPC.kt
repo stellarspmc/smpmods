@@ -29,8 +29,8 @@ class CustomNPC private constructor(builder: Builder) {
 		var displayName: Component
 		var profile: ResolvableProfile? = null
 		val lookAtPlayer: Boolean
-		var onAttack: BiConsumer<ServerPlayer, Mannequin> = BiConsumer { _, _ -> }
-		var onUse: BiConsumer<ServerPlayer, Mannequin> = BiConsumer { _, _ -> }
+		var onAttack: BiConsumer<ServerPlayer, Mannequin> = { _, _ -> }
+		var onUse: BiConsumer<ServerPlayer, Mannequin> = { _, _ -> }
 
 		init {
 			this.displayName = Component.literal(id)

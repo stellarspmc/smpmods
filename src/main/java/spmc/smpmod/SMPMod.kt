@@ -1,6 +1,5 @@
 package spmc.smpmod
 
-import com.mojang.brigadier.CommandDispatcher
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -24,9 +23,6 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.ChatFormatting
-import net.minecraft.commands.CommandBuildContext
-import net.minecraft.commands.CommandSourceStack
-import net.minecraft.commands.Commands.CommandSelection
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
@@ -34,7 +30,6 @@ import net.minecraft.stats.Stats
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
-import org.apache.commons.lang3.exception.ExceptionUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spmc.smpmod.core.BedrockSkinFetcher
@@ -56,44 +51,36 @@ import spmc.smpmod.treasure.ChunkPool
 import spmc.smpmod.treasure.TreasureHelper
 import spmc.smpmod.utils.MessageUtils
 import spmc.smpmod.vault.VaultData
+import java.util.concurrent.CompletableFuture
 import kotlin.math.roundToInt
-import kotlin.system.exitProcess
 
 @Environment(EnvType.SERVER)
 class SMPMod : DedicatedServerModInitializer {
     override fun onInitializeServer() {
-        try {
-            CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext, _: CommandSelection -> CommandRegistry.register(dispatcher, context) })
-        } catch (e: Exception) {
-            modLogger.error(ExceptionUtils.getStackTrace(e))
-            exitProcess(1)
-        }
-
         PolymerRegistry.init()
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-	        try {
-		        ConfigLoader.checkConfigs()
-		        minecraftServer = server
-		        bot = JDABuilder.createDefault(ConfigLoader.CONFIG.token).setMemberCachePolicy(MemberCachePolicy.ALL).addEventListeners(EventHandler()).enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES).build()
-		        bot?.awaitReady()
-		        messageChannel = bot?.getTextChannelById(ConfigLoader.CONFIG.messageChannelId)
-		        bot?.presence?.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"))
-		        messageChannel?.sendMessage("Server has opened!")?.queue()
-		        bot?.updateCommands()?.addCommands(Commands.slash("players", "Get the number of players."), Commands.slash("market", "Get the market inside the server."), Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false))?.queue()
-
-		        FishingManager.register()
-		        MarketState.register()
-		        VaultData.register()
-		        NPCManager.register()
-	        } catch (e: Exception) {
-		        modLogger.error("Config not initialized, please finish the config.")
-		        throw RuntimeException(e)
+	        ConfigLoader.checkConfigs()
+	        minecraftServer = server
+	        bot = JDABuilder.createDefault(ConfigLoader.CONFIG?.token).setMemberCachePolicy(MemberCachePolicy.ALL).addEventListeners(EventHandler()).enableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES).build()
+	        CompletableFuture.runAsync {
+		        try {
+			        bot?.awaitReady()
+			        messageChannel = ConfigLoader.CONFIG?.messageChannelId?.let { bot?.getTextChannelById(it) }
+			        bot?.presence?.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.playing("Minecraft"))
+			        messageChannel?.sendMessage("Server has opened!")?.queue()
+			        bot?.updateCommands()?.addCommands(Commands.slash("players", "Get the number of players."), Commands.slash("market", "Get the market inside the server."), Commands.slash("top", "Get the economy leaderboard.").addOption(OptionType.INTEGER, "page", "The leaderboard page number (defaults to 1)", false))?.queue()
+		        } catch (e: Exception) { modLogger.error("Failed to initialize Discord bot connection", e) }
 	        }
+
+	        FishingManager.register()
+	        MarketState.register()
+	        VaultData.register()
+	        NPCManager.register()
+	        ShopManager.register()
         }
 
-	    ShopManager.register()
-        ChunkLoaderSavedData.register()
+	    ChunkLoaderSavedData.register()
         ServerMobEvents.registerMobs()
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
@@ -101,7 +88,7 @@ class SMPMod : DedicatedServerModInitializer {
 	        BedrockSkinFetcher.restoreSkin(server, player)
 	        QuestManager.get()?.checkAndResetRotations(player)
 	        EconomyData.get()?.registerPlayer(player.getUUID(), player.gameProfile.name())
-	        player.awardRecipes(server.recipeManager.recipes.stream().distinct().filter { a -> a.id().identifier().namespace == "smpmod" }.toList())
+	        player.awardRecipes(server.recipeManager.recipes.distinct().filter { it.id().identifier().namespace == "smpmod" })
 	        messageChannel?.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string))?.queue()
         }
 
@@ -127,24 +114,23 @@ class SMPMod : DedicatedServerModInitializer {
 					        eco.changeBalance(killer.getUUID(), bountyReward)
 					        MessageUtils.sendSuccess<Int>(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", entity.scoreboardName, bountyReward))
 				        }
-			        }
-			        TODO("create new bounty system")
+			        }// TODO: create new bounty system
 		        }
 	        }
         }
 
-	    ServerTickEvents.END_SERVER_TICK.register { server ->
-		    if (server.playerList.players.isEmpty()) return@register
-		    if (server.tickCount % 360 == 0) ShopManager.serverTickLoop(server)
-		    if (server.tickCount % 15 == 0) NPCManager.serverTickLoop(server)
-		    if (server.tickCount % 50 == 0) ChunkPool.serverTickLoop()
-		    if (server.tickCount % 1200 != 0) return@register
-		    MarketState.serverTickLoop(server)
+	    ServerTickEvents.END_SERVER_TICK.register {
+		    if (it.playerList.players.isEmpty()) return@register
+		    if (it.tickCount % 360 == 0) ShopManager.serverTickLoop(it)
+		    if (it.tickCount % 15 == 0) NPCManager.serverTickLoop(it)
+		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
+		    if (it.tickCount % 1200 != 0) return@register
+		    MarketState.serverTickLoop(it)
 
-		    val scoreboard = server.scoreboard
+		    val scoreboard = it.scoreboard
 		    val objective = scoreboard.getObjective("play_time") ?: scoreboard.addObjective("play_time", ObjectiveCriteria.DUMMY, Component.literal("hours").withStyle(ChatFormatting.GOLD), ObjectiveCriteria.RenderType.INTEGER, false, null)
 		    scoreboard.setDisplayObjective(DisplaySlot.BELOW_NAME, objective)
-		    for (player in server.playerList.players) {
+		    for (player in it.playerList.players) {
 			    val playTime = player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
 			    if (playTime > 0) EconomyData.get()?.changeBalance(player.getUUID(), 1.2)
 
@@ -155,10 +141,11 @@ class SMPMod : DedicatedServerModInitializer {
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }
 	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> DiscordWebhook.sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) }
-	    ServerLifecycleEvents.SERVER_STOPPED.register { _ -> messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
+	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)
 	    UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) // TODO: better handling
+	    CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, context, _ -> CommandRegistry.register(dispatcher, context) })
 
 	    // proof of concept, TODO: make it better
         PlayerBlockBreakEvents.AFTER.register { world, _, _, state, _ ->

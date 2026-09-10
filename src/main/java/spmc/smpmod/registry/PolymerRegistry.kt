@@ -76,7 +76,7 @@ object PolymerRegistry {
 
 	fun <T : Recipe<*>> registerRecipeType(id: String): RecipeType<T> {
 		val identifier = Identifier.fromNamespaceAndPath("smpmod", id)
-		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object : RecipeType<T> { override fun toString(): String = identifier.toString() })
+		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object : RecipeType<T> { override fun toString() = identifier.toString() })
 	}
 
 	// recipe serializer

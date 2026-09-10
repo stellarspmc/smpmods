@@ -44,7 +44,7 @@ object NPCRegistry {
                                 EconomyData.get()?.changeBalance(player.getUUID(), totalPayout)
                                 talkAsMannequin(mannequin, Component.literal(String.format("Fine catch! I'll buy those %d fish for $%.2f. Smooth sailing!", totalFishCount, totalPayout)), player as ServerPlayer)
                             } else talkAsMannequin(mannequin, Component.literal("Bah! You didn't leave any fish in the bin... Come back when you've got something with scales!"), player as ServerPlayer)
-                        } } }, Component.literal("Fish Merchant - Sell Bin"))) }
+                        }} }, Component.literal("Fish Merchant - Sell Bin"))) }
             .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you.. yet."), player) }
             .build()
         )

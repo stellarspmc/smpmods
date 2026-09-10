@@ -13,16 +13,7 @@ public class MixinLivingEntity {
     @ModifyVariable(method = "addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z", at = @At("HEAD"), argsOnly = true, index = 1)
     private MobEffectInstance smp$boostPotionEffects(MobEffectInstance newEffect) {
         if ((Object) this instanceof ServerPlayer) {
-            if (VaultData.buffValue != 0f) {
-                return new MobEffectInstance(
-                        newEffect.getEffect(),
-                        (int) (newEffect.getDuration() * (1.0 + VaultData.buffValue)),
-                        newEffect.getAmplifier(),
-                        newEffect.isAmbient(),
-                        newEffect.isVisible(),
-                        newEffect.showIcon()
-                );
-            }
+            if (VaultData.buffValue != 0f) return new MobEffectInstance(newEffect.getEffect(), (int) (newEffect.getDuration() * (1.0 + VaultData.buffValue)), newEffect.getAmplifier(), newEffect.isAmbient(), newEffect.isVisible(), newEffect.showIcon());
         }
         return newEffect;
     }

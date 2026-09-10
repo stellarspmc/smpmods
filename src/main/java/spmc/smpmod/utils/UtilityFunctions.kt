@@ -17,10 +17,10 @@ import java.util.stream.Stream
 object UtilityFunctions {
     fun getLevelOfEntity(uuid: UUID): ServerLevel {
         val level = AtomicReference<ServerLevel>()
-        SMPMod.minecraftServer?.allLevels?.forEach { a -> if (a.getEntity(uuid) != null) level.set(a) }
+        SMPMod.minecraftServer?.allLevels?.forEach { if (it.getEntity(uuid) != null) level.set(it) }
 	    return level.get()
     }
 
-    fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { thing -> BuiltInRegistries.ITEM.getKey(thing) }, builder)}
+    fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { BuiltInRegistries.ITEM.getKey(it) }, builder)}
 	fun isAdmin(player: ServerPlayer) = player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
 }

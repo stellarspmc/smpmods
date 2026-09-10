@@ -27,8 +27,8 @@ enum class ItemModifier(@JvmField val color: TextColor, @JvmField val priceMulti
     NUCLEAR(TextColor.fromRgb(0x39FF14), 3.25),
     LUCKY(TextColor.fromRgb(0x00C853), 1.4);
 
-    val isNotLocked: Boolean = !(this.priceMultiplier >= 2)
-    override fun toString(): String = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
+    val isNotLocked = !(this.priceMultiplier >= 2)
+    override fun toString() = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
 
     companion object {
         @JvmStatic

@@ -24,7 +24,7 @@ object ATMMenu {
 	}
 
 	private fun openJavaGui(player: ServerPlayer) {
-		val gui = object: SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player) } }
+		val gui = object: SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player) }}
 		gui.setTitle(Component.literal("ATM Menu"))
 		refreshGui(gui, player)
 		gui.open()

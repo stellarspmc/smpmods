@@ -13,6 +13,6 @@ enum class ItemRarity(@JvmField val color: TextColor, private val consideredRare
     CHROMATIC(TextColor.fromRgb(16726072), true),
     ASTRAL(TextColor.fromRgb(4581119), true);
 
-    fun shouldAnnounce(): Boolean = consideredRare
-    override fun toString(): String = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
+    fun shouldAnnounce() = consideredRare
+    override fun toString() = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
 }

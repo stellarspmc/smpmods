@@ -19,8 +19,8 @@ import spmc.smpmod.treasure.TreasureHelper.Biomes
 import java.util.*
 
 object TreasureRegistry {
-    private val REGISTRY: MutableList<TreasureEntry> = ArrayList()
-    fun getEligibleTreasures(biome: Biomes, rarity: ItemRarity): List<TreasureEntry> = REGISTRY.filter { entry -> entry.isValid(rarity, biome) }
+    private val REGISTRY: MutableList<TreasureEntry> = mutableListOf()
+    fun getEligibleTreasures(biome: Biomes, rarity: ItemRarity) = REGISTRY.filter { it.isValid(rarity, biome) }
 
     private fun add(item: Item): TreasureEntry.Builder {
         val builder = TreasureEntry.Builder(item)
@@ -34,7 +34,7 @@ object TreasureRegistry {
         registerOverworld()
         registerNether()
         registerEnd()
-    }
+    } // TODO: use it instead of repeating level -> (or do a helper function to get enchant, but might slowdown, CAUTION)
 
     private fun registerDefault() {
 	    add(Items.GLASS_BOTTLE).count(8).rarity(ItemRarity.COMMON)
@@ -95,8 +95,7 @@ object TreasureRegistry {
 	    add(Items.REDSTONE_BLOCK).count(1, 2).rarity(ItemRarity.RARE)
 	    add(Items.OAK_LOG).count(7).rarity(ItemRarity.RARE)
 	    add(Items.DIAMOND).count(1, 2).rarity(ItemRarity.RARE)
-	    add(Items.IRON_SHOVEL).rarity(ItemRarity.RARE).name(Component.literal("Copper Shovel")).modify { level ->
-		    val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    add(Items.IRON_SHOVEL).rarity(ItemRarity.RARE).name(Component.literal("Copper Shovel")).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 4)
 		    enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 	    }
@@ -113,8 +112,7 @@ object TreasureRegistry {
 	    add(Items.LAPIS_BLOCK).count(3).rarity(ItemRarity.EPIC)
 	    add(Items.REDSTONE_BLOCK).count(5, 8).rarity(ItemRarity.EPIC)
 	    add(Items.COAL).count(1, 2).rarity(ItemRarity.EPIC).name(Component.literal("Refined Carbon").withStyle(ChatFormatting.DARK_GRAY))
-	    add(Items.IRON_CHESTPLATE).rarity(ItemRarity.EPIC).modify { level ->
-		    val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    add(Items.IRON_CHESTPLATE).rarity(ItemRarity.EPIC).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.PROTECTION), 3)
 		    enchant(enchants.getOrThrow(Enchantments.MENDING), 1)
 	    }
@@ -132,14 +130,12 @@ object TreasureRegistry {
 	    add(Items.REDSTONE_BLOCK).count(12, 16).rarity(ItemRarity.LEGENDARY)
 	    // TODO: eme rod FISHING
 	    //add(Items.COAL).count(2, 5).rarity(ItemRarity.LEGENDARY).name(Component.literal("Compressed Carbon").withStyle(ChatFormatting.GRAY)) TODO: hooks
-	    add(Items.DIAMOND_PICKAXE).rarity(ItemRarity.LEGENDARY).modify { level ->
-		    val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    add(Items.DIAMOND_PICKAXE).rarity(ItemRarity.LEGENDARY).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 6)
 		    enchant(enchants.getOrThrow(Enchantments.FORTUNE), 3)
 		    enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 4)
 	    }
-	    add(Items.GOLDEN_SHOVEL).rarity(ItemRarity.LEGENDARY).modify { level ->
-		    val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    add(Items.GOLDEN_SHOVEL).rarity(ItemRarity.LEGENDARY).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 8)
 		    enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 6)
 	    }
@@ -441,13 +437,13 @@ object TreasureRegistry {
 	    add(Items.POPPED_CHORUS_FRUIT).count(6, 12).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST)
 	    add(Items.ENDER_PEARL).count(4, 8).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST)
 	    add(Items.CONCRETE.purple).count(16, 32).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(8, 12).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(1, emptyList())) } // duration 1
+	    add(Items.FIREWORK_ROCKET).count(8, 12).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(1, emptyList())) } // duration 1
 
 	    add(Items.END_ROD).count(8, 12).rarity(ItemRarity.RARE).biome(Biomes.END_LIST)
 	    add(Items.PURPUR_BLOCK).count(16, 32).rarity(ItemRarity.RARE).biome(Biomes.END_LIST)
 	    add(Items.DRAGON_BREATH).count(2, 4).rarity(ItemRarity.RARE).biome(Biomes.END_LIST)
 	    add(Items.ENDERMITE_SPAWN_EGG).rarity(ItemRarity.RARE).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(8, 14).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }
+	    add(Items.FIREWORK_ROCKET).count(8, 14).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }
 	    add(Items.DIAMOND_PICKAXE).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { level ->
 		    val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.UNBREAKING), level.random.nextIntBetweenInclusive(1, 2))
@@ -458,13 +454,13 @@ object TreasureRegistry {
 	    add(Items.ENDER_CHEST).count(2).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST)
 	    add(Items.CRYING_OBSIDIAN).count(12, 24).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST)
 	    add(Items.GLAZED_TERRACOTTA.purple).count(16, 32).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST)
-	    add(Items.POTION).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST).name(Component.literal("Special Liquid")).modify { _ -> set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0xFFFFFF), listOf(MobEffectInstance(MobEffects.NAUSEA, 200, 15)), Optional.empty<String>())) }
+	    add(Items.POTION).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST).name(Component.literal("Special Liquid")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0xFFFFFF), listOf(MobEffectInstance(MobEffects.NAUSEA, 200, 15)), Optional.empty<String>())) }
 
-	    add(Items.POTION).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST).name(Component.literal("Dragon's Breath")).modify { _ -> set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0x9B59B6), listOf(MobEffectInstance(MobEffects.REGENERATION, 400, 1), MobEffectInstance(MobEffects.RESISTANCE, 600, 0), MobEffectInstance(MobEffects.SLOW_FALLING, 600, 0)), Optional.empty<String>())) }
+	    add(Items.POTION).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST).name(Component.literal("Dragon's Breath")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0x9B59B6), listOf(MobEffectInstance(MobEffects.REGENERATION, 400, 1), MobEffectInstance(MobEffects.RESISTANCE, 600, 0), MobEffectInstance(MobEffects.SLOW_FALLING, 600, 0)), Optional.empty<String>())) }
 		add(Items.SHULKER_SHELL).count(6, 10).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST)
 	    add(Items.END_CRYSTAL).count(2).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST)
 	    add(Items.OBSIDIAN).count(32, 64).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(16, 24).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }
+	    add(Items.FIREWORK_ROCKET).count(16, 24).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }
 	    add(Items.DIAMOND_CHESTPLATE).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST).name(Component.literal("Voidbound Cuirass").withStyle(ChatFormatting.GOLD)).modify { level ->
 			val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.PROTECTION), level.random.nextIntBetweenInclusive(3, 4))
@@ -475,7 +471,7 @@ object TreasureRegistry {
 	    add(Items.END_CRYSTAL).count(3, 4).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST)
 	    add(Items.NETHER_STAR).count(1).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST)
 	    add(Items.DRAGON_HEAD).count(1).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(24, 28).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(3, emptyList())) }
+	    add(Items.FIREWORK_ROCKET).count(24, 28).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(3, emptyList())) }
 	    add(Items.NETHERITE_PICKAXE).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST).name(Component.literal("Void Excavator").withStyle(ChatFormatting.LIGHT_PURPLE)).modify { level ->
 			val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), level.random.nextIntBetweenInclusive(7, 10))
@@ -484,7 +480,7 @@ object TreasureRegistry {
 
 	    add(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE).count(2, 8).rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST)
 	    add(Items.NETHERITE_INGOT).count(18).rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(16, 18).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(4, emptyList())) }
+	    add(Items.FIREWORK_ROCKET).count(16, 18).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(4, emptyList())) }
 	    add(Items.NETHERITE_SWORD).rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST).name(Component.literal("Void's Edge").withStyle(ChatFormatting.RED)).modify { level ->
 			val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.SHARPNESS), 2)
@@ -494,7 +490,7 @@ object TreasureRegistry {
 		}
 
 	    add(Items.BEACON).count(1).rarity(ItemRarity.ASTRAL).biome(Biomes.END_LIST)
-	    add(Items.FIREWORK_ROCKET).count(36, 40).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { _ -> set(DataComponents.FIREWORKS, Fireworks(10, emptyList())) }
+	    add(Items.FIREWORK_ROCKET).count(36, 40).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(10, emptyList())) }
 	    add(Items.NETHERITE_CHESTPLATE).rarity(ItemRarity.ASTRAL).biome(Biomes.END_LIST).name(Component.literal("Astral Deity's Aegis").withStyle(ChatFormatting.AQUA)).modify { level ->
 			val enchants = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.PROTECTION), 10)

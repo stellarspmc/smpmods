@@ -6,7 +6,7 @@ import net.minecraft.world.entity.MobCategory
 import net.minecraft.world.level.Level
 
 object BossRegistry {
-    internal fun register() {
-        PolymerRegistry.registerEntity("crystal_boss", EntityType.Builder.of({ entityType, level -> CrystalBoss(entityType, level) }, MobCategory.MONSTER).sized(.9f, 2.9f), CrystalBoss.createAttributes())
+    internal fun register() { // TODO: fix
+        PolymerRegistry.registerEntity("crystal_boss", EntityType.Builder.of(::CrystalBoss, MobCategory.MONSTER).sized(.9f, 2.9f), CrystalBoss.createAttributes())
     }
 }

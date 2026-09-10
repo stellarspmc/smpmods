@@ -11,7 +11,7 @@ object ConfigLoader {
 
 	var CONFIG: DiscordConfig? = DiscordConfig()
 
-	fun saveConfig() { try { Files.newBufferedWriter(CONFIG_FILE).use { writer -> GSON.toJson(CONFIG, writer) } } catch (e: Exception) { SMPMod.modLogger.error("Failed to save Discord config!", e) } }
+	fun saveConfig() { try { Files.newBufferedWriter(CONFIG_FILE).use { GSON.toJson(CONFIG, it) }} catch (e: Exception) { SMPMod.modLogger.error("Failed to save Discord config!", e) }}
 	fun checkConfigs() {
 		if (Files.exists(CONFIG_FILE)) loadConfig()
 		else {
@@ -22,10 +22,7 @@ object ConfigLoader {
 
 	private fun loadConfig() {
 		try {
-			Files.newBufferedReader(CONFIG_FILE).use { reader ->
-				CONFIG = GSON.fromJson<DiscordConfig?>(reader, DiscordConfig::class.java)
-				if (CONFIG == null) CONFIG = DiscordConfig()
-			}
+			Files.newBufferedReader(CONFIG_FILE).use { CONFIG = GSON.fromJson<DiscordConfig?>(it, DiscordConfig::class.java)?: DiscordConfig() }
 		} catch (e: Exception) { SMPMod.modLogger.error("Failed to load Discord config! Reverting to defaults.", e) }
 	}
 }

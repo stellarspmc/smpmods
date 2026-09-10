@@ -38,9 +38,9 @@ class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: 
 			for (trait in traits) title.append(Component.literal("$trait ").withColor(trait.color))
 			title.append(Component.literal(this.fishName).withColor(rarity.color))
 			if (quality > 0) title.append(Component.literal(" " + "★".repeat(quality)).withStyle(ChatFormatting.YELLOW))
-			return title.withStyle { style -> style.withItalic(false) }
+			return title.withStyle { it.withItalic(false) }
 		}
-		return Component.literal(this.fishName).withColor(rarity.color).withStyle { style -> style.withItalic(false) }
+		return Component.literal(this.fishName).withColor(rarity.color).withStyle { it.withItalic(false) }
 	}
 
 	override fun buildLore(stack: ItemStack): MutableList<Component> {
@@ -69,7 +69,7 @@ class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: 
 			val map = mutableMapOf<ItemModifier, Int>()
 			if (tag.getCompound("modifier").isPresent) {
 				val modTag = tag.getCompound("modifier").get()
-				modTag.forEach { id, level -> ItemModifier.fromId(id).ifPresent { mod -> level.asInt().ifPresent { lvl -> map[mod] = lvl } } }
+				modTag.forEach { id, level -> ItemModifier.fromId(id).ifPresent { mod -> level.asInt().ifPresent { lvl -> map[mod] = lvl }} }
 			}
 			return map
 		}

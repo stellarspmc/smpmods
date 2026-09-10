@@ -41,8 +41,8 @@ class NPCData : SavedData {
     fun getMannequin(level: ServerLevel, id: String): Mannequin? = level.getEntity(getUuid(id) ?: return null) as? Mannequin
 
     companion object {
-        val CODEC: Codec<NPCData> = RecordCodecBuilder.create { instance -> instance.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", mapOf()).forGetter { data -> data.npcMap }).apply(instance) { npcs -> NPCData(npcs) } }
-	    val TYPE: SavedDataType<NPCData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), { NPCData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+        val CODEC: Codec<NPCData> = RecordCodecBuilder.create { it.group(Codec.unboundedMap(Codec.STRING, UUIDUtil.CODEC).optionalFieldOf("npcs", mapOf()).forGetter(NPCData::npcMap)).apply(it, ::NPCData)}
+	    val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "npc_data"), { NPCData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
         @JvmStatic fun get() = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
         @JvmStatic fun createCustomProfile(name: String, uuidIntArray: IntArray, textureValue: String) = createCustomProfile(name, UUIDUtil.uuidFromIntArray(uuidIntArray), textureValue)

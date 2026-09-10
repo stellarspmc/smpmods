@@ -35,7 +35,7 @@ object NPCManager {
 
         val mannequin = EntityTypes.MANNEQUIN.create(level, EntitySpawnReason.TRIGGERED) ?: return null
         mannequin.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
-	    mannequin.profile = def.profile // TODO: check, type problems
+	    if (def.profile != null) mannequin.profile = def.profile // TODO: check, type problems
         mannequin.customName = def.displayName
         mannequin.setImmovable(true)
         mannequin.isInvulnerable = true

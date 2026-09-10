@@ -122,6 +122,6 @@ class ShopManager : SavedData() {
             }
         }
 
-        fun serverTickLoop(server: MinecraftServer) { getAllShops(server).forEach { data: ShopData -> data.updateHologram() } }
+        fun serverTickLoop(server: MinecraftServer) { getAllShops(server).forEach { data: ShopData -> data.updateHologram() }}
     }
 }

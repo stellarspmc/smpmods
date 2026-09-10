@@ -3,13 +3,12 @@ package spmc.smpmod.utils
 import spmc.smpmod.utils.MessageUtils.formatName
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
 
 class BaseImplementedItem(block: Block, properties: Properties, vanillaItem: Item, private val id: String) : BasePolymerBlockItem(block, properties, vanillaItem) {
-    override fun buildName(stack: ItemStack): Component = Component.literal(formatName(id)).withStyle { style: Style -> style.withItalic(false) }
+    override fun buildName(stack: ItemStack) = Component.literal(formatName(id)).withStyle { it.withItalic(false) }
     override fun buildLore(stack: ItemStack): MutableList<Component> = mutableListOf()
 
     override fun modifyItem(stack: ItemStack, stackData: ItemStack) {

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour
 object PlantRegistry {
     val SEEDS: HashMap<String, SeedItem> = HashMap()
 
-    private fun getBaseSeed(baseCrop: Item): Item = when (baseCrop) {
+    private fun getBaseSeed(baseCrop: Item) = when (baseCrop) {
 		Items.WHEAT -> Items.WHEAT_SEEDS
 	    Items.CARROT -> Items.CARROT
 	    Items.POTATO -> Items.POTATO
@@ -25,9 +25,9 @@ object PlantRegistry {
 
     private fun registerPlant(cropId: String, baseCrop: Item, basePrice: Double, rarity: ItemRarity) {
         val baseSeed = getBaseSeed(baseCrop)
-        val cropItem = PolymerRegistry.createItem(cropId) { properties -> CropItem(properties, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity) }
-        val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { properties -> SeedBlock(properties) { cropItem } }, BlockBehaviour.Properties.of()) as SeedBlock
-        val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { properties -> SeedItem(seedBlock, properties, baseSeed, MessageUtils.formatName(cropId + "_seeds")) }
+        val cropItem = PolymerRegistry.createItem(cropId) { CropItem(it, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity) }
+        val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { SeedBlock(it) { cropItem }}, BlockBehaviour.Properties.of()) as SeedBlock
+        val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { SeedItem(seedBlock, it, baseSeed, MessageUtils.formatName(cropId + "_seeds")) }
         SEEDS.putIfAbsent(cropId, seedItem)
     }
 

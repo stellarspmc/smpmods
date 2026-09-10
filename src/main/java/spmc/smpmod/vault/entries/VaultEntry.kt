@@ -1,9 +1,9 @@
-package spmc.smpmod.vault.entries;
+package spmc.smpmod.vault.entries
 
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerLevel
 
-public interface VaultEntry {
-    String id();
-    double value();
-    void apply(ServerLevel level);
+interface VaultEntry {
+	fun id(): String
+	fun value(): Double
+	fun apply(level: ServerLevel)
 }

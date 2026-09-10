@@ -48,7 +48,7 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 
 	fun top(page: Int): String {
 		val sorted = this.sortedBalances
-		val filtered = sorted.filter { entry -> resolveName(entry.key) != "spmc" }
+		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
 		val rankings = StringBuilder()
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
@@ -67,7 +67,7 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 
 	fun getMinecraftTop(page: Int): Component {
 		val sorted = this.sortedBalances
-		val filtered = sorted.filter { entry -> resolveName(entry.key) != "spmc" }
+		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
 		val endIndex = min(startIndex + pageSize, filtered.size)
@@ -87,17 +87,13 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 		return rankings
 	}
 
-	val sortedBalances: List<Map.Entry<UUID, Double>> = balances.entries.sortedBy { it.value }.asReversed()
+	val sortedBalances = balances.entries.sortedBy { it.value }.asReversed()
 
 	companion object {
 		private val BALANCES_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.DOUBLE)
 		private val NAMES_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING)
-
-		val CODEC: Codec<EconomyData> = RecordCodecBuilder.create { instance -> instance.group(BALANCES_CODEC.fieldOf("balances").forGetter { data -> data.balances }, NAMES_CODEC.fieldOf("names").forGetter { data -> data.names }).apply(instance) { balances, names -> EconomyData(balances, names) } }
-		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "economy"), { EconomyData() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
-
-		@JvmStatic
-		fun get(): EconomyData? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
-
+		val CODEC: Codec<EconomyData> = RecordCodecBuilder.create { it.group(BALANCES_CODEC.fieldOf("balances").forGetter(EconomyData::balances), NAMES_CODEC.fieldOf("names").forGetter(EconomyData::names)).apply(it, ::EconomyData) }
+		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "economy"), ::EconomyData, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+		@JvmStatic fun get(): EconomyData? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
 	}
 }

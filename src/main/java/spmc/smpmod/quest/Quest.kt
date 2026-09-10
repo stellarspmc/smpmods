@@ -42,11 +42,11 @@ data class Quest(val id: String, val title: String, val description: String, @Jv
 		}
 
 		companion object {
-			val CODEC: Codec<QuestReward> = RecordCodecBuilder.create { instance -> instance.group(Codec.DOUBLE.optionalFieldOf("money", 0.0).forGetter(QuestReward::money), Codec.INT.optionalFieldOf("experience", 0).forGetter(QuestReward::experience), ItemStack.CODEC.listOf().optionalFieldOf("items", mutableListOf<ItemStack>()).forGetter(QuestReward::items)).apply(instance, ::QuestReward) }
+			val CODEC: Codec<QuestReward> = RecordCodecBuilder.create { it.group(Codec.DOUBLE.optionalFieldOf("money", 0.0).forGetter(QuestReward::money), Codec.INT.optionalFieldOf("experience", 0).forGetter(QuestReward::experience), ItemStack.CODEC.listOf().optionalFieldOf("items", mutableListOf<ItemStack>()).forGetter(QuestReward::items)).apply(it, ::QuestReward) }
 		}
 	}
 
 	companion object {
-		val CODEC: Codec<Quest> = RecordCodecBuilder.create { instance -> instance.group(Codec.STRING.fieldOf("id").forGetter(Quest::id), Codec.STRING.fieldOf("title").forGetter(Quest::title), Codec.STRING.fieldOf("description").forGetter(Quest::description), QuestType.CODEC.fieldOf("type").forGetter(Quest::type), Identifier.CODEC.fieldOf("target").forGetter(Quest::target), Codec.INT.fieldOf("required_count").forGetter(Quest::requiredCount), QuestCategory.CODEC.fieldOf("quest_type").forGetter(Quest::questType), QuestReward.CODEC.fieldOf("reward").forGetter(Quest::questReward), Codec.STRING.optionalFieldOf("npc_id").forGetter(Quest::npcId), Codec.STRING.optionalFieldOf("prerequisite_quest_id").forGetter(Quest::preQuestId)).apply(instance, ::Quest) }
+		val CODEC: Codec<Quest> = RecordCodecBuilder.create { it.group(Codec.STRING.fieldOf("id").forGetter(Quest::id), Codec.STRING.fieldOf("title").forGetter(Quest::title), Codec.STRING.fieldOf("description").forGetter(Quest::description), QuestType.CODEC.fieldOf("type").forGetter(Quest::type), Identifier.CODEC.fieldOf("target").forGetter(Quest::target), Codec.INT.fieldOf("required_count").forGetter(Quest::requiredCount), QuestCategory.CODEC.fieldOf("quest_type").forGetter(Quest::questType), QuestReward.CODEC.fieldOf("reward").forGetter(Quest::questReward), Codec.STRING.optionalFieldOf("npc_id").forGetter(Quest::npcId), Codec.STRING.optionalFieldOf("prerequisite_quest_id").forGetter(Quest::preQuestId)).apply(it, ::Quest) }
 	}
 }

@@ -27,11 +27,11 @@ class PlayerQuestData {
         fun getQuest(): Quest? = QuestRegistry.get(this.questId)
 
         companion object {
-            val CODEC: Codec<ActiveQuest> = RecordCodecBuilder.create { instance -> instance.group(Codec.STRING.fieldOf("quest").forGetter { obj -> obj.questId }, Codec.INT.fieldOf("current_count").forGetter { obj -> obj.currentCount }, Codec.BOOL.fieldOf("completed").forGetter { obj -> obj.isCompleted }, Codec.BOOL.optionalFieldOf("claimed", false).forGetter { obj -> obj.isClaimed }).apply(instance, ::ActiveQuest)}
+            val CODEC: Codec<ActiveQuest> = RecordCodecBuilder.create { it.group(Codec.STRING.fieldOf("quest").forGetter(ActiveQuest::questId), Codec.INT.fieldOf("current_count").forGetter(ActiveQuest::currentCount), Codec.BOOL.fieldOf("completed").forGetter(ActiveQuest::isCompleted), Codec.BOOL.optionalFieldOf("claimed", false).forGetter(ActiveQuest::isClaimed)).apply(it, ::ActiveQuest)}
         }
     }
 
     companion object {
-        val CODEC: Codec<PlayerQuestData> = RecordCodecBuilder.create { instance -> instance.group(ActiveQuest.CODEC.listOf().fieldOf("active_quests").forGetter { p -> p.activeQuests }, Codec.STRING.listOf().xmap( { coll -> ArrayList(coll).toSet() }, { coll -> ArrayList(coll) }).fieldOf("completed_quests").forGetter { p -> p.completedQuestIds }, Codec.LONG.optionalFieldOf("last_daily_reset", 0L).forGetter { p -> p.lastDailyResetDay }, Codec.LONG.optionalFieldOf("last_weekly_reset", 0L).forGetter { p -> p.lastWeeklyResetWeek }).apply(instance) { active, completed, daily, weekly -> val data = PlayerQuestData(); data.activeQuests.addAll(active); data.completedQuestIds.addAll(completed); data.lastDailyResetDay = daily; data.lastWeeklyResetWeek = weekly; data } }
+        val CODEC: Codec<PlayerQuestData> = RecordCodecBuilder.create { it.group(ActiveQuest.CODEC.listOf().fieldOf("active_quests").forGetter(PlayerQuestData::activeQuests), Codec.STRING.listOf().xmap({ a -> a.toSet() }, ::ArrayList).fieldOf("completed_quests").forGetter(PlayerQuestData::completedQuestIds), Codec.LONG.optionalFieldOf("last_daily_reset", 0L).forGetter(PlayerQuestData::lastDailyResetDay), Codec.LONG.optionalFieldOf("last_weekly_reset", 0L).forGetter(PlayerQuestData::lastWeeklyResetWeek)).apply(it) { active, completed, daily, weekly -> val data = PlayerQuestData(); data.activeQuests.addAll(active); data.completedQuestIds.addAll(completed); data.lastDailyResetDay = daily; data.lastWeeklyResetWeek = weekly; data }}
     }
 }

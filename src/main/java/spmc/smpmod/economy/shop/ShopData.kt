@@ -160,7 +160,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         }
 
         private fun openJavaGui(player: ServerPlayer, shopData: ShopData) {
-            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player, shopData) } }
+            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player, shopData) }}
             gui.setTitle(Component.literal("Shop Settings"))
             refreshGui(gui, player, shopData)
             gui.open()

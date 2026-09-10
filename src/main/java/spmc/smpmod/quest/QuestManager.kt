@@ -11,7 +11,6 @@ import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 import java.time.LocalDate
 import java.util.*
-import java.util.function.Function
 import kotlin.math.min
 
 class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQuestData> = HashMap()) : SavedData() {
@@ -33,12 +32,12 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
             setDirty()
         }
 
-        data.activeQuests.filter { a -> (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.DAILY) or (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.WEEKLY) }.forEach { a -> completeAndClaim(player, a) }
+        data.activeQuests.filter { a -> (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.DAILY) or (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.WEEKLY) }.forEach { completeAndClaim(player, it) }
     }
 
     fun getAvailableNpcQuests(player: ServerPlayer, npcId: String): List<Quest?> {
         val data: PlayerQuestData = getQuests(player)
-        return QuestRegistry.getAllForNpc(npcId).filter{ quest -> return@filter !(data.activeQuests.any { a -> a.questId == quest?.id } || data.completedQuestIds.contains(quest?.id)) && quest?.preQuestId?.map{ o -> data.completedQuestIds.contains(o) }?.orElse(true)!!}
+        return QuestRegistry.getAllForNpc(npcId).filter { return@filter !(data.activeQuests.any { a -> a.questId == it?.id } || data.completedQuestIds.contains(it?.id)) && it?.preQuestId?.map{ o -> data.completedQuestIds.contains(o) }?.orElse(true)!!}
     }
 
     fun completeAndClaim(player: ServerPlayer, activeQuest: PlayerQuestData.ActiveQuest) {
@@ -64,10 +63,10 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
     }
 
     companion object {
-        val CODEC: Codec<QuestManager> = Codec.unboundedMap(UUIDUtil.CODEC, PlayerQuestData.CODEC).xmap({ questData -> QuestManager(questData) }, { manager -> manager.playerQuests })
-        val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "questing"), { QuestManager() }, CODEC, DataFixTypes.LEVEL)
+        val CODEC: Codec<QuestManager> = Codec.unboundedMap(UUIDUtil.STRING_CODEC, PlayerQuestData.CODEC).xmap(::QuestManager, QuestManager::playerQuests)
+        val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "questing"), ::QuestManager, CODEC, DataFixTypes.LEVEL)
 
-        @JvmStatic fun get(): QuestManager? { return minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE) }
-        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData { return (get()?: return PlayerQuestData()).playerQuests.computeIfAbsent(player.getUUID()) { _ -> PlayerQuestData() } }
+        @JvmStatic fun get() = minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+        @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData = (get()?: return PlayerQuestData()).playerQuests.computeIfAbsent(player.getUUID()) { PlayerQuestData() }
     }
 }

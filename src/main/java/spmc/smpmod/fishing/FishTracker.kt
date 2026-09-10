@@ -25,7 +25,7 @@ import kotlin.math.min
 
 class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, MutableList<String>> = HashMap()): SavedData() {
 	val unlocked: MutableMap<UUID, MutableList<String>> = HashMap()
-	init { fishUnlocked.forEach { (uuid: UUID, list: MutableList<String>) -> this.unlocked[uuid] = ArrayList(list) } }
+	init { fishUnlocked.forEach { (uuid: UUID, list: MutableList<String>) -> this.unlocked[uuid] = ArrayList(list) }}
 
 	fun getUnlockedFish(id: UUID) = unlocked.getOrDefault(id, ArrayList())
 	fun addFish(id: UUID, fish: String) {
@@ -39,7 +39,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 	companion object {
 		private val UNLOCKED_CODEC: Codec<MutableMap<UUID, MutableList<String>>> = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.list(Codec.STRING))
 
-		val CODEC: Codec<FishTracker> = RecordCodecBuilder.create { instance -> instance.group(UNLOCKED_CODEC.fieldOf("unlocked").forGetter(FishTracker::unlocked)).apply(instance, ::FishTracker) }
+		val CODEC: Codec<FishTracker> = RecordCodecBuilder.create { it.group(UNLOCKED_CODEC.fieldOf("unlocked").forGetter(FishTracker::unlocked)).apply(it, ::FishTracker) }
 		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "fish_tracker"), { FishTracker() }, CODEC, DataFixTypes.PLAYER)
 		@JvmStatic fun get(): FishTracker? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
 
@@ -72,7 +72,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 					val fishId = BuiltInRegistries.ITEM.getKey(fishItem).path
 
 					val isUnlocked = unlockedList.contains(fishId)
-					if (isUnlocked) gui.setSlot(i, GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))).addLoreLine(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + FishItem.getModifiedPrice(fishItem.defaultInstance)).withStyle(ChatFormatting.GREEN)).withStyle { style -> style.withItalic(false) }))
+					if (isUnlocked) gui.setSlot(i, GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))).addLoreLine(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + FishItem.getModifiedPrice(fishItem.defaultInstance)).withStyle(ChatFormatting.GREEN)).withStyle { it.withItalic(false) }))
 					else gui.setSlot(i, GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal(String.format("Found in: %s", BiomeCategory.getBiomeFish(fishItem).toString())).withColor(TextColor.fromRgb(0xFF5555))))
 				} else gui.setSlot(i, GuiElementBuilder(Items.AIR))
 			}

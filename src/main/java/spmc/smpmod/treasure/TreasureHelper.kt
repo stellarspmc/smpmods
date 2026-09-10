@@ -111,7 +111,7 @@ object TreasureHelper {
             val END_LIST = listOf(END) // TODO: diversity (nullscape)
             val CAVES = listOf(DRIP, SCULK, LUSH) // this doesnt make sense but might come in handy
 
-            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes = BIOME_CACHE.computeIfAbsent(biomeKey) { key -> entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) } } ?: DEFAULT }
+            fun getGroup(biomeKey: ResourceKey<Biome>): Biomes = BIOME_CACHE.computeIfAbsent(biomeKey) { key -> entries.firstOrNull { group -> group != DEFAULT && group.biomes.any { keyword -> key.identifier().path.contains(keyword) }} ?: DEFAULT }
         }
     }
     internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) { // TODO: eval, new blocks?
@@ -137,7 +137,7 @@ object TreasureHelper {
         VERY_LOW(.3f, mutableListOf(Blocks.CALCITE, Blocks.SANDSTONE, Blocks.NETHERRACK, Blocks.SOUL_SAND, Blocks.SOUL_SOIL, Blocks.GRAVEL));
 
         companion object {
-            private val RATE_MAP = IdentityHashMap<Block, Float>().apply { enumEntries<BlockRates>().forEach { entry -> entry.blocks.forEach { block -> put(block, entry.multiplier) } } }
+            private val RATE_MAP = IdentityHashMap<Block, Float>().apply { enumEntries<BlockRates>().forEach { entry -> entry.blocks.forEach { block -> put(block, entry.multiplier) }} }
             fun getMultiplier(state: BlockState): Float = RATE_MAP[state.block] ?: 0f
         }
     }

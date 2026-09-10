@@ -23,10 +23,10 @@ object FishingRegistry {
     @JvmField val SKY: MutableList<Item> = ArrayList()
 
     val allFish: List<Item> get() = listOf(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY).flatten().distinct()
-    private fun registerRod(tier: RodTiers) { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { properties -> RodItem(properties, tier) } }
+    private fun registerRod(tier: RodTiers) { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { RodItem(it, tier) }}
 
     private fun registerFish(id: String, vanillaModel: Item, basePrice: Double, rarity: ItemRarity, listToBeAdded: MutableList<Item>) {
-        val item = PolymerRegistry.createItem(id) { properties -> FishItem(properties, vanillaModel, formatName(id), basePrice, rarity) }
+        val item = PolymerRegistry.createItem(id) { FishItem(it, vanillaModel, formatName(id), basePrice, rarity) }
         listToBeAdded.add(item)
         FISH_REGISTRY[id] = item
     }
@@ -55,7 +55,7 @@ object FishingRegistry {
     }
 
     internal fun registerFishes() {
-        PolymerRegistry.createItem("corgravian") { properties -> FishItem(properties, Items.SALMON, "Corgravian", 1000000.0, ItemRarity.ASTRAL) }
+        PolymerRegistry.createItem("corgravian") { FishItem(it, Items.SALMON, "Corgravian", 1000000.0, ItemRarity.ASTRAL) }
         registerDefault()
         registerPlains()
         registerTropical()

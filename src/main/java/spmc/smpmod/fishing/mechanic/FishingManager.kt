@@ -10,7 +10,7 @@ import java.util.*
 
 object FishingManager {
 	private val ACTIVE_SESSIONS: MutableMap<UUID, FishingSession> = mutableMapOf()
-	fun register() { ServerTickEvents.END_SERVER_TICK.register(ServerTickEvents.EndTick { _ -> ACTIVE_SESSIONS.entries.removeIf { entry -> entry.value.tick() } }) }
+	fun register() { ServerTickEvents.END_SERVER_TICK.register { ACTIVE_SESSIONS.entries.removeIf { entry -> entry.value.tick() } } }
 
 	@JvmStatic
 	fun startMinigame(player: ServerPlayer, hook: FishingHook) {

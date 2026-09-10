@@ -11,7 +11,6 @@ import spmc.smpmod.industrial.recipe.CompressorRecipe
 import spmc.smpmod.industrial.recipe.SmelterRecipe
 import spmc.smpmod.utils.MessageUtils
 import net.minecraft.ChatFormatting
-import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import net.minecraft.network.codec.ByteBufCodecs
@@ -24,13 +23,12 @@ import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
-import net.minecraft.world.level.block.state.BlockState
 
 object IndustrialRegistry {
-    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
-    private fun registerMineral(id: String, vanillaModel: Item, name: Component) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, vanillaModel, name) } }
-    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) } }
-    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { properties -> BaseMineralItem(properties, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) } }
+    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) }}
+    private fun registerMineral(id: String, vanillaModel: Item, name: Component) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, name) }}
+    private fun registerKarat(id: String, karat: Int, goldColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) }}
+    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) }}
 
     @JvmField var COMPRESSOR_TYPE: RecipeType<CompressorRecipe>? = null
     @JvmField var COMPRESSOR_SERIALIZER: RecipeSerializer<CompressorRecipe>? = null
@@ -100,18 +98,15 @@ object IndustrialRegistry {
     }
 
     internal fun registerBlocks() {
-        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", { properties -> SculkCompressorBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SculkCompressorEntity(pos, state) }, Items.SCULK_CATALYST)
-        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", { properties -> SmelteryBlock(properties) }, BlockBehaviour.Properties.of(), { pos: BlockPos, state: BlockState -> SmelteryEntity(pos, state) }, Items.SMOKER)
+        SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", ::SculkCompressorBlock, BlockBehaviour.Properties.of(), ::SculkCompressorEntity, Items.SCULK_CATALYST)
+        SMELTERY_ENTITY = PolymerRegistry.createBlockWithItemEntity("smeltery", ::SmelteryBlock, BlockBehaviour.Properties.of(), ::SmelteryEntity, Items.SMOKER)
     }
 
     internal fun registerRecipes() {
         COMPRESSOR_TYPE = PolymerRegistry.registerRecipeType("compressing")
-        COMPRESSOR_SERIALIZER = PolymerRegistry.registerRecipeSerializer("compressing",
-            RecordCodecBuilder.mapCodec { instance -> instance.group(Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient), Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result),
-                Codec.INT.optionalFieldOf("process_time", 200).forGetter(CompressorRecipe::processTime) // Default 10 sec (200 ticks)
-            ).apply(instance, ::CompressorRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient, ByteBufCodecs.VAR_INT, CompressorRecipe::count, ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result, ByteBufCodecs.VAR_INT, CompressorRecipe::processTime, ::CompressorRecipe))
+        COMPRESSOR_SERIALIZER = PolymerRegistry.registerRecipeSerializer("compressing", RecordCodecBuilder.mapCodec { it.group(Ingredient.CODEC.fieldOf("ingredient").forGetter(CompressorRecipe::ingredient), Codec.INT.optionalFieldOf("count", 1).forGetter(CompressorRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(CompressorRecipe::result), Codec.INT.optionalFieldOf("process_time", 200).forGetter(CompressorRecipe::processTime)).apply(it, ::CompressorRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, CompressorRecipe::ingredient, ByteBufCodecs.VAR_INT, CompressorRecipe::count, ItemStackTemplate.STREAM_CODEC, CompressorRecipe::result, ByteBufCodecs.VAR_INT, CompressorRecipe::processTime, ::CompressorRecipe))
 
         SMELTERY_TYPE = PolymerRegistry.registerRecipeType("smelting")
-        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting", RecordCodecBuilder.mapCodec { instance -> instance.group(Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients), Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result), Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)).apply(instance, ::SmelterRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients, ByteBufCodecs.VAR_INT, SmelterRecipe::count, ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result, ByteBufCodecs.VAR_INT, SmelterRecipe::processTime, ::SmelterRecipe))
+        SMELTERY_SERIALIZER = PolymerRegistry.registerRecipeSerializer("smelting", RecordCodecBuilder.mapCodec { it.group(Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(SmelterRecipe::ingredients), Codec.INT.optionalFieldOf("count", 1).forGetter(SmelterRecipe::count), ItemStackTemplate.CODEC.fieldOf("result").forGetter(SmelterRecipe::result), Codec.INT.optionalFieldOf("process_time", 200).forGetter(SmelterRecipe::processTime)).apply(it, ::SmelterRecipe) }, StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), SmelterRecipe::ingredients, ByteBufCodecs.VAR_INT, SmelterRecipe::count, ItemStackTemplate.STREAM_CODEC, SmelterRecipe::result, ByteBufCodecs.VAR_INT, SmelterRecipe::processTime, ::SmelterRecipe))
     }
 }
