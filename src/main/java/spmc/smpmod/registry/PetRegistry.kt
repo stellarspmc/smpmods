@@ -1,6 +1,6 @@
 package spmc.smpmod.registry
 
-class PetRegistry {
+object PetRegistry {
 	fun init() {
 		TODO("add pet functionality")
 	}

@@ -14,8 +14,8 @@ import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.component.Fireworks
 import net.minecraft.world.item.enchantment.Enchantments
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.treasure.TreasureEntry
-import spmc.smpmod.treasure.TreasureHelper.Biomes
+import spmc.smpmod.mining.TreasureEntry
+import spmc.smpmod.mining.TreasureHelper.Biomes
 import java.util.*
 
 object TreasureRegistry {

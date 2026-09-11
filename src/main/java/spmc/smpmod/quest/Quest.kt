@@ -24,7 +24,7 @@ data class Quest(val id: String, val title: String, val description: String, @Jv
 
 	enum class QuestType: StringRepresentable {
 		MINE_BLOCK, KILL_MOB, GATHER_ITEM,
-		//DELIVER_ITEM("deliver_item"), TODO: impl
+		//DELIVER_ITEM("deliver_item"), TODO: impl (check cooking update)
 		CRAFTING, FISHING, TRADE_MARKET; // TODO: impl (TRADE_MARKET)
 
 		override fun getSerializedName() = this.name

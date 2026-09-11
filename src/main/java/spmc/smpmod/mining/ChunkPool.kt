@@ -1,4 +1,4 @@
-package spmc.smpmod.treasure
+package spmc.smpmod.mining
 
 import net.minecraft.world.level.ChunkPos
 import kotlin.math.ln

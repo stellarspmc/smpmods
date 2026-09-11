@@ -1,11 +1,10 @@
-package spmc.smpmod.treasure
+package spmc.smpmod.mining
 
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import spmc.smpmod.SMPMod.Companion.minecraftServer
 import spmc.smpmod.core.ItemRarity
-import net.minecraft.util.RandomSource
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore

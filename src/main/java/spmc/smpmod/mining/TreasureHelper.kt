@@ -1,17 +1,15 @@
-package spmc.smpmod.treasure
+package spmc.smpmod.mining
 
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.treasure.ChunkPool.checkChunkPool
-import spmc.smpmod.treasure.ChunkPool.increment
-import spmc.smpmod.treasure.TreasureSpawner.spawnTreasureContainer
+import spmc.smpmod.mining.ChunkPool.checkChunkPool
+import spmc.smpmod.mining.ChunkPool.increment
+import spmc.smpmod.mining.TreasureSpawner.spawnTreasureContainer
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Holder
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.enchantment.Enchantment
 import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.level.ChunkPos
@@ -21,7 +19,7 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
-import spmc.smpmod.treasure.ChunkPool.multiplier
+import spmc.smpmod.mining.ChunkPool.multiplier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.enums.enumEntries

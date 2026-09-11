@@ -1,4 +1,4 @@
-package spmc.smpmod.treasure
+package spmc.smpmod.mining
 
 import spmc.smpmod.SMPMod
 import spmc.smpmod.core.ItemRarity

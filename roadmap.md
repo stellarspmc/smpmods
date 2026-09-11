@@ -77,5 +77,15 @@
 ### Pets
 * **Core Idea:** Unlockable pets with 4 main features: Index, Inventory system, RNG mechanic and buffs.
 * https://discord.com/channels/964789575669137470/1536957411708108923/1536957411708108923
+
+### RPG-Like Mob Level Count
+* **Core Idea:** Adding levels to natural spawning mobs, increasing drops / stuff like that
 * **Technical Requirements:**
-* wip
+* **important thought** mob farms
+
+### Mob Farm Nerf
+* **Core Idea:** see: matcha flavored
+
+### Cooking Update
+* **Core Idea:** refer to discord
+* https://discord.com/channels/964789575669137470/1534914451432800470

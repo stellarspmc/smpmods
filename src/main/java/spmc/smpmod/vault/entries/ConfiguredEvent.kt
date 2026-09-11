@@ -12,7 +12,7 @@ import net.minecraft.world.effect.MobEffects
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.fluctuate.FluctuationData.Companion.changeMargin
 import spmc.smpmod.npc.NPCData.Companion.get
-import spmc.smpmod.treasure.TreasureHelper
+import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.vault.VaultData
 import java.util.function.BiConsumer
 import java.util.function.Consumer

@@ -1,4 +1,4 @@
-package spmc.smpmod.treasure
+package spmc.smpmod.mining
 
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Item

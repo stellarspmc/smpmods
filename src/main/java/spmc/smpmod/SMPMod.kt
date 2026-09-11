@@ -47,8 +47,8 @@ import spmc.smpmod.npc.NPCManager
 import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
 import spmc.smpmod.registry.PolymerRegistry
-import spmc.smpmod.treasure.ChunkPool
-import spmc.smpmod.treasure.TreasureHelper
+import spmc.smpmod.mining.ChunkPool
+import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.utils.MessageUtils
 import spmc.smpmod.vault.VaultData
 import java.util.concurrent.CompletableFuture
