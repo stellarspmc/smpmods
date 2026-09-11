@@ -8,6 +8,9 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.core.component.DataComponentPatch
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.particles.PowerParticleOption
@@ -19,25 +22,31 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.BarrelBlock
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BarrelBlockEntity
+import kotlin.math.max
 
 object TreasureSpawner {
     fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: TreasureHelper.Biomes) {
-        world.destroyBlock(pos, true)
+	    val list = TreasureRegistry.getEligibleTreasures(biomes, rarity)
+	    if (list.isEmpty()) return
+
+	    world.destroyBlock(pos, true)
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3)
         val barrel = world.getBlockEntity(pos) as? BarrelBlockEntity ?: return
-        val list = TreasureRegistry.getEligibleTreasures(biomes, rarity)
-        val availableSlots = (0 until barrel.containerSize).toMutableList()
-        if (list.isEmpty()) return
+	    val customNameComponent = Component.literal(rarity.toString()).withColor(rarity.color).append(" Treasure")
+	    barrel.applyComponents(DataComponentMap.builder().set(DataComponents.CUSTOM_NAME, customNameComponent).build(), DataComponentPatch.builder().set(DataComponents.CUSTOM_NAME, customNameComponent).build())
 
-        repeat(world.random.nextIntBetweenInclusive(1, 9 - rarity.ordinal)) {
+	    val availableSlots = (0 until barrel.containerSize).toMutableList()
+        repeat(world.random.nextIntBetweenInclusive(1, max(1, 9 - rarity.ordinal))) {
             if (availableSlots.isEmpty()) return@repeat
 
             val treasure = list[world.random.nextInt(list.size)]
             val slotIndex = world.random.nextInt(availableSlots.size)
-            barrel.setItem(availableSlots.removeAt(slotIndex), treasure.createStack(world))
+	        val targetSlot = availableSlots.removeAt(slotIndex)
+	        val item = treasure.createStack(world)
+            barrel.setItem(targetSlot, item)
         }
 
-        barrel.setChanged()
+	    barrel.setChanged()
         spawnLootEffects(world, pos, rarity, player)
     }
 
@@ -79,7 +88,6 @@ object TreasureSpawner {
                 world.sendParticles(ParticleTypes.FIREWORK, x, y, z, 40, .4, .4, .4, .15)
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1f, 1f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, 1f)
-
                 announceLoot(world, rarity, player)
             }
 
@@ -92,7 +100,6 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, .7f, 1.5f)
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1f, .8f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, .9f)
-
                 announceLoot(world, rarity, player)
             }
 
@@ -105,7 +112,6 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1f, 1.2f)
                 world.playSound(null, pos, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.BLOCKS, .4f, 1.6f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, 0.8f)
-
                 announceLoot(world, rarity, player)
             }
 

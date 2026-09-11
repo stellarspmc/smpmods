@@ -159,6 +159,7 @@ object CommandRegistry {
 
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().player?: return -1
+	    if (player.level().dimension().identifier().namespace != "minecraft") return -1
         var totalPayout = .0
 
         for (i in 0..<player.inventory.containerSize) {
@@ -324,6 +325,7 @@ object CommandRegistry {
     private fun executeWithdraw(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
         val item = ItemArgument.getItem(ctx, "item").item().value()
         val player = ctx.getSource().player?: return -1
+	    if (player.level().dimension().identifier().namespace != "minecraft") return -1
         val totalCost = MarketState.buyMineral(player, item, count)
         if (totalCost == -2.0) {
             player.sendSystemMessage(Component.literal("✖: ").append(Component.translatable(item.getDescriptionId())).append(" is not a tradeable market item.").withStyle(ChatFormatting.RED))

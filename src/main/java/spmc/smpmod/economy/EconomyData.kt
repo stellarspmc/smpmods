@@ -47,14 +47,14 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 	}
 
 	fun top(page: Int): String {
-		val sorted = this.sortedBalances
+		val sorted = sortedBalances()
 		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
 		val rankings = StringBuilder()
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
 		val endIndex = min(startIndex + pageSize, filtered.size)
 
-		if (startIndex >= filtered.size || startIndex < 0) return "*No data available for this page.*"
+		if (startIndex !in 0..filtered.size) return "*No data available for this page.*"
 		for (i in startIndex ..< endIndex) {
 			val entry = filtered[i]
 			val name = MarkdownSanitizer.escape(resolveName(entry.key))
@@ -66,13 +66,13 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 	}
 
 	fun getMinecraftTop(page: Int): Component {
-		val sorted = this.sortedBalances
+		val sorted = sortedBalances()
 		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
 		val endIndex = min(startIndex + pageSize, filtered.size)
 
-		if (startIndex >= filtered.size || startIndex < 0) return Component.literal("No data available for this page.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
+		if (startIndex !in 0..filtered.size) return Component.literal("No data available for this page.").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)
 
 		val rankings = Component.empty()
 		for (i in startIndex ..< endIndex) {
@@ -87,7 +87,7 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 		return rankings
 	}
 
-	val sortedBalances = balances.entries.sortedBy { it.value }.asReversed()
+	private fun sortedBalances() = balances.entries.sortedBy { it.value }.asReversed()
 
 	companion object {
 		private val BALANCES_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.DOUBLE)

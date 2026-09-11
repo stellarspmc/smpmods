@@ -14,6 +14,7 @@ object FishingManager {
 
 	@JvmStatic
 	fun startMinigame(player: ServerPlayer, hook: FishingHook) {
+		if (player.level().dimension().identifier().namespace != "minecraft") return
 		if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return
 		ACTIVE_SESSIONS[player.getUUID()] = FishingSession(player, hook, (player.mainHandItem.item as? RodItem)?.tier ?: RodTiers.NORMAL)
 	}

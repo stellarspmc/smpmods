@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
+import spmc.smpmod.core.CreativeDimensionManager.teleportToCreative
 
 object NPCRegistry {
     internal fun init() {
@@ -72,5 +73,15 @@ object NPCRegistry {
             .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("stub: do something"), player) } // TODO: write dialogue
             .build()
         )
+
+	    register(CustomNPC.Builder("creative", true)
+		    .displayName(Component.literal("Astral Builder").withColor(12471528))
+		    .skin("creative", intArrayOf(2003779368, -1931584255, -1623256195, 1848851372), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTAxNTcyYTRjNDJkN2ZmOTViZjUyMmIzYzNiMmZiMmNhYWM0NzM1YzQ4YWZlNWZiODI5NDJiMTllMzgxNTYzZiJ9fX0=")
+		    .onAttack { player, _ -> teleportToCreative(player) }
+		    .onUse { player, _ -> }
+			.build()
+		)
+
+	    // TODO: create survival counterpart
     }
 }

@@ -95,6 +95,7 @@ class SMPMod : DedicatedServerModInitializer {
 
 	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
 	        if (entity is ServerPlayer && messageChannel != null) {
+		        if (entity.level().dimension().identifier().namespace != "minecraft") return@register
 		        messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(entity).string + " at (" + entity.x.toInt() + ", " + entity.y.toInt() + ", " + entity.z.toInt() + ")"))?.queue()
 		        val eco = EconomyData.get() ?: return@register
 		        val victimBalance = eco.getBalance(entity.getUUID())
@@ -108,7 +109,7 @@ class SMPMod : DedicatedServerModInitializer {
 				        MessageUtils.sendError<Int>(entity, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
 
 				        if (damageSource.entity?.getUUID() != entity.getUUID()) {
-					        val killer = damageSource.entity as ServerPlayer
+					        val killer = damageSource.entity as? ServerPlayer?: return@register
 					        val bountyReward = ((totalLost * .7) * 100.0).roundToInt() / 100.0
 
 					        eco.changeBalance(killer.getUUID(), bountyReward)
@@ -140,7 +141,7 @@ class SMPMod : DedicatedServerModInitializer {
 	    }
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }
-	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> DiscordWebhook.sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) }
+	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> DiscordWebhook.sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) } // TODO: diff between creative and survival
 	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)
@@ -150,8 +151,9 @@ class SMPMod : DedicatedServerModInitializer {
 	    // proof of concept, TODO: make it better
         PlayerBlockBreakEvents.AFTER.register { world, _, _, state, _ ->
 	        if (world.isClientSide) return@register
+	        if (world.dimension().identifier().namespace != "minecraft") return@register
 	        if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
-		        TODO("to be fixed") //if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, ItemStack(PlantRegistry.SEEDS.get("wheat")))
+		        //if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, ItemStack(PlantRegistry.SEEDS.get("wheat"))) TODO: to be fixed
 	        }
         }
     }

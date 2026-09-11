@@ -18,12 +18,14 @@ object QuestRegistry {
 		initWeekly()
 
 		PlayerBlockBreakEvents.AFTER.register { _, player, _, state, _ ->
+			if (player.level().dimension().identifier().namespace != "minecraft") return@register
 			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) activeQuest.increment(1)
 			}
 		}
 
 		ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
+			if (entity.level().dimension().identifier().namespace != "minecraft") return@register
 			getQuests(damageSource.entity as? ServerPlayer?: return@register).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.KILL_MOB && quest.target == BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)) activeQuest.increment(1)
 			}

@@ -34,6 +34,7 @@ public class MixinServerGamePacketListenerImpl {
         BlockPos signPos = packet.getPos();
 
         if (!(serverLevel.getBlockEntity(signPos) instanceof SignBlockEntity signBlockEntity)) return;
+        if (!serverLevel.dimension().identifier().getNamespace().equals("minecraft")) return;
 
         SignText signText = signBlockEntity.getText(packet.isFrontText());
         String line1 = signText.getMessage(0, false).getString().trim();

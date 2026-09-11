@@ -85,6 +85,9 @@
 
 ### Mob Farm Nerf
 * **Core Idea:** see: matcha flavored
+* **Technical Requirements:**
+* a spawner like structure → spawn mobs and give out more rewards
+* breaking spawners grant heart items?
 
 ### Cooking Update
 * **Core Idea:** refer to discord

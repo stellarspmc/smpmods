@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import spmc.smpmod.SMPMod.Companion.modLogger
 import spmc.smpmod.mining.ChunkPool.multiplier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -39,8 +40,9 @@ object TreasureHelper {
 
     fun onBlockBreak(world: Level, player: Player, pos: BlockPos, state: BlockState, ignored: BlockEntity?) {
         if (world.isClientSide) return
+	    if (player.level().dimension().identifier().namespace != "minecraft") return
 
-        val mainHand = player.mainHandItem
+        val mainHand = player.mainHandItem // TODO: fortune increases chances
         val enchantmentRegistry = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
         val silkTouchHolder = enchantmentRegistry.get(Enchantments.SILK_TOUCH)
         if (silkTouchHolder.isPresent && EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder.get(), mainHand) > 0) return
@@ -69,10 +71,10 @@ object TreasureHelper {
     }
 
     private fun getBaseCommonChance(state: BlockState): Float = BlockRates.getMultiplier(state)
-    private fun adjustRarity(rarity: ItemRarity): ItemRarity {
-        if (!rigTreasures || rarity.ordinal == ItemRarity.entries.size) return rarity
-        return ItemRarity.entries[rarity.ordinal + 1]
-    }
+	private fun adjustRarity(rarity: ItemRarity): ItemRarity {
+		if (!rigTreasures || rarity.ordinal >= ItemRarity.entries.lastIndex) return rarity
+		return ItemRarity.entries[rarity.ordinal + 1]
+	}
 
     enum class Biomes(private val biomes: MutableList<String>) { // TODO: eval, not complete?
         BADLANDS(mutableListOf("badlands")),
@@ -130,7 +132,7 @@ object TreasureHelper {
         LOW(.85f, mutableListOf(
 	        Blocks.STONE, Blocks.TUFF, Blocks.ANDESITE, Blocks.GRANITE,
 	        Blocks.AMETHYST_BLOCK, Blocks.DRIPSTONE_BLOCK, Blocks.DIORITE, Blocks.DEEPSLATE,
-	        Blocks.BASALT, Blocks.BLACKSTONE, Blocks.SMOOTH_BASALT, Blocks.MAGMA_BLOCK, Blocks.END_STONE
+	        Blocks.BASALT, Blocks.BLACKSTONE, Blocks.SMOOTH_BASALT, Blocks.MAGMA_BLOCK, Blocks.END_STONE, Blocks.CINNABAR, Blocks.SULFUR
 		)),
         VERY_LOW(.3f, mutableListOf(Blocks.CALCITE, Blocks.SANDSTONE, Blocks.NETHERRACK, Blocks.SOUL_SAND, Blocks.SOUL_SOIL, Blocks.GRAVEL));
 

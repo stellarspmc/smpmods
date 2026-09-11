@@ -80,12 +80,11 @@ class MarketState: SavedData() {
 
 		fun sellMineral(player: ServerPlayer, item: Item, amount: Int, multiplier: Double): Double {
 			val market: MarketState = state ?: return .0
-			val data = market.get(item) ?: return .0
 			val eco = get()?: return .0
 
-			if (item === Items.DIAMOND) return if (eco.changeBalance(player.getUUID(), 100 * amount * multiplier)) 100 * amount * multiplier else .0
+			if (item == Items.DIAMOND) return if (eco.changeBalance(player.getUUID(), 100 * amount * multiplier)) 100 * amount * multiplier else .0
+			val data = market.get(item) ?: return .0
 			if (amount <= 0) return .0
-
 			val totalPayout = (data.getBulkSellPayout(amount) * multiplier * 100.0).roundToInt() / 100.0
 			if (totalPayout <= 0) return .0
 

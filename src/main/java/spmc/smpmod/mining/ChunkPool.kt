@@ -15,5 +15,5 @@ object ChunkPool {
 
 	fun multiplier(chunk: ChunkPos): Double =  1 - (chunkBasedPool.getOrDefault(chunk, .0) / 275)
     fun serverTickLoop() { for (pos in chunkBasedPool.keys) chunkBasedPool.replace(pos, Math.clamp(chunkBasedPool.getOrDefault(pos, .0).pow(.999), .0, 100.0)) }
-    fun checkChunkPool(pos: ChunkPos): Boolean = chunkBasedPool.getOrDefault(pos, .0) <= 100.0
+    fun checkChunkPool(pos: ChunkPos): Boolean = chunkBasedPool.getOrDefault(pos, .0) > 100.0
 }

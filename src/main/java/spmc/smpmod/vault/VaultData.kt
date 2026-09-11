@@ -162,11 +162,11 @@ class VaultData: SavedData {
 
 		fun register() {
 			ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-				for (perk in (get() ?: return@register).activePerks) if (NPCData.get()?.getMannequin((SMPMod.minecraftServer ?: return@register).overworld(), "vault_guardian") != null) perk.type.trigger(perk.level, handler.getPlayer())
+				for ((type, level) in (get() ?: return@register).activePerks) if (NPCData.get()?.getMannequin((SMPMod.minecraftServer ?: return@register).overworld(), "vault_guardian") != null) type.trigger(level, handler.getPlayer())
 			}
 
 			ServerPlayerEvents.AFTER_RESPAWN.register { _, player, _ ->
-				for (perk in (get() ?: return@register).activePerks) if (NPCData.get()?.getMannequin((SMPMod.minecraftServer ?: return@register).overworld(), "vault_guardian") != null) perk.type.trigger(perk.level, player)
+				for ((type, level) in (get() ?: return@register).activePerks) if (NPCData.get()?.getMannequin((SMPMod.minecraftServer ?: return@register).overworld(), "vault_guardian") != null) type.trigger(level, player)
 			}
 
 			ServerTickEvents.END_SERVER_TICK.register {

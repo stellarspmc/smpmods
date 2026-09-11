@@ -46,7 +46,7 @@ class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: 
 	override fun buildLore(stack: ItemStack): MutableList<Component> {
 		val lore = mutableListOf<Component>()
 		val fishTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("fish")
-		if (fishTag.isPresent) lore.add(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + getModifiedPrice(stack)).withStyle(ChatFormatting.GREEN)).withStyle { style: Style? -> style!!.withItalic(false) })
+		if (fishTag.isPresent) lore.add(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + getModifiedPrice(stack)).withStyle(ChatFormatting.GREEN)).withStyle { it.withItalic(false) })
 		return lore
 	}
 

@@ -127,6 +127,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
 
     public static InteractionResult eventSpawnBoss(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if (world.isClientSide()) return InteractionResult.PASS;
+        if (!player.level().dimension().identifier().getNamespace().equals("minecraft")) return InteractionResult.PASS;
         ItemStack heldItem = player.getItemInHand(hand);
         if (heldItem.is(Items.END_CRYSTAL)) {
             BlockPos clickedPos = hitResult.getBlockPos();

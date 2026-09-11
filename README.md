@@ -9,13 +9,13 @@ This suite of mods (combined and modified with many other) is for my minecraft s
 - Shop system
 - Bedrock support
 - Weird bosses (inside joke of server)
-
-### Roadmap
 - Server Vault
 - Plant System
 - Fishing System
 - Questing
 - Machines
+
+### Roadmap
 - Cosmetics
 - Dimensions to explore
 - More...

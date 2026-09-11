@@ -27,6 +27,8 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
+
 @Mixin(FishingHook.class)
 public abstract class MixinFishingHook {
     @Shadow private int nibble;
@@ -65,8 +67,8 @@ public abstract class MixinFishingHook {
         FishingHook hook = (FishingHook) (Object) this;
         if (!hook.level().isClientSide()) {
             ServerPlayer player = (ServerPlayer) getPlayerOwner();
-            if (player != null) {
-                if (player.getMainHandItem().getItem() instanceof RodItem) {
+             if (player != null) {
+                 if (player.getMainHandItem().getItem() instanceof RodItem && Objects.equals(player.level().dimension().identifier().getNamespace(), "minecraft")) {
                     this.nibble = 100;
                     FishingManager.startMinigame(player, hook);
                 }

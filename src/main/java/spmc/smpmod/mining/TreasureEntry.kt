@@ -3,66 +3,68 @@ package spmc.smpmod.mining
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
-import spmc.smpmod.SMPMod.Companion.minecraftServer
 import spmc.smpmod.core.ItemRarity
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
 
-class TreasureEntry private constructor(builder: Builder) {
-    private val item = builder.item
-    private val minCount: Int
-    private val maxCount: Int
-    private val rarity: ItemRarity
-    private val allowedBiomes: MutableSet<TreasureHelper.Biomes>
-	private val modifiers: List<ItemStack.(ServerLevel) -> Unit>
-	private val name: Component?
-	private val lore: List<Component>
+class TreasureEntry private constructor(
+		val item: Item,
+		val minCount: Int,
+		val maxCount: Int,
+		val rarity: ItemRarity,
+		val allowedBiomes: Set<TreasureHelper.Biomes>,
+		val modifiers: List<ItemStack.(ServerLevel) -> Unit>,
+		val name: Component?,
+		val lore: List<Component>
+) {
+	fun isValid(rarity: ItemRarity, biome: TreasureHelper.Biomes): Boolean {
+		if (this.rarity != rarity) return false
+		if (minCount !in 1 .. maxCount) return false
+		return allowedBiomes.isEmpty() || allowedBiomes.contains(biome)
+	}
 
-    init {
-        this.minCount = builder.minCount
-        this.maxCount = builder.maxCount
-        this.rarity = builder.rarity
-        this.allowedBiomes = builder.allowedBiomes
-	    this.modifiers = builder.modifiers
-	    this.name = builder.name
-	    this.lore = builder.lore
-    }
+	fun createStack(level: ServerLevel): ItemStack {
+		val count = if (minCount == maxCount) minCount else level.random.nextIntBetweenInclusive(minCount, maxCount)
+		val stack = ItemStack(item, count)
 
-    fun isValid(rarity: ItemRarity, biome: TreasureHelper.Biomes): Boolean {
-        if (this.rarity.ordinal != rarity.ordinal) return false
-        if (minCount < 1 || maxCount < 1 || maxCount < minCount) return false
-        return allowedBiomes.contains(biome) || allowedBiomes.isEmpty()
-    }
+		modifiers.forEach { modify -> stack.modify(level) }
+		name?.let { customName -> stack.set(DataComponents.CUSTOM_NAME, customName) }
+		if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore))
 
-	fun getRarity() = rarity
-    fun createStack(level: ServerLevel): ItemStack {
-		val stack = ItemStack(item, (minecraftServer?: return ItemStack(item, (minCount + maxCount) / 2)).overworld().random.nextIntBetweenInclusive(minCount, maxCount))
-	    modifiers.forEach { modify -> stack.modify(level) }
-	    name?.let { customName -> stack.set(DataComponents.CUSTOM_NAME, customName) }
-	    if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore))
 		return stack
 	}
 
-    class Builder(val item: Item) {
-	    val modifiers = mutableListOf<ItemStack.(ServerLevel) -> Unit>()
-        var minCount = 1
-        var maxCount = 1
-        var rarity: ItemRarity = ItemRarity.COMMON
-        val allowedBiomes: MutableSet<TreasureHelper.Biomes> = HashSet()
-	    var name: Component? = null
-	    var lore: MutableList<Component> = mutableListOf()
+	class Builder(val item: Item) {
+		var minCount: Int = 1
+		var maxCount: Int = 1
+		var rarity: ItemRarity = ItemRarity.COMMON
+		val allowedBiomes: MutableSet<TreasureHelper.Biomes> = mutableSetOf()
+		val modifiers = mutableListOf<ItemStack.(ServerLevel) -> Unit>()
+		var name: Component? = null
+		val lore = mutableListOf<Component>()
 
-        fun count(min: Int, max: Int) = apply { minCount = min; maxCount = max }
-        fun count(max: Int) = apply { maxCount = max }
-        fun rarity(rarity: ItemRarity) = apply { this.rarity = rarity }
-        fun biome(biome: TreasureHelper.Biomes) = apply { this.allowedBiomes.add(biome) }
-        fun biome(biomes: List<TreasureHelper.Biomes>) = apply { this.allowedBiomes.addAll(biomes) }
-	    fun modify(modifier: ItemStack.(ServerLevel) -> Unit) = apply { this.modifiers.add(modifier) }
-	    fun name(name: Component) = apply { this.name = name }
-	    fun lore(line: Component) = apply { this.lore.add(line) }
-	    fun lore(vararg lines: Component) = apply { this.lore.addAll(lines) }
+		// Fixed count semantics: count(exact) sets both min and max to the same value
+		fun count(exact: Int) = apply { minCount = exact; maxCount = exact }
+		fun count(min: Int, max: Int) = apply { minCount = min; maxCount = max }
 
-        fun build() = TreasureEntry(this)
-    }
+		fun rarity(rarity: ItemRarity) = apply { this.rarity = rarity }
+		fun biome(vararg biomes: TreasureHelper.Biomes) = apply { allowedBiomes.addAll(biomes) }
+		fun biome(biomes: List<TreasureHelper.Biomes>) = apply { allowedBiomes.addAll(biomes) }
+		fun biome(biome: TreasureHelper.Biomes) = apply { allowedBiomes.add(biome) }
+		fun modify(modifier: ItemStack.(ServerLevel) -> Unit) = apply { modifiers.add(modifier) }
+		fun name(name: Component) = apply { this.name = name }
+		fun lore(vararg lines: Component) = apply { lore.addAll(lines) }
+
+		fun build() = TreasureEntry(
+			item = item,
+			minCount = minCount,
+			maxCount = maxCount,
+			rarity = rarity,
+			allowedBiomes = allowedBiomes.toSet(),
+			modifiers = modifiers.toList(),
+			name = name,
+			lore = lore.toList()
+		)
+	}
 }
