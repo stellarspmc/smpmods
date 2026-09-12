@@ -1,5 +1,6 @@
 package spmc.smpmod.core
 
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags
 import net.minecraft.core.Holder
 import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.BiomeTags
@@ -13,18 +14,18 @@ import java.util.concurrent.ConcurrentHashMap
 
 enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 	BADLANDS(listOf(BiomeTags.IS_BADLANDS)),
-	DESERT(listOf(createBiomeTag("is_dry"), createBiomeTag("is_desert"))),
-	SNOWY(listOf(createBiomeTag("is_snowy"), createBiomeTag("is_cold"))),
-	TROPICAL(listOf(createBiomeTag("is_jungle"), createBiomeTag("is_savanna"), createBiomeTag("is_swamp"), createBiomeTag("is_tropical"), BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)),
-	OCEAN(listOf(createBiomeTag("is_ocean"), createBiomeTag("is_river"), BiomeTags.IS_OCEAN, BiomeTags.IS_RIVER, BiomeTags.IS_BEACH)),
-	FOREST(listOf(createBiomeTag("is_forest"))), // TODO
-	TAIGA(listOf(BiomeTags.IS_TAIGA)),
-	PLAINS(listOf(BiomeTags.IS_HILL)), // TODO: check
-	FLOWER, // TODO
+	DESERT(listOf(ConventionalBiomeTags.IS_DRY_OVERWORLD, ConventionalBiomeTags.IS_DESERT)),
+	SNOWY(listOf(ConventionalBiomeTags.IS_SNOWY, ConventionalBiomeTags.IS_COLD_OVERWORLD)),
+	TROPICAL(listOf(ConventionalBiomeTags.IS_JUNGLE, ConventionalBiomeTags.IS_SAVANNA, ConventionalBiomeTags.IS_SWAMP, createBiomeTag("is_tropical"), BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)), // TODO: remove tropical tag with ConventionalBiomeTags
+	OCEAN(listOf(ConventionalBiomeTags.IS_OCEAN, ConventionalBiomeTags.IS_RIVER, BiomeTags.IS_OCEAN, BiomeTags.IS_RIVER, BiomeTags.IS_BEACH)),
+	FOREST(listOf(ConventionalBiomeTags.IS_FOREST)), // TODO
+	TAIGA(listOf(BiomeTags.IS_TAIGA, ConventionalBiomeTags.IS_TAIGA)),
+	PLAINS(listOf(BiomeTags.IS_HILL, ConventionalBiomeTags.IS_HILL)), // TODO: check
+	FLOWER(listOf(ConventionalBiomeTags.IS_FLORAL, ConventionalBiomeTags.IS_FLOWER_FOREST)), // TODO
 	MOUNTAIN(listOf(BiomeTags.IS_MOUNTAIN)), // TODO: checks "peaks", "slopes", "stony", "windswept"
 	MUSHROOM(listOf(BiomeTags.WITHOUT_ZOMBIE_SIEGES)),
 
-	CAVE(listOf(createBiomeTag("is_cave"))),
+	CAVE(listOf(ConventionalBiomeTags.IS_CAVE)),
 	SCULK(listOf(BiomeTags.HAS_ANCIENT_CITY)), // TODO
 
 	DEEP,
@@ -41,7 +42,7 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 	// END_ISLANDS? Identifier.fromNamespaceAndPath("c", "end_islands"))
 	DEFAULT;
 
-	override fun toString() = name.lowercase().replaceFirstChar { it.uppercase() }
+	override fun toString() = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
 	companion object {
 		val OVERWORLD = listOf(BADLANDS, DESERT, CAVE, FOREST, SCULK, MUSHROOM, TROPICAL, TAIGA, OCEAN, FLOWER, MOUNTAIN, SNOWY, SKY)
 

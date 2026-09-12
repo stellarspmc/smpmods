@@ -24,4 +24,11 @@ abstract class BasePolymerItem(properties: Properties, private val vanillaItem: 
     abstract fun buildName(stack: ItemStack): Component
     abstract fun buildLore(stack: ItemStack): MutableList<Component>
     abstract fun modifyItem(stack: ItemStack, stackData: ItemStack)
+
+	companion object {
+		fun applyGlint(out: ItemStack, stack: ItemStack) {
+			out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+			stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+		}
+	}
 }

@@ -14,7 +14,7 @@ import spmc.smpmod.SMPMod
 import java.util.*
 import kotlin.math.min
 
-class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> = HashMap<UUID, Double>(), names: MutableMap<UUID, String> = HashMap<UUID, String>()): SavedData() {
+class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double> = HashMap<UUID, Double>(), names: MutableMap<UUID, String> = HashMap<UUID, String>()): SavedData() {
 	private val balances = HashMap(balances)
 	private val names = HashMap(names)
 
@@ -92,8 +92,8 @@ class EconomyData @JvmOverloads constructor(balances: MutableMap<UUID, Double> =
 	companion object {
 		private val BALANCES_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.DOUBLE)
 		private val NAMES_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING)
-		val CODEC: Codec<EconomyData> = RecordCodecBuilder.create { it.group(BALANCES_CODEC.fieldOf("balances").forGetter(EconomyData::balances), NAMES_CODEC.fieldOf("names").forGetter(EconomyData::names)).apply(it, ::EconomyData) }
-		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "economy"), ::EconomyData, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
-		@JvmStatic fun get(): EconomyData? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+		val CODEC: Codec<EconomySystem> = RecordCodecBuilder.create { it.group(BALANCES_CODEC.fieldOf("balances").forGetter(EconomySystem::balances), NAMES_CODEC.fieldOf("names").forGetter(EconomySystem::names)).apply(it, ::EconomySystem) }
+		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "economy"), ::EconomySystem, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+		@JvmStatic fun get(): EconomySystem? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 	}
 }

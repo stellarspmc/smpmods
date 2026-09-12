@@ -7,9 +7,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import com.sun.jdi.connect.Connector
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.fishing.FishTracker
 import spmc.smpmod.npc.NPCData
@@ -41,8 +40,8 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.levelgen.Heightmap
 import spmc.smpmod.core.BountySystem
+import spmc.smpmod.utils.UtilFunc.getY
 import spmc.smpmod.utils.UtilFunc.isAdmin
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.net.URI
@@ -51,7 +50,6 @@ import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 object CommandRegistry {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext) {
@@ -133,7 +131,7 @@ object CommandRegistry {
 	}
 
     private fun executeBalance(ctx: CommandContext<CommandSourceStack>, target: NameAndId): Int {
-        val eco: EconomyData = EconomyData.get() ?: return -1
+        val eco: EconomySystem = EconomySystem.get() ?: return -1
         ctx.getSource().sendSuccess({ Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(target.name() + " has ").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(String.format("$%.2f", eco.getBalance(target.id()))).withStyle(ChatFormatting.RED))
@@ -143,7 +141,7 @@ object CommandRegistry {
     }
 
     private fun executeTop(ctx: CommandContext<CommandSourceStack>, page: Int): Int {
-        val eco: EconomyData = EconomyData.get() ?: return -1
+        val eco: EconomySystem = EconomySystem.get() ?: return -1
         ctx.getSource().sendSuccess({ Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD).append("\n").append(eco.getMinecraftTop(page)) }, false)
         return 1
     }
@@ -169,7 +167,7 @@ object CommandRegistry {
         val amount = rnd2DP(DoubleArgumentType.getDouble(ctx, "amount"))
         if (sender.getUUID() == target.id()) return sendError(sender, "You cannot send money to yourself.")
 
-        val eco: EconomyData = EconomyData.get() ?: return -1
+        val eco: EconomySystem = EconomySystem.get() ?: return -1
         if (eco.changeBalance(sender.getUUID(), -amount)) {
             eco.changeBalance(target.id(), amount)
 
@@ -299,7 +297,7 @@ object CommandRegistry {
 				SMPMod.minecraftServer?.execute {
 					if (player.isRemoved) return@execute
 
-					val eco = EconomyData.get() ?: return@execute
+					val eco = EconomySystem.get() ?: return@execute
 					if (eco.getBalance(player.uuid) < cost) {
 						sendError<Int>(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH))
 						return@execute
@@ -320,7 +318,7 @@ object CommandRegistry {
 
     private fun executeSurface(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().player?: return -1
-        player.teleportTo(player.x, player.level().getHeight(Heightmap.Types.WORLD_SURFACE, player.x.toInt(), player.z.toInt()).toDouble(), player.z)
+        player.teleportTo(player.x, getY(player.x.toInt(), player.z.toInt(), player.level()).toDouble(), player.z)
         player.playSound(SoundEvents.WITHER_SHOOT, 3f, .5f)
         return 1
     }
@@ -334,13 +332,13 @@ object CommandRegistry {
 
 	private fun executeRTP(ctx: CommandContext<CommandSourceStack>): Int {
 		val player = ctx.getSource().player?: return -1
-		val eco = EconomyData.get()?: return -1
+		val eco = EconomySystem.get()?: return -1
 		val range = 150000
 		if (player.level().dimension() != Level.OVERWORLD) return sendError(player, "/rtp only works for the overworld!")
 		if (eco.changeBalance(player.uuid, -300.0)) {
 			val x = player.level().random.nextIntBetweenInclusive(-range, range)
 			val z = player.level().random.nextIntBetweenInclusive(-range, range)
-			player.teleportTo(x.toDouble(), player.level().getHeight(Heightmap.Types.WORLD_SURFACE, x, z).toDouble(), z.toDouble())
+			player.teleportTo(x.toDouble(), getY(player.x.toInt(), player.z.toInt(), player.level()).toDouble(), z.toDouble())
 			return sendSuccess(player, "You have been successfully teleported to ($x, $z)!")
 		}
 		return sendError(player, "Insufficient funds! You need $300 for a random teleport.")
@@ -348,7 +346,7 @@ object CommandRegistry {
 
 	private fun executeTPA(ctx: CommandContext<CommandSourceStack>): Int {
 		val player = ctx.getSource().player?: return -1
-		val eco = EconomyData.get()?: return -1
+		val eco = EconomySystem.get()?: return -1
 		if (eco.changeBalance(player.uuid, -2.0)) {
 			TODO("implement tpa, tpaccept, tpadeny, tpahere")
 		}
@@ -357,7 +355,7 @@ object CommandRegistry {
 
 	private fun executeHome(ctx: CommandContext<CommandSourceStack>): Int {
 		val player = ctx.getSource().player?: return -1
-		val eco = EconomyData.get()?: return -1
+		val eco = EconomySystem.get()?: return -1
 		val price = when (val stubValue = player.level().random.nextIntBetweenInclusive(0, 100)) {
 			in 0..2 -> stubValue * 200
 			3 -> 1000

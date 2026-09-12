@@ -25,8 +25,7 @@ object MessageUtils {
         message = replaceWith(message, "(?<!\\\\)_", ChatFormatting.ITALIC.toString(), ChatFormatting.RESET.toString())
         message = replaceWith(message, "(?<!\\\\)~~", ChatFormatting.STRIKETHROUGH.toString(), ChatFormatting.RESET.toString())
 
-        message = message.replace("\\\\\\*".toRegex(), "*").replace("\\\\_".toRegex(), "_").replace("\\\\~".toRegex(), "~")
-        return message.replace("\"".toRegex(), "\\\\\"")
+        return message.replace("\\\\\\*".toRegex(), "*").replace("\\\\_".toRegex(), "_").replace("\\\\~".toRegex(), "~").replace("\"".toRegex(), "\\\\\"")
     }
 
     private fun replaceWith(message: String, quot: String, pre: String, suf: String): String {

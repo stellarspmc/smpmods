@@ -66,7 +66,7 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
         val CODEC: Codec<QuestManager> = Codec.unboundedMap(UUIDUtil.STRING_CODEC, PlayerQuestData.CODEC).xmap(::QuestManager, QuestManager::playerQuests)
         val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "questing"), ::QuestManager, CODEC, DataFixTypes.LEVEL)
 
-        @JvmStatic fun get() = minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+        @JvmStatic fun get() = minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
         @JvmStatic fun getQuests(player: ServerPlayer): PlayerQuestData = (get()?: return PlayerQuestData()).playerQuests.computeIfAbsent(player.getUUID()) { PlayerQuestData() }
     }
 }

@@ -6,14 +6,14 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.item.component.CustomData
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.utils.MessageUtils
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 
 object BountySystem {
 
 	fun executeVictim(player: ServerPlayer, damageSource: DamageSource) {
-		val eco = EconomyData.get() ?: return
+		val eco = EconomySystem.get() ?: return
 		val victimBalance = eco.getBalance(player.getUUID())
 		if (victimBalance >= 1000) {
 			val lossPercent = .05 + (player.getRandom().nextDouble() * .05)
@@ -29,7 +29,7 @@ object BountySystem {
 	}
 
 	private fun changeBounty(victim: ServerPlayer, killer: ServerPlayer, lost: Double) {
-		val eco = EconomyData.get() ?: return
+		val eco = EconomySystem.get() ?: return
 		val bountyReward = rnd2DP(lost * .9)
 
 		eco.changeBalance(killer.getUUID(), bountyReward)
@@ -43,7 +43,7 @@ object BountySystem {
 	}
 
 	fun addPlayerBounty(adder: ServerPlayer, victim: ServerPlayer, bounty: Double, anonymous: Boolean): Int {
-		val eco = EconomyData.get() ?: return -1
+		val eco = EconomySystem.get() ?: return -1
 		if (eco.changeBalance(adder.getUUID(), -rnd2DP(bounty))) {
 			val victimNbt = victim.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag()
 			val originalBounty = victimNbt.getDoubleOr("bounty", .0)

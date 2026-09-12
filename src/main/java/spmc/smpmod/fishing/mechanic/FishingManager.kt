@@ -18,7 +18,4 @@ object FishingManager {
 		if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return
 		ACTIVE_SESSIONS[player.getUUID()] = FishingSession(player, hook, (player.mainHandItem.item as? RodItem)?.tier ?: RodTiers.NORMAL)
 	}
-
-	fun isFishing(playerUuid: UUID) = ACTIVE_SESSIONS.containsKey(playerUuid)
-	fun cancelMinigame(playerUuid: UUID) = ACTIVE_SESSIONS.remove(playerUuid)
 }

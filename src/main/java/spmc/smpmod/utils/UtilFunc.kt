@@ -12,20 +12,14 @@ import net.minecraft.server.permissions.PermissionLevel
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.biome.Biome
-import spmc.smpmod.SMPMod
-import java.util.*
-import java.util.concurrent.atomic.AtomicReference
+import net.minecraft.world.level.levelgen.Heightmap
 import kotlin.math.roundToInt
 
 object UtilFunc {
-    fun getLevelOfEntity(uuid: UUID): ServerLevel {
-        val level = AtomicReference<ServerLevel>()
-        SMPMod.minecraftServer?.allLevels?.forEach { if (it.getEntity(uuid) != null) level.set(it) }
-	    return level.get()
-    }
-
-    fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { BuiltInRegistries.ITEM.getKey(it) }, builder)}
+	@Suppress("UnstableApiUsage")
 	fun isAdmin(player: ServerPlayer) = player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
-	fun createBiomeTag(tag: String): TagKey<Biome> = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", tag))
+	fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { BuiltInRegistries.ITEM.getKey(it) }, builder)}
+	fun createBiomeTag(tag: String): TagKey<Biome> = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", tag)) // TODO: remove
 	fun rnd2DP(toBeRounded: Double) = (toBeRounded * 100.0).roundToInt() / 100.0
+	fun getY(x: Int, z: Int, level: ServerLevel) = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z)
 }

@@ -24,11 +24,10 @@ import net.minecraft.world.level.saveddata.SavedDataType
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData.Companion.get
+import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.UUID
 import kotlin.collections.forEach
-import kotlin.math.roundToInt
 
 class MarketState: SavedData() {
 	fun get(item: Item): FluctuationData? {
@@ -42,7 +41,7 @@ class MarketState: SavedData() {
 	}
 
 	fun registerMineral(item: Item, defaultPrice: Double, fluctuation: Double) {
-		val data: FluctuationData = permanentMarketMap.computeIfAbsent(item) { _ -> FluctuationData(item, defaultPrice, fluctuation) }
+		val data: FluctuationData = permanentMarketMap.computeIfAbsent(item) { FluctuationData(item, defaultPrice, fluctuation) }
 		data.defaultPrice = defaultPrice
 		data.fluctuation = fluctuation
 		setDirty()
@@ -54,12 +53,10 @@ class MarketState: SavedData() {
 		private val temporaryMarketMap: MutableMap<Item, FluctuationExpiry> = mutableMapOf()
 		private val displayList: MutableList<UUID> = mutableListOf()
 		private var rotationTick = 144000
-		val CODEC: Codec<MarketState> = FluctuationData.CODEC.listOf().xmap( { datum: MutableList<FluctuationData> -> val market = MarketState()
-			for (data in datum) market.registerMineral(data.mineral, data.defaultPrice, data.fluctuation)
-			market }, { _ -> ArrayList(permanentMarketMap.values) })
+		val CODEC: Codec<MarketState> = FluctuationData.CODEC.listOf().xmap( { val market = MarketState(); for (data in it) market.registerMineral(data.mineral, data.defaultPrice, data.fluctuation); market }, { ArrayList(permanentMarketMap.values) })
 
 		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "market"), { MarketState() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
-		@JvmStatic val state: MarketState? get() = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+		@JvmStatic val state: MarketState? get() = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
 		fun buyMineral(player: ServerPlayer, item: Item, amount: Int): Double {
 			val market = state ?: return -2.0

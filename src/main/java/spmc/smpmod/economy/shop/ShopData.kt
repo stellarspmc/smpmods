@@ -24,14 +24,13 @@ import org.geysermc.cumulus.form.CustomForm
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.utils.UtilFunc.isAdmin
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey<Level>, val barrelPos: BlockPos, val interactionEntityUuid: UUID, val itemDisplayUuid: UUID, val textDisplayUuid: UUID, private var itemSold: ItemStack, private var stack: Int, private var price: Double, receipts: MutableList<ShopReceipt>, val isCreative: Boolean) {
     val receipts: MutableList<ShopReceipt> = ArrayList<ShopReceipt>(receipts)
@@ -80,7 +79,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         val availableBatches = this.availableStock
         if (availableBatches < 1) return sendError(buyer, "This shop is out of stock!", 0)
 
-        val eco: EconomyData = EconomyData.get() ?: return 0
+        val eco: EconomySystem = EconomySystem.get() ?: return 0
         if (eco.getBalance(buyer.getUUID()) < price) return sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0)
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {

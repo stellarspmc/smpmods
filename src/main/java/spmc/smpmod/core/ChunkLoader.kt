@@ -18,7 +18,7 @@ import net.minecraft.world.level.saveddata.SavedDataType
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.utils.MessageUtils.sendSuccess
 
-class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()) : SavedData() {
+class ChunkLoader @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()) : SavedData() {
     private val activeLoaders: MutableSet<BlockPos> = HashSet(activeLoaders)
     private var suspended = false
 
@@ -62,8 +62,8 @@ class ChunkLoaderSavedData @JvmOverloads constructor(activeLoaders: MutableSet<B
 
     companion object {
         private val LOADERS_CODEC: Codec<MutableSet<BlockPos>> = BlockPos.CODEC.listOf().xmap(::HashSet, ::ArrayList)
-        val CODEC: Codec<ChunkLoaderSavedData> = RecordCodecBuilder.create { it.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter(ChunkLoaderSavedData::activeLoaders)).apply(it, ::ChunkLoaderSavedData) }
-	    val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), ::ChunkLoaderSavedData, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+        val CODEC: Codec<ChunkLoader> = RecordCodecBuilder.create { it.group(LOADERS_CODEC.fieldOf("active_loaders").forGetter(ChunkLoader::activeLoaders)).apply(it, ::ChunkLoader) }
+	    val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "chunk_loaders"), ::ChunkLoader, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 
         fun get(level: ServerLevel) = level.dataStorage.computeIfAbsent(TYPE)
 

@@ -2,7 +2,7 @@ package spmc.smpmod.mining
 
 import spmc.smpmod.SMPMod
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.registry.TreasureRegistry
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.minecraft.ChatFormatting
@@ -137,7 +137,7 @@ object TreasureSpawner {
     }
 
     private fun announceLoot(world: ServerLevel, rarity: ItemRarity, player: Player) {
-        val eco = EconomyData.get() ?: return
+        val eco = EconomySystem.get() ?: return
         val balance: Double = eco.getBalance(player.getUUID())
         val balanceScale = if (balance <= 0) 1.0 else Math.clamp(1000 / balance, .0, 1.0)
         eco.changeBalance(player.getUUID(), 3 * balanceScale)

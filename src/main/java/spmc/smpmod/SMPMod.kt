@@ -30,6 +30,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.stats.Stats
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.MobCategory
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -41,11 +42,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spmc.smpmod.core.BedrockSkinFetcher
 import spmc.smpmod.core.BountySystem
-import spmc.smpmod.core.ChunkLoaderSavedData
+import spmc.smpmod.core.ChunkLoader
 import spmc.smpmod.discord.DiscordWebhook
 import spmc.smpmod.discord.EventHandler
 import spmc.smpmod.discord.config.ConfigLoader
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.economy.shop.ShopManager
 import spmc.smpmod.fishing.mechanic.FishingManager
@@ -57,10 +58,8 @@ import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
 import spmc.smpmod.registry.PlantRegistry
 import spmc.smpmod.registry.PolymerRegistry
-import spmc.smpmod.utils.MessageUtils
 import spmc.smpmod.vault.VaultData
 import java.util.concurrent.CompletableFuture
-import kotlin.math.roundToInt
 
 @Environment(EnvType.SERVER)
 class SMPMod : DedicatedServerModInitializer {
@@ -88,20 +87,20 @@ class SMPMod : DedicatedServerModInitializer {
 	        ShopManager.register()
         }
 
-	    ChunkLoaderSavedData.register()
+	    ChunkLoader.register()
         ServerMobEvents.registerMobs()
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
 	        val player = handler.getPlayer()
 	        BedrockSkinFetcher.restoreSkin(server, player)
 	        QuestManager.get()?.checkAndResetRotations(player)
-	        EconomyData.get()?.registerPlayer(player.getUUID(), player.gameProfile.name())
+	        EconomySystem.get()?.registerPlayer(player.getUUID(), player.gameProfile.name())
 	        player.awardRecipes(server.recipeManager.recipes.distinct().filter { it.id().identifier().namespace == "smpmod" })
 	        messageChannel?.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string))?.queue()
         }
 
 
-	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
+	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // players only
 	        val player = entity as? ServerPlayer ?: return@register
 		    if (player.level().dimension().identifier().namespace != "minecraft") return@register
 		    messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(player).string + " at (" + player.x.toInt() + ", " + player.y.toInt() + ", " + player.z.toInt() + ")"))?.queue()
@@ -127,11 +126,20 @@ class SMPMod : DedicatedServerModInitializer {
 		    scoreboard.setDisplayObjective(DisplaySlot.BELOW_NAME, objective)
 		    for (player in it.playerList.players) {
 			    val playTime = player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
-			    if (playTime > 0) EconomyData.get()?.changeBalance(player.getUUID(), 1.2)
+			    if (playTime > 0) EconomySystem.get()?.changeBalance(player.getUUID(), 1.2)
 
 			    scoreboard.getOrCreatePlayerScore(player, objective).set(playTime / 72000)
 			    QuestManager.get()?.checkAndResetRotations(player)
 		    }
+	    }
+
+	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // non-players only
+			if (entity is ServerPlayer) return@register
+		    when (entity.type.category) {
+			    MobCategory.MONSTER -> {} // all aggressive
+			    MobCategory.MISC -> {} // villagers, golems, non-mob types (!!!)
+			    else -> return@register
+			}
 	    }
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }

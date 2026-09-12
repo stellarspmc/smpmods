@@ -6,8 +6,9 @@ import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.projectile.FishingHook
+import spmc.smpmod.utils.sessions.MechanicSession
 
-class FishingSession(private val player: ServerPlayer, private val hook: FishingHook, private val tier: RodTiers) {
+class FishingSession(private val player: ServerPlayer, private val hook: FishingHook, private val tier: RodTiers): MechanicSession() {
     private var cursor = .0f
     private var movingRight = true
     private var wasJumping: Boolean
@@ -24,7 +25,7 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
         this.wasJumping = player.isJumping
     }
 
-    fun tick(): Boolean {
+    override fun tick(): Boolean {
         if (!player.isAlive || hook.isRemoved || ticksLeft-- <= 0) {
             onFail("Time ran out!")
             player.sendSystemMessage(Component.empty(), true)

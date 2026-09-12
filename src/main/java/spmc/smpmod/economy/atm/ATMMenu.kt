@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
-import spmc.smpmod.economy.EconomyData.Companion.get
+import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.utils.MessageUtils.sendSuccess

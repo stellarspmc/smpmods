@@ -18,7 +18,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.npc.NPCData
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.vault.entries.ActivePerk
@@ -125,7 +125,7 @@ class VaultData: SavedData {
 
 			try {
 				amount = input.toDouble()
-				if (amount > 0 && (EconomyData.get()?: return).getBalance(player.getUUID()) >= amount) isValid = true
+				if (amount > 0 && (EconomySystem.get()?: return).getBalance(player.getUUID()) >= amount) isValid = true
 			} catch (_: NumberFormatException) { }
 
 			val outputItem: ItemStack
@@ -143,7 +143,7 @@ class VaultData: SavedData {
 			this.setSlot(2, outputItem, Consumer {
 				if (!canDonate) return@Consumer
 				val vaultData: VaultData = (get()?: return@Consumer)
-				if ((EconomyData.get() ?: return@Consumer).changeBalance(player.getUUID(), -finalAmount)) {
+				if ((EconomySystem.get() ?: return@Consumer).changeBalance(player.getUUID(), -finalAmount)) {
 					vaultData.recordDonation(player.getUUID(), finalAmount)
 					player.sendSystemMessage(Component.literal("Thank you! You donated ").withStyle(ChatFormatting.GREEN).append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.GOLD)).append(Component.literal(" to the Vault!")))
 				} else sendError(player, "You do not have enough money to donate to the Vault.")
@@ -157,7 +157,7 @@ class VaultData: SavedData {
 		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "vault"), ::VaultData, CODEC, DataFixTypes.LEVEL)
 		@JvmField var buffValue: Float = 0f
 
-		fun get(): VaultData? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+		fun get(): VaultData? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
 
 		fun register() {
@@ -184,7 +184,7 @@ class VaultData: SavedData {
 			if (topDonors.isEmpty()) player.sendSystemMessage(Component.literal("  - No donations yet").withStyle(ChatFormatting.GRAY))
 			else {
 				var rank = 1
-				for ((key, value) in topDonors) player.sendSystemMessage(Component.literal(String.format("  #%d %s: ", rank++, EconomyData.get()!!.resolveName(key))).withStyle(ChatFormatting.YELLOW).append(Component.literal(String.format("$%.2f", value)).withStyle(ChatFormatting.GREEN)))
+				for ((key, value) in topDonors) player.sendSystemMessage(Component.literal(String.format("  #%d %s: ", rank++, EconomySystem.get()!!.resolveName(key))).withStyle(ChatFormatting.YELLOW).append(Component.literal(String.format("$%.2f", value)).withStyle(ChatFormatting.GREEN)))
 			}
 
 			player.sendSystemMessage(Component.literal("Active Perks:").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))

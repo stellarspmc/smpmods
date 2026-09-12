@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomyData.Companion.get
+import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.economy.fluctuate.MarketState.Companion.state
 import spmc.smpmod.utils.MessageUtils.parseMarkdown
 import kotlin.String

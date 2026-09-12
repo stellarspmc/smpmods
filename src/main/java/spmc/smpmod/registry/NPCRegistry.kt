@@ -1,6 +1,6 @@
 package spmc.smpmod.registry
 
-import spmc.smpmod.economy.EconomyData
+import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.npc.CustomNPC
 import spmc.smpmod.npc.NPCData.Companion.talkAsMannequin
@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
-import spmc.smpmod.core.CreativeDimensionManager.teleportToCreative
+import spmc.smpmod.core.CreativeData
 
 object NPCRegistry {
     internal fun init() {
@@ -42,7 +42,7 @@ object NPCRegistry {
                                 sellContainer.setItem(i, ItemStack.EMPTY)
                             }
                             if (totalPayout > 0) {
-                                EconomyData.get()?.changeBalance(player.getUUID(), totalPayout)
+                                EconomySystem.get()?.changeBalance(player.getUUID(), totalPayout)
                                 talkAsMannequin(mannequin, Component.literal(String.format("Fine catch! I'll buy those %d fish for $%.2f. Smooth sailing!", totalFishCount, totalPayout)), player as ServerPlayer)
                             } else talkAsMannequin(mannequin, Component.literal("Bah! You didn't leave any fish in the bin... Come back when you've got something with scales!"), player as ServerPlayer)
                         }} }, Component.literal("Fish Merchant - Sell Bin"))) }
@@ -69,20 +69,33 @@ object NPCRegistry {
         register(CustomNPC.Builder("dw_rewarder", true)
             .displayName(Component.literal("Rewarder").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
             .skin("dw_rewarder", intArrayOf(-1913824437, 1951356145, -1425084227, -1019769070), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2IzZTgwMTkyOTIyOTMyOTNjNmUyYWI3N2VlZGZiZTE1YjQxMjZjNmM2NTI0N2UzNGQ3OTgzNzIyM2FhZjExNSJ9fX0=")
-            .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("stub: say smt"), player) }
-            .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("stub: do something"), player) } // TODO: write dialogue
+            .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("stub: stub"), player) }
+            .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you."), player) } // TODO: write dialogue
             .build()
         )
 
-	    register(CustomNPC.Builder("creative", true)
+	    register(CustomNPC.Builder("gmc", true)
 		    .displayName(Component.literal("Astral Builder").withColor(12471528))
-		    .skin("creative", intArrayOf(2003779368, -1931584255, -1623256195, 1848851372), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTAxNTcyYTRjNDJkN2ZmOTViZjUyMmIzYzNiMmZiMmNhYWM0NzM1YzQ4YWZlNWZiODI5NDJiMTllMzgxNTYzZiJ9fX0=")
-		    .onAttack { player, _ -> teleportToCreative(player) }
-		    .onUse { player, _ -> }
+		    .skin("gmc", intArrayOf(2003779368, -1931584255, -1623256195, 1848851372), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTAxNTcyYTRjNDJkN2ZmOTViZjUyMmIzYzNiMmZiMmNhYWM0NzM1YzQ4YWZlNWZiODI5NDJiMTllMzgxNTYzZiJ9fX0=")
+		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("Right click me to enter the creative realm!"), player) }
+		    .onUse { player, _ -> CreativeData.teleportToCreative(player) }
 			.build()
 		)
 
-	    // TODO: create survival counterpart
-	    // TODO: create market person (to bring more players to using the market function)
+	    register(CustomNPC.Builder("gms", true)
+		    .displayName(Component.literal("Tuff Survivor").withColor(0x87D6BB))
+		    .skin("gms", intArrayOf(-957282800, -489268634, -1836512640, 880029979), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDY2OWU0NTk4MmRjYjQ5OWQyYmZlNjQ4ODcwOTNkZjhjMzlhZTNkNWE5ZjQ5NjJiN2IyZTQwMTY3MGUzN2QyMiJ9fX0=")
+		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("Right click me to return to the SMP!"), player) }
+		    .onUse { player, _ -> CreativeData.teleportToOverworld(player) }
+		    .build()
+	    )
+
+	    register(CustomNPC.Builder("market", true)
+		    .displayName(Component.literal("Market Master").withColor(0x87D6BB))
+		    .skin("market", intArrayOf(859935646, -1416867370, -1404676300, 69776291), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjQ1MDZjODMyYTM2YjhiYmE2NDM4NmVhZTM1ZmJjZmRjODBmNzZhZTYzODk3ZjZkM2NlOTNmZWY1ZGZmODU2OCJ9fX0=")
+		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I can control the market with ease!"), player) }
+		    .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("This is a work in progress..."), player) } // TODO
+		    .build()
+	    )
     }
 }

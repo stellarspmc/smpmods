@@ -42,7 +42,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 
 		val CODEC: Codec<FishTracker> = RecordCodecBuilder.create { it.group(UNLOCKED_CODEC.fieldOf("unlocked").forGetter(FishTracker::unlocked)).apply(it, ::FishTracker) }
 		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "fish_tracker"), { FishTracker() }, CODEC, DataFixTypes.PLAYER)
-		@JvmStatic fun get(): FishTracker? = SMPMod.minecraftServer?.overworld()?.dataStorage?.computeIfAbsent(TYPE)
+		@JvmStatic fun get(): FishTracker? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
 		fun openFishIndexMenu(player: ServerPlayer): Int {
 			openFishIndexMenu(player, 0)

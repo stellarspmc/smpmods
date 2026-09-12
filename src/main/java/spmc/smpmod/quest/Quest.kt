@@ -6,7 +6,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.item.ItemStack
-import spmc.smpmod.economy.EconomyData.Companion.get
+import spmc.smpmod.economy.EconomySystem.Companion.get
 import java.util.*
 
 @JvmRecord
