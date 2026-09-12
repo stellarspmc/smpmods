@@ -10,6 +10,7 @@ import net.minecraft.world.item.component.CustomData
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.utils.BasePolymerItem
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -82,7 +83,7 @@ class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: 
 				val modifiers = getModifiers(tag)
 				var price = ((stack.item) as FishItem).basePrice * stack.count
 				for ((key, value) in modifiers) price *= key.priceMultiplier * min(1, value)
-				return (price * (quality * .15 + 1) * 100).roundToInt() / 100.0
+				return rnd2DP(price * (quality * .15 + 1))
 			}
 			return ((stack.item) as FishItem).basePrice * stack.count
 		}

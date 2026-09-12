@@ -26,7 +26,8 @@ import org.geysermc.floodgate.api.FloodgateApi
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData
 import spmc.smpmod.utils.MessageUtils.sendError
-import spmc.smpmod.utils.UtilityFunctions.isAdmin
+import spmc.smpmod.utils.UtilFunc.isAdmin
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -124,7 +125,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
     }
 
     fun setPrice(price: Double) {
-        this.price = (max(.0, price) * 100.0).roundToInt() / 100.0
+        this.price = rnd2DP(max(.0, price))
         updateHologram()
         ShopManager.get(this.level?: return).setDirty()
     }

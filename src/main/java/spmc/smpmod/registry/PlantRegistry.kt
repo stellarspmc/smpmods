@@ -20,6 +20,8 @@ object PlantRegistry {
 	    Items.TORCHFLOWER -> Items.TORCHFLOWER_SEEDS
 	    Items.MELON -> Items.MELON_SEEDS
 	    Items.PUMPKIN -> Items.PUMPKIN_SEEDS
+	    Items.SWEET_BERRIES -> Items.SWEET_BERRIES
+	    Items.CHORUS_FRUIT -> Items.CHORUS_FLOWER // or CHORUS_PLANT?
 	    else -> Items.AIR
 	}
 
@@ -37,5 +39,20 @@ object PlantRegistry {
     internal fun register() {
         registerPlant("wheat", Items.WHEAT, 1.0, ItemRarity.COMMON)
         registerPlant("beetroot", Items.BEETROOT, 2.0, ItemRarity.COMMON)
+	    registerPlant("carrot", Items.CARROT, 3.6, ItemRarity.COMMON)
+	    registerPlant("berry", Items.SWEET_BERRIES, 4.5, ItemRarity.COMMON)
+	    registerPlant("potato", Items.POTATO, 6.0, ItemRarity.COMMON)
+
+	    registerPlant("strawberry", Items.SWEET_BERRIES, 14.0, ItemRarity.UNCOMMON)
+	    registerPlant("pumpkin", Items.PUMPKIN, 24.6, ItemRarity.UNCOMMON)
+	    registerPlant("melon", Items.MELON, 22.5, ItemRarity.UNCOMMON)
+	    registerPlant("carrot", Items.CARROT, 3.6, ItemRarity.COMMON)
+
+	    registerPlant("torch_flower", Items.SWEET_BERRIES, 45.0, ItemRarity.RARE)
+	    registerPlant("cucumber", Items.MELON, 67.5, ItemRarity.RARE)
+	    registerPlant("eggplant", Items.TORCHFLOWER, 69.0, ItemRarity.RARE) // 3522-eggplant
+	    registerPlant("piranha", Items.TORCHFLOWER, 69.0, ItemRarity.RARE) // 127088-piranha-plant OR 127087-piranha-plant-facing-up
+	    registerPlant("life_mushroom", Items.RED_MUSHROOM, 72.0, ItemRarity.RARE) // 128174-life-mushroom
+	    registerPlant("rose", Items.ROSE_BUSH, 80.0, ItemRarity.RARE) // 126801-rose
     }
 }

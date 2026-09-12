@@ -25,4 +25,3 @@ abstract class BasePolymerItem(properties: Properties, private val vanillaItem: 
     abstract fun buildLore(stack: ItemStack): MutableList<Component>
     abstract fun modifyItem(stack: ItemStack, stackData: ItemStack)
 }
-

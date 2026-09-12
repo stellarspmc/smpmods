@@ -14,8 +14,8 @@ import spmc.smpmod.economy.EconomyData.Companion.get
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.utils.MessageUtils.sendSuccess
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 object ATMMenu {
 	fun open(player: ServerPlayer) {
@@ -35,7 +35,7 @@ object ATMMenu {
 		for (i in 0 .. 26) gui.setSlot(i, GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" ")))
 		gui.setSlot(11, GuiElementBuilder(Items.REDSTONE_BLOCK).setName(Component.literal("Withdraw $100.00").withStyle(ChatFormatting.DARK_RED).append(Component.literal(" (Right-click: Withdraw All)").withStyle(ChatFormatting.GRAY))).setCallback { type ->
 			if (type.isRight) {
-				val current = ((eco.getBalance(player.getUUID()) * 100f).roundToInt() / 100f).toDouble()
+				val current = rnd2DP(eco.getBalance(player.getUUID()))
 				if (current > 0 && current % 100 == .0) {
 					eco.changeBalance(player.getUUID(), -current)
 					giveExactItems(player, (current / 100).toInt())

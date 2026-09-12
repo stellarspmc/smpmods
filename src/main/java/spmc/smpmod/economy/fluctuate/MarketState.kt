@@ -25,6 +25,7 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData.Companion.get
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.UUID
 import kotlin.collections.forEach
 import kotlin.math.roundToInt
@@ -71,7 +72,7 @@ class MarketState: SavedData() {
 				return (amount * 100).toDouble()
 			}
 
-			val totalCost = (data.getBulkBuyCost(amount) * 100.0).roundToInt() / 100.0
+			val totalCost = rnd2DP(data.getBulkBuyCost(amount))
 			if (!eco.changeBalance(player.getUUID(), -totalCost)) return -1.0
 			data.withdraw(amount.toLong())
 			market.setDirty()
@@ -85,7 +86,7 @@ class MarketState: SavedData() {
 			if (item == Items.DIAMOND) return if (eco.changeBalance(player.getUUID(), 100 * amount * multiplier)) 100 * amount * multiplier else .0
 			val data = market.get(item) ?: return .0
 			if (amount <= 0) return .0
-			val totalPayout = (data.getBulkSellPayout(amount) * multiplier * 100.0).roundToInt() / 100.0
+			val totalPayout = rnd2DP(data.getBulkSellPayout(amount) * multiplier)
 			if (totalPayout <= 0) return .0
 
 			if (eco.changeBalance(player.getUUID(), totalPayout)) {

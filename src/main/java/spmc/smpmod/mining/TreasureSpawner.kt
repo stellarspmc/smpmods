@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
+import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.BarrelBlock
 import net.minecraft.world.level.block.Blocks
@@ -26,6 +27,7 @@ import spmc.smpmod.core.BiomeCategory
 import kotlin.math.max
 
 object TreasureSpawner {
+	val treasureBlocks: MutableList<Display.BlockDisplay> = mutableListOf()
     fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: BiomeCategory) {
 	    val list = TreasureRegistry.getEligibleTreasures(biomes, rarity)
 	    if (list.isEmpty()) return
@@ -61,28 +63,28 @@ object TreasureSpawner {
                 world.sendParticles(ParticleTypes.CRIT, x, y, z, 20, .3, .3, .3, .1)
                 world.sendParticles(ParticleTypes.SMOKE, x, y, z, 10, .2, .2, .2, .02)
                 world.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, .8f, 1.2f)
-            }
+            } // 772-treasure-chest
 
             ItemRarity.UNCOMMON -> {
                 world.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 35, .4, .4, .4, .05)
                 world.sendParticles(ParticleTypes.GLOW, x, y, z, 20, .3, .3, .3, .02)
                 world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1f)
                 world.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, .5f, 1.5f)
-            }
+            } // 50412-emerald-treasure-chest
 
             ItemRarity.RARE -> {
                 world.sendParticles(ParticleTypes.ENCHANT, x, y + 0.5, z, 60, .4, .4, .4, .5)
                 world.sendParticles(ParticleTypes.WAX_ON, x, y, z, 25, .3, .3, .3, .05)
                 world.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.4f)
                 world.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, .8f, 1.2f)
-            }
+            } // 57930-treasure-chest-lilac
 
             ItemRarity.EPIC -> {
                 world.sendParticles(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1f), x, y, z, 60, .5, .5, .5, .03)
                 world.sendParticles(ParticleTypes.END_ROD, x, y, z, 25, .4, .4, .4, .08)
                 world.playSound(null, pos, SoundEvents.EVOKER_CAST_SPELL, SoundSource.BLOCKS, 1f, 1f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, .7f, 1.3f)
-            }
+            } // 89501-purple-chest
 
             ItemRarity.LEGENDARY -> {
                 world.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 120, .6, .6, .6, .3)
@@ -90,7 +92,7 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1f, 1f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, 1f)
                 announceLoot(world, rarity, player)
-            }
+            } // 50411-golden-treasure-chest
 
             ItemRarity.MYTHIC -> {
                 world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, -0xaa01), x, y, z, 2, .0, .0, .0, .0)
@@ -102,7 +104,7 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1f, .8f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, .9f)
                 announceLoot(world, rarity, player)
-            }
+            } // 42800-legendary-loot
 
             ItemRarity.CHROMATIC -> {
                 world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFF0000), x, y, z, 2, .0, .0, .0, .0)
@@ -114,7 +116,7 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.BLOCKS, .4f, 1.6f)
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, 0.8f)
                 announceLoot(world, rarity, player)
-            }
+            } // 64903-halloween-mystery-st-chest
 
             ItemRarity.ASTRAL -> {
                 world.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xAD39D6), x, y, z, 4, .0, .0, .0, .0)
@@ -130,7 +132,7 @@ object TreasureSpawner {
                 world.playSound(null, pos, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1f, 1.5f)
 
                 announceLoot(world, rarity, player)
-            }
+            } // 42800-legendary-loot
         }
     }
 

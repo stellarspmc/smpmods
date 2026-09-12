@@ -24,7 +24,8 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.gameevent.GameEvent
 import kotlin.math.min
 
-class RodItem(properties: Properties, @JvmField val tier: RodTiers): FishingRodItem(properties.stacksTo(1).durability(tier.durability).repairable(tier.getStack())), PolymerItem {
+class RodItem(properties: Properties,
+              @JvmField val tier: RodTiers): FishingRodItem(properties.stacksTo(1).durability(tier.durability).repairable(tier.getStack())), PolymerItem {
 	override fun getPolymerItem(itemStack: ItemStack, context: PacketContext) = Items.FISHING_ROD
 	override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider?) = BuiltInRegistries.ITEM.getKey(Items.FISHING_ROD)
 	override fun getName(itemStack: ItemStack) = Component.literal("$tier Rod").withColor(tier.color).withStyle { it.withItalic(false) }

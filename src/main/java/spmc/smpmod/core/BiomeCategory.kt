@@ -1,17 +1,14 @@
 package spmc.smpmod.core
 
 import net.minecraft.core.Holder
-import net.minecraft.core.registries.Registries
-import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.BiomeTags
 import net.minecraft.tags.TagKey
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.biome.Biome
-import spmc.smpmod.fishing.FishItem
-import spmc.smpmod.utils.UtilityFunctions.createBiomeTag
-import java.util.EnumSet
+import spmc.smpmod.utils.UtilFunc.createBiomeTag
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
@@ -23,9 +20,9 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 	FOREST(listOf(createBiomeTag("is_forest"))), // TODO
 	TAIGA(listOf(BiomeTags.IS_TAIGA)),
 	PLAINS(listOf(BiomeTags.IS_HILL)), // TODO: check
-	FLOWER(listOf("flower", "cherry")), // TODO
-	MOUNTAIN(listOf("peaks", "slopes", "stony", "windswept")), // TODO
-	MUSHROOM(listOf("mushroom")), // TODO
+	FLOWER, // TODO
+	MOUNTAIN(listOf(BiomeTags.IS_MOUNTAIN)), // TODO: checks "peaks", "slopes", "stony", "windswept"
+	MUSHROOM(listOf(BiomeTags.WITHOUT_ZOMBIE_SIEGES)),
 
 	CAVE(listOf(createBiomeTag("is_cave"))),
 	SCULK(listOf(BiomeTags.HAS_ANCIENT_CITY)), // TODO
@@ -34,13 +31,13 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 	SKY,
 
 	NETHER(listOf(BiomeTags.IS_NETHER)), // general nether
-	CRIMSON(listOf("crimson_forest")),
-	WARPED(listOf("warped_forest")),
-	SOUL_SAND(listOf("soul_sand_valley")),
-	BASALT(listOf("basalt_deltas")),
-	NETHER_WASTES(),
+	CRIMSON,
+	WARPED,
+	SOUL_SAND,
+	BASALT,
+	NETHER_WASTES,
 
-	END(listOf(BiomeTags.IS_END)), // probably includes every end biome? TODO: add nullscape diversity
+	END(listOf(BiomeTags.IS_END)), // probably includes every end biome? TODO: add nullscape diversity (not a good idea to put here)
 	// END_ISLANDS? Identifier.fromNamespaceAndPath("c", "end_islands"))
 	DEFAULT;
 
@@ -67,10 +64,6 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 			val biomeHolder = level.getBiome(player.blockPosition())
 			val category = getGroup(biomeHolder)
 			return if (category == DEFAULT) EnumSet.of(DEFAULT) else EnumSet.of(category)
-		}
-
-		fun getCategoryFromFish(fish: FishItem): BiomeCategory {
-			TODO("")
 		}
 	}
 }

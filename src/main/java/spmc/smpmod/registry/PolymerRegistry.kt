@@ -87,4 +87,7 @@ object PolymerRegistry {
 		PolymerEntityUtils.registerType(type)
 		FabricDefaultAttributeRegistry.register(type, supplier)
 	}
+
+	// TODO: create things to migrate all items
+	fun migration(originalId: String, newId: String) {}
 }

@@ -10,6 +10,7 @@ import net.minecraft.world.item.component.CustomData
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.utils.BasePolymerItem
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -54,7 +55,7 @@ class CropItem(settings: Properties, vanillaItem: Item, val cropName: String, va
 		val tag: CompoundTag = getCropTag(stack)
 		val quality: Int = getQuality(tag)
 		val price = this.basePrice * stack.count
-		return (price * (1 + (quality * .45)) * 100.0).roundToInt() / 100.0
+		return rnd2DP(price * (1 + quality * .45))
 	}
 
 	companion object {

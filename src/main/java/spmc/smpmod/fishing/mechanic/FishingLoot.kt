@@ -9,17 +9,18 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.util.RandomSource
+import net.minecraft.world.item.Item
 import spmc.smpmod.SMPMod
+import spmc.smpmod.core.BiomeCategory.Companion.getPlayerCategories
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.FishTracker.Companion.get
 import spmc.smpmod.fishing.RodTiers
-import spmc.smpmod.quest.PlayerQuestData.ActiveQuest
 import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.QuestManager.Companion.getQuests
+import spmc.smpmod.registry.FishingRegistry.getAvailableFish
 import java.util.*
-import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -27,7 +28,7 @@ object FishingLoot {
 	fun rewardFish(player: ServerPlayer, tier: RodTiers, streak: Int) {
 		val random = SMPMod.minecraftServer?.overworld()?.getRandom() ?: return
 
-		if (streak > 3) TODO("fish mob to kill (like the new game)")
+		if (streak > 3) {}//TODO("fish mob to kill (like the new game)")
 
 		val caughtFish = getRandomFishForTier(player, tier)
 		val modMap = mutableMapOf<ItemModifier, Int>()
@@ -47,11 +48,13 @@ object FishingLoot {
 		player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN).append(Component.literal(caughtFish.fishName).withColor(caughtFish.rarity.color)).append(Component.literal(".").withStyle(ChatFormatting.GREEN)))
 		get()?.addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).path)
 		if (caughtFish.rarity.shouldAnnounce()) announceLoot(caughtFish.rarity.toString().uppercase(Locale.getDefault()), caughtFish.fishName, caughtFish.rarity.color, player)
-		getQuests(player).activeQuests.forEach(Consumer { activeQuest: ActiveQuest -> if (activeQuest.getQuest()?.type == Quest.QuestType.FISHING) activeQuest.increment(1) })
+		getQuests(player).activeQuests.forEach { if (it.getQuest()?.type == Quest.QuestType.FISHING) it.increment(1) }
 	}
 
 	private fun getRandomFishForTier(player: ServerPlayer, tier: RodTiers): FishItem {
-		val pool = BiomeCategory.getAvailableFish(player)
+		val playerCategories = getPlayerCategories(player)
+		val pool: MutableList<Item> = mutableListOf()
+		playerCategories.forEach { pool.addAll(getAvailableFish(it)) }
 		check(pool.isNotEmpty()) { "Fish pool is empty!" }
 		val weights = tier.rates
 		val roll = (SMPMod.minecraftServer?: return pool[0] as FishItem).overworld().getRandom().nextDouble() * 100
@@ -69,7 +72,7 @@ object FishingLoot {
 
 		val finalRarity = selectedRarity
 		val matchingFish = ArrayList(pool.map { it as FishItem }.filter { it.rarity == finalRarity }).ifEmpty { return pool[0] as FishItem }
-		var tierTotalWeight = 0.0
+		var tierTotalWeight = .0
 		val fishWeights = DoubleArray(matchingFish.size)
 
 		for (i in matchingFish.indices) {
@@ -79,7 +82,7 @@ object FishingLoot {
 		}
 
 		val fishRoll = (SMPMod.minecraftServer?: return matchingFish[0]).overworld().getRandom().nextDouble() * tierTotalWeight
-		var fishWeight = 0.0
+		var fishWeight = .0
 
 		for (i in matchingFish.indices) {
 			fishWeight += fishWeights[i]
@@ -89,19 +92,19 @@ object FishingLoot {
 		return matchingFish[0]
 	}
 
-	private val BASE_STAR_WEIGHTS = doubleArrayOf(1000.0, 600.0, 300.0, 120.0, 35.0, 6.0)
+	private val BASE_STAR_WEIGHTS = intArrayOf(1000, 600, 300, 120, 35, 6)
 	private fun rollStarQuality(random: RandomSource, luckBonus: Float): Int {
 		val adjustedWeights = DoubleArray(BASE_STAR_WEIGHTS.size)
-		var totalWeight = 0.0
+		var totalWeight = .0
 
 		for (star in BASE_STAR_WEIGHTS.indices) {
-			val weight = BASE_STAR_WEIGHTS[star] * luckBonus.toDouble().pow(star.toDouble())
+			val weight = BASE_STAR_WEIGHTS[star].toDouble() * luckBonus.toDouble().pow(star.toDouble())
 			adjustedWeights[star] = weight
 			totalWeight += weight
 		}
 
 		val roll = random.nextDouble() * totalWeight
-		var cumulative = 0.0
+		var cumulative = .0
 
 		for (star in adjustedWeights.indices) {
 			cumulative += adjustedWeights[star]

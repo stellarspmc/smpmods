@@ -1,12 +1,13 @@
 package spmc.smpmod.registry
 
-import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
+import com.sun.jdi.connect.Connector
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomyData
 import spmc.smpmod.economy.fluctuate.MarketState
@@ -18,13 +19,14 @@ import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.utils.MessageUtils.sendError
 import spmc.smpmod.utils.MessageUtils.sendSuccess
-import spmc.smpmod.utils.UtilityFunctions.streamToSuggestion
+import spmc.smpmod.utils.UtilFunc.streamToSuggestion
 import spmc.smpmod.vault.VaultData
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.GameProfileArgument
 import net.minecraft.commands.arguments.item.ItemArgument
 import net.minecraft.core.BlockPos
@@ -40,13 +42,13 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.levelgen.Heightmap
-import net.minecraft.world.level.portal.TeleportTransition
-import spmc.smpmod.utils.UtilityFunctions.isAdmin
+import spmc.smpmod.core.BountySystem
+import spmc.smpmod.utils.UtilFunc.isAdmin
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -91,6 +93,14 @@ object CommandRegistry {
                     .requires { isAdmin(it.player?: return@requires false) }
                     .suggests { _, builder -> SharedSuggestionProvider.suggest(NPCManager.allIds, builder) }
                     .executes(CommandRegistry::executeNpcSetup))))
+
+	    dispatcher.register(Commands.literal("bounty")
+		    .executes { executeBounty(it, it.source.player ?: return@executes -1) }
+		    .then(Commands.argument("player", EntityArgument.player())
+			    .executes { executeBounty(it, EntityArgument.getPlayer(it, "player")) }
+		        .then(Commands.literal("add")
+			        .then(Commands.argument("anonymous", BoolArgumentType.bool())
+				        .executes(CommandRegistry::addBounty)))))
 
         dispatcher.register(Commands.literal("fishing").executes { FishTracker.openFishIndexMenu(it.getSource().player?: return@executes -1) })
         dispatcher.register(Commands.literal("vault").executes { VaultData.sendVaultMessage(it.getSource().player?: return@executes -1) })
@@ -138,10 +148,25 @@ object CommandRegistry {
         return 1
     }
 
+	private fun executeBounty(ctx: CommandContext<CommandSourceStack>, player: ServerPlayer): Int {
+		val name = if ((ctx.source.player ?: return -1).uuid == player.uuid) "Your" else player.scoreboardName
+		ctx.source.sendSuccess({ Component.literal("$name bounty is at $${BountySystem.checkBounty(player)}.").withColor(TextColor.GREEN) }, false)
+		return 1
+	}
+
+	private fun addBounty(ctx: CommandContext<CommandSourceStack>): Int {
+		val player = EntityArgument.getPlayer(ctx, "player")
+		val amount = DoubleArgumentType.getDouble(ctx, "amount")
+		val anon = BoolArgumentType.getBool(ctx, "anonymous")
+		val source = ctx.source.player ?: return -1
+		if (source.uuid == player.uuid) return sendError(source, "You can't set a bounty on yourself!") // TODO: can you set a bounty on yourself?
+		return BountySystem.addPlayerBounty(source, player, amount, anon)
+	}
+
     private fun executeSend(ctx: CommandContext<CommandSourceStack>): Int {
         val target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()
         val sender = ctx.getSource().player?: return -1
-        val amount = ((DoubleArgumentType.getDouble(ctx, "amount") * 100f).roundToInt() / 100f).toDouble()
+        val amount = rnd2DP(DoubleArgumentType.getDouble(ctx, "amount"))
         if (sender.getUUID() == target.id()) return sendError(sender, "You cannot send money to yourself.")
 
         val eco: EconomyData = EconomyData.get() ?: return -1

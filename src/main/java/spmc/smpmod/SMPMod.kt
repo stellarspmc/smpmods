@@ -40,6 +40,7 @@ import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spmc.smpmod.core.BedrockSkinFetcher
+import spmc.smpmod.core.BountySystem
 import spmc.smpmod.core.ChunkLoaderSavedData
 import spmc.smpmod.discord.DiscordWebhook
 import spmc.smpmod.discord.EventHandler
@@ -104,32 +105,13 @@ class SMPMod : DedicatedServerModInitializer {
 	        val player = entity as? ServerPlayer ?: return@register
 		    if (player.level().dimension().identifier().namespace != "minecraft") return@register
 		    messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(player).string + " at (" + player.x.toInt() + ", " + player.y.toInt() + ", " + player.z.toInt() + ")"))?.queue()
-		    val eco = EconomyData.get() ?: return@register
-		    val victimBalance = eco.getBalance(player.getUUID())
-
 		    val headItem = ItemStack(Items.PLAYER_HEAD)
 		    headItem.applyComponents(DataComponentMap.builder().set(DataComponents.PROFILE, player.profile).build())
 		    val headEntity = ItemEntity(player.level(), player.x, player.y + 1, player.z, headItem)
 		    headEntity.setPickUpDelay(40)
 		    player.level().addFreshEntity(headEntity)
 
-		    if (victimBalance >= 1000) {
-			    val lossPercent = .05 + (player.getRandom().nextDouble() * .05)
-			    val totalLost = ((victimBalance * lossPercent) * 100.0).roundToInt() / 100.0
-
-			    if (totalLost > 0) {
-				    eco.changeBalance(player.getUUID(), -totalLost)
-				    MessageUtils.sendError<Int>(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
-
-				    if (damageSource.entity?.getUUID() != entity.getUUID()) {
-					    val killer = damageSource.entity as? ServerPlayer?: return@register
-					    val bountyReward = ((totalLost * .7) * 100.0).roundToInt() / 100.0
-
-					    eco.changeBalance(killer.getUUID(), bountyReward)
-					    MessageUtils.sendSuccess<Int>(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.scoreboardName, bountyReward))
-				    }
-			    }// TODO: create new bounty system
-		    }
+		    BountySystem.executeVictim(player, damageSource)
         }
 
 	    ServerTickEvents.END_SERVER_TICK.register {

@@ -1,10 +1,8 @@
 package spmc.smpmod.registry
 
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import spmc.smpmod.core.BiomeCategory
-import spmc.smpmod.core.BiomeCategory.Companion.getPlayerCategories
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.RodItem
@@ -33,17 +31,30 @@ object FishingRegistry { // might have to switch up how this works? TODO
         FISH_REGISTRY[id] = item
     }
 
-	fun getAvailableFish(player: ServerPlayer): MutableList<Item> {
-		val categories: Set<BiomeCategory> = getPlayerCategories(player)
-		val result: MutableList<Item> = ArrayList()
-
-		for (category in categories) {
-			result.addAll(ArrayList(allFish))
+	fun getAvailableFish(biome: BiomeCategory): List<Item> { // TODO: mushroom fishes?
+		return when(biome) {
+			BiomeCategory.BADLANDS, BiomeCategory.DESERT -> DESERT
+			BiomeCategory.NETHER, BiomeCategory.BASALT, BiomeCategory.CRIMSON, BiomeCategory.WARPED, BiomeCategory.SOUL_SAND -> LAVA
+			BiomeCategory.CAVE, BiomeCategory.SCULK -> DEEP
+			BiomeCategory.END -> END
+			BiomeCategory.SNOWY, BiomeCategory.TAIGA -> SNOWY
+			BiomeCategory.PLAINS, BiomeCategory.FLOWER -> PLAINS
+			BiomeCategory.SKY -> SKY
+			BiomeCategory.TROPICAL -> TROPICAL
+			else -> FISH
 		}
+	}
 
-		result.addAll(FISH)
-
-		return result // TODO: fix code
+	fun getCategoryFromFish(fish: Item): BiomeCategory {
+		if (PLAINS.contains(fish)) return BiomeCategory.PLAINS
+		else if (DESERT.contains(fish)) return BiomeCategory.DESERT
+		else if (LAVA.contains(fish)) return BiomeCategory.NETHER
+		else if (DEEP.contains(fish)) return BiomeCategory.DEEP
+		else if (END.contains(fish)) return BiomeCategory.END
+		else if (SNOWY.contains(fish)) return BiomeCategory.SNOWY
+		else if (SKY.contains(fish)) return BiomeCategory.SKY
+		else if (TROPICAL.contains(fish)) return BiomeCategory.TROPICAL
+		return BiomeCategory.DEFAULT
 	}
 
     fun getFish(id: String): Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
@@ -90,7 +101,7 @@ object FishingRegistry { // might have to switch up how this works? TODO
         registerFish("valey", Items.SALMON, 24.0, ItemRarity.COMMON, FISH)
         registerFish("lilorange", Items.TROPICAL_FISH, 26.0, ItemRarity.COMMON, FISH)
         registerFish("coalbie", Items.SALMON, 27.0, ItemRarity.COMMON, FISH)
-        registerFish("gegg", Items.PUFFERFISH, 29.0, ItemRarity.COMMON, FISH)
+        registerFish("greg", Items.PUFFERFISH, 29.0, ItemRarity.COMMON, FISH)
         registerFish("tropical_fish", Items.TROPICAL_FISH, 31.0, ItemRarity.COMMON, FISH)
         registerFish("tikira", Items.COD, 32.0, ItemRarity.COMMON, FISH)
         registerFish("red_bass", Items.SALMON, 33.0, ItemRarity.COMMON, FISH)

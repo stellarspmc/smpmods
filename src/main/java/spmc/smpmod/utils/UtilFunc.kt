@@ -15,9 +15,9 @@ import net.minecraft.world.level.biome.Biome
 import spmc.smpmod.SMPMod
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import java.util.stream.Stream
+import kotlin.math.roundToInt
 
-object UtilityFunctions {
+object UtilFunc {
     fun getLevelOfEntity(uuid: UUID): ServerLevel {
         val level = AtomicReference<ServerLevel>()
         SMPMod.minecraftServer?.allLevels?.forEach { if (it.getEntity(uuid) != null) level.set(it) }
@@ -27,4 +27,5 @@ object UtilityFunctions {
     fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { BuiltInRegistries.ITEM.getKey(it) }, builder)}
 	fun isAdmin(player: ServerPlayer) = player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
 	fun createBiomeTag(tag: String): TagKey<Biome> = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", tag))
+	fun rnd2DP(toBeRounded: Double) = (toBeRounded * 100.0).roundToInt() / 100.0
 }

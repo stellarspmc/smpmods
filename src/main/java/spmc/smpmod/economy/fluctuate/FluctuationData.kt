@@ -5,19 +5,19 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.util.RandomSource
 import net.minecraft.world.item.Item
+import spmc.smpmod.utils.UtilFunc.rnd2DP
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToLong
 
 class FluctuationData @JvmOverloads constructor(val mineral: Item, @JvmField var defaultPrice: Double, var fluctuation: Double, var amountDeposited: Long = 0, var amountWithdrawn: Long = 0) {
 	private var lastTransactionTime = System.currentTimeMillis()
 
-	fun getBasePriceAt(netDemand: Long) = (max(defaultPrice * (1 + ((netDemand / SATURATION_VOLUME) * fluctuation)), .0) * 100.0).roundToLong() / 100.0
+	fun getBasePriceAt(netDemand: Long) = rnd2DP(max(defaultPrice * (1 + ((netDemand / SATURATION_VOLUME) * fluctuation)), .0))
 	val currentPrice: Double get() = getBasePriceAt(amountWithdrawn - amountDeposited)
 
 	fun getBulkBuyCost(amount: Int): Double {
 		val currentNet = amountWithdrawn - amountDeposited
-		return (((getBasePriceAt(currentNet) * BUY_MARGIN + getBasePriceAt(currentNet + amount) * BUY_MARGIN) / 2) * amount * 100.0).roundToLong() / 100.0
+		return rnd2DP(((getBasePriceAt(currentNet) * BUY_MARGIN + getBasePriceAt(currentNet + amount) * BUY_MARGIN) / 2) * amount)
 	}
 
 	fun getBulkSellPayout(amount: Int): Double {
@@ -26,7 +26,7 @@ class FluctuationData @JvmOverloads constructor(val mineral: Item, @JvmField var
 		val endPrice: Double = getBasePriceAt(currentNet - amount) * SELL_MARGIN
 
 		val avgPrice = (startPrice + endPrice) / 2
-		return (avgPrice * amount * 100.0).roundToLong() / 100.0
+		return rnd2DP(avgPrice * amount)
 	}
 
 	fun deposit(amount: Long) {
