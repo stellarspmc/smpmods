@@ -56,6 +56,7 @@ object BedrockSkinFetcher {
         scheduler.schedule({ server.execute { if ((server.playerList.getPlayer(playerId)?: return@execute).connection.isAcceptingMessages) fetchAndApplySkin(server, playerId, playerName, xuid, attempt + 1) }}, 850L, TimeUnit.MILLISECONDS)
     }
 
+    @Suppress("CAST_NEVER_SUCCEEDS")
     private fun applySkin(server: MinecraftServer, playerId: UUID, skin: SkinProperty) {
         val player = server.playerList.getPlayer(playerId) ?: return
 
@@ -66,7 +67,7 @@ object BedrockSkinFetcher {
 
         map.put("textures", Property("textures", skin.value, skin.signature))
         val newProperties = PropertyMap(map)
-        (profile as AccessorGameProfile).setProperties(newProperties) // shush
+        (profile as AccessorGameProfile).setProperties(newProperties)
 
 	    server.execute {
 		    if (player.isRemoved) return@execute

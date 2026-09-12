@@ -8,6 +8,10 @@
 * 8 rarity loot tier tables
 * Pickaxe progression tree (cross emoji) & chunk digging limit logic (tick emoji)
 
+### **please refer to discord for latest updates!!!**
+
+## v7.3-pre5
+
 ### Stock Market Screen Monitors
 * **Core Idea:** In-world physical display screens at spawn to display live market trends, integrated with quick-trade market NPCs for instant command-free transactions.
 * **Technical Requirements:**
@@ -24,8 +28,6 @@
 * **Core Idea:** Adding NPCs as a shop alternative would make the shops more engaging than barrels.
 * **Technical Requirements:**
 * Hooking up shop system with NPCs
-
-## v7.3-pre5
 
 ### Fishing Re-Rework
 * **Core Idea:** Interactive fishing mechanics where catches are spawned as active living mobs instead of static item drops, featuring streak-based mob events.
