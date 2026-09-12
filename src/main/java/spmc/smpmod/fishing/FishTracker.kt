@@ -17,6 +17,9 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 import spmc.smpmod.SMPMod
+import spmc.smpmod.core.BiomeCategory
+import spmc.smpmod.core.BiomeCategory.Companion.getCategoryFromFish
+import spmc.smpmod.registry.FishingRegistry
 import spmc.smpmod.registry.FishingRegistry.allFish
 import java.util.*
 import kotlin.math.ceil
@@ -73,7 +76,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 
 					val isUnlocked = unlockedList.contains(fishId)
 					if (isUnlocked) gui.setSlot(i, GuiElementBuilder(fishItem).addLoreLine(Component.literal("✔ Unlocked").withColor(TextColor.fromRgb(0x55FF55))).addLoreLine(Component.literal("Price: ").withStyle(ChatFormatting.GRAY).append(Component.literal("$" + FishItem.getModifiedPrice(fishItem.defaultInstance)).withStyle(ChatFormatting.GREEN)).withStyle { it.withItalic(false) }))
-					else gui.setSlot(i, GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal(String.format("Found in: %s", BiomeCategory.getBiomeFish(fishItem).toString())).withColor(TextColor.fromRgb(0xFF5555))))
+					else gui.setSlot(i, GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal("???").withColor(TextColor.fromRgb(0xAAAAAA))).addLoreLine(Component.literal(String.format("Found in: %s", getCategoryFromFish(fishItem as FishItem).toString())).withColor(TextColor.fromRgb(0xFF5555))))
 				} else gui.setSlot(i, GuiElementBuilder(Items.AIR))
 			}
 

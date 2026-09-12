@@ -83,5 +83,6 @@ object NPCRegistry {
 		)
 
 	    // TODO: create survival counterpart
+	    // TODO: create market person (to bring more players to using the market function)
     }
 }

@@ -18,15 +18,22 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.ChatFormatting
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.stats.Stats
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
@@ -41,14 +48,14 @@ import spmc.smpmod.economy.EconomyData
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.economy.shop.ShopManager
 import spmc.smpmod.fishing.mechanic.FishingManager
+import spmc.smpmod.mining.ChunkPool
+import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.mobs.ServerMobEvents
-import spmc.smpmod.mobs.boss.CrystalBoss
 import spmc.smpmod.npc.NPCManager
 import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
+import spmc.smpmod.registry.PlantRegistry
 import spmc.smpmod.registry.PolymerRegistry
-import spmc.smpmod.mining.ChunkPool
-import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.utils.MessageUtils
 import spmc.smpmod.vault.VaultData
 import java.util.concurrent.CompletableFuture
@@ -94,30 +101,35 @@ class SMPMod : DedicatedServerModInitializer {
 
 
 	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
-	        if (entity is ServerPlayer && messageChannel != null) {
-		        if (entity.level().dimension().identifier().namespace != "minecraft") return@register
-		        messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(entity).string + " at (" + entity.x.toInt() + ", " + entity.y.toInt() + ", " + entity.z.toInt() + ")"))?.queue()
-		        val eco = EconomyData.get() ?: return@register
-		        val victimBalance = eco.getBalance(entity.getUUID())
+	        val player = entity as? ServerPlayer ?: return@register
+		    if (player.level().dimension().identifier().namespace != "minecraft") return@register
+		    messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(player).string + " at (" + player.x.toInt() + ", " + player.y.toInt() + ", " + player.z.toInt() + ")"))?.queue()
+		    val eco = EconomyData.get() ?: return@register
+		    val victimBalance = eco.getBalance(player.getUUID())
 
-		        if (victimBalance >= 1000) {
-			        val lossPercent = .05 + (entity.getRandom().nextDouble() * .05)
-			        val totalLost = ((victimBalance * lossPercent) * 100.0).roundToInt() / 100.0
+		    val headItem = ItemStack(Items.PLAYER_HEAD)
+		    headItem.applyComponents(DataComponentMap.builder().set(DataComponents.PROFILE, player.profile).build())
+		    val headEntity = ItemEntity(player.level(), player.x, player.y + 1, player.z, headItem)
+		    headEntity.setPickUpDelay(40)
+		    player.level().addFreshEntity(headEntity)
 
-			        if (totalLost > 0) {
-				        eco.changeBalance(entity.getUUID(), -totalLost)
-				        MessageUtils.sendError<Int>(entity, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
+		    if (victimBalance >= 1000) {
+			    val lossPercent = .05 + (player.getRandom().nextDouble() * .05)
+			    val totalLost = ((victimBalance * lossPercent) * 100.0).roundToInt() / 100.0
 
-				        if (damageSource.entity?.getUUID() != entity.getUUID()) {
-					        val killer = damageSource.entity as? ServerPlayer?: return@register
-					        val bountyReward = ((totalLost * .7) * 100.0).roundToInt() / 100.0
+			    if (totalLost > 0) {
+				    eco.changeBalance(player.getUUID(), -totalLost)
+				    MessageUtils.sendError<Int>(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
 
-					        eco.changeBalance(killer.getUUID(), bountyReward)
-					        MessageUtils.sendSuccess<Int>(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", entity.scoreboardName, bountyReward))
-				        }
-			        }// TODO: create new bounty system
-		        }
-	        }
+				    if (damageSource.entity?.getUUID() != entity.getUUID()) {
+					    val killer = damageSource.entity as? ServerPlayer?: return@register
+					    val bountyReward = ((totalLost * .7) * 100.0).roundToInt() / 100.0
+
+					    eco.changeBalance(killer.getUUID(), bountyReward)
+					    MessageUtils.sendSuccess<Int>(killer, String.format("⚔ You killed %s and claimed a $%.2f bounty!", player.scoreboardName, bountyReward))
+				    }
+			    }// TODO: create new bounty system
+		    }
         }
 
 	    ServerTickEvents.END_SERVER_TICK.register {
@@ -145,17 +157,32 @@ class SMPMod : DedicatedServerModInitializer {
 	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)
-	    UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) // TODO: better handling
+	    //UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) TODO: better handling
 	    CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, context, _ -> CommandRegistry.register(dispatcher, context) })
 
 	    // proof of concept, TODO: make it better
-        PlayerBlockBreakEvents.AFTER.register { world, _, _, state, _ ->
+        PlayerBlockBreakEvents.AFTER.register { world, _, pos, state, _ ->
 	        if (world.isClientSide) return@register
 	        if (world.dimension().identifier().namespace != "minecraft") return@register
 	        if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
-		        //if (world.getRandom().nextFloat() < 0.08f) Block.popResource(world, pos, ItemStack(PlantRegistry.SEEDS.get("wheat"))) TODO: to be fixed
+		        if (world.getRandom().nextFloat() < 0.08f) PlantRegistry.SEEDS["wheat"]?.let { Block.popResource(world, pos, ItemStack(it)) }
 	        }
         }
+
+	    AttackEntityCallback.EVENT.register { player, world, hand, _, _ ->
+		    if (!world.isClientSide && player is ServerPlayer) {
+			    val stack = player.getItemInHand(hand)
+			    if (stack.`is`(Items.MACE) && player.cooldowns.isOnCooldown(stack)) return@register InteractionResult.FAIL
+		    }
+			InteractionResult.PASS
+	    }
+
+	    ServerLivingEntityEvents.AFTER_DAMAGE.register { _, source, _, _, _ ->
+		    val attacker = source.entity as? ServerPlayer ?: return@register
+		    val mainHandStack = attacker.mainHandItem
+
+		    if (mainHandStack.`is`(Items.MACE) && attacker.fallDistance > 1.5f) attacker.cooldowns.addCooldown(mainHandStack, 30 * 20)
+	    }
     }
 
     companion object {

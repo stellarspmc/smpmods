@@ -13,14 +13,14 @@ import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.component.Fireworks
 import net.minecraft.world.item.enchantment.Enchantments
+import spmc.smpmod.core.BiomeCategory
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.mining.TreasureEntry
-import spmc.smpmod.mining.TreasureHelper.Biomes
 import java.util.*
 
 object TreasureRegistry {
     private val REGISTRY: MutableList<TreasureEntry> = mutableListOf()
-    fun getEligibleTreasures(biome: Biomes, rarity: ItemRarity) = REGISTRY.filter { it.isValid(rarity, biome) }
+    fun getEligibleTreasures(biome: BiomeCategory, rarity: ItemRarity) = REGISTRY.filter { it.isValid(rarity, biome) }
 
 	private inline fun entry(item: Item, block: TreasureEntry.Builder.() -> Unit = {}): TreasureEntry {
 		val builder = TreasureEntry.Builder(item)
@@ -301,168 +301,166 @@ object TreasureRegistry {
 	    }*/ // TODO: fix
     }
     private fun registerOverworld() { // sort by rarity, then biome, group overlaps tgt TODO
-		entry(Items.HANGING_ROOTS) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.RAW_COPPER) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.RAW_IRON) { count(2).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.COAL) { count(5).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.GRAVEL) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.FLINT) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.OAK_PLANKS) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
-	    entry(Items.RAIL) { count(2, 6).rarity(ItemRarity.COMMON).biome(Biomes.OVERWORLD) }
+		entry(Items.HANGING_ROOTS) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.RAW_COPPER) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.RAW_IRON) { count(2).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.COAL) { count(5).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.GRAVEL) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.FLINT) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.OAK_PLANKS) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
+	    entry(Items.RAIL) { count(2, 6).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
 
-		entry(Items.COPPER_INGOT) { count(3).rarity(ItemRarity.UNCOMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.IRON_INGOT) { count(2).rarity(ItemRarity.UNCOMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.REDSTONE) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.LAPIS_LAZULI) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.OVERWORLD) }
-		entry(Items.CONCRETE.white) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.OVERWORLD) }
+		entry(Items.COPPER_INGOT) { count(3).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.IRON_INGOT) { count(2).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.REDSTONE) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.LAPIS_LAZULI) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OVERWORLD) }
+		entry(Items.CONCRETE.white) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OVERWORLD) }
 
 	    // biome
 
-		entry(Items.GLOW_BERRIES) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.COBBLESTONE) { count(32).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.COBBLED_DEEPSLATE) { count(14).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.ANDESITE) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.DIORITE) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.GRANITE) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
-		entry(Items.GRAVEL) { count(64).rarity(ItemRarity.COMMON).biome(Biomes.CAVES) }
+		entry(Items.GLOW_BERRIES) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.COBBLESTONE) { count(32).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.COBBLED_DEEPSLATE) { count(14).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.ANDESITE) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.DIORITE) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.GRANITE) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.GRAVEL) { count(64).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.POINTED_DRIPSTONE) { count(6).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.DRIPSTONE_BLOCK) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.MOSS_BLOCK) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.CAVE) }
 
-		entry(Items.POINTED_DRIPSTONE) { count(6).rarity(ItemRarity.COMMON).biome(Biomes.DRIP) }
-		entry(Items.DRIPSTONE_BLOCK) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.DRIP) }
+		entry(Items.MANGROVE_ROOTS) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.TROPICAL) }
+		entry(Items.CLAY_BALL) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.TROPICAL).biome(BiomeCategory.OCEAN) }
+		entry(Items.SEAGRASS) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.OCEAN) }
+		entry(Items.WATER_BUCKET) { count(1).rarity(ItemRarity.COMMON).biome(BiomeCategory.OCEAN).biome(BiomeCategory.CAVE) }
 
-		entry(Items.MOSS_BLOCK) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.LUSH) }
+		entry(Items.RED_SAND) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.BADLANDS) }
+		entry(Items.DEAD_BUSH) { count(6).rarity(ItemRarity.COMMON).biome(BiomeCategory.BADLANDS).biome(BiomeCategory.DESERT) }
+		entry(Items.CACTUS) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.DESERT) }
+		entry(Items.GLASS) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.DESERT) }
+		entry(Items.LAVA_BUCKET) { count(1).rarity(ItemRarity.COMMON).biome(BiomeCategory.DESERT) }
+		entry(Items.SAND) { count(64).rarity(ItemRarity.COMMON).biome(BiomeCategory.DESERT) }
 
-		entry(Items.MANGROVE_ROOTS) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.SWAMP) }
-		entry(Items.CLAY_BALL) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.SWAMP).biome(Biomes.OCEAN) }
-		entry(Items.SEAGRASS) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.OCEAN) }
-		entry(Items.WATER_BUCKET) { count(1).rarity(ItemRarity.COMMON).biome(Biomes.OCEAN).biome(Biomes.DRIP) }
+		entry(Items.SNOWBALL) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.SNOWY) }
+		entry(Items.SPRUCE_SAPLING) { rarity(ItemRarity.COMMON).biome(BiomeCategory.SNOWY).biome(BiomeCategory.TAIGA) }
+		entry(Items.SWEET_BERRIES) { count(6).rarity(ItemRarity.COMMON).biome(BiomeCategory.TAIGA) }
 
-		entry(Items.RED_SAND) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.BADLANDS) }
-		entry(Items.DEAD_BUSH) { count(6).rarity(ItemRarity.COMMON).biome(Biomes.BADLANDS).biome(Biomes.DESERT) }
-		entry(Items.CACTUS) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.DESERT) }
-		entry(Items.GLASS) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.DESERT) }
-		entry(Items.LAVA_BUCKET) { count(1).rarity(ItemRarity.COMMON).biome(Biomes.DESERT) }
-		entry(Items.SAND) { count(64).rarity(ItemRarity.COMMON).biome(Biomes.DESERT) }
+		entry(Items.BAMBOO) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.TROPICAL) }
 
-		entry(Items.SNOWBALL) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.ICE) }
-		entry(Items.SPRUCE_SAPLING) { rarity(ItemRarity.COMMON).biome(Biomes.ICE).biome(Biomes.TAIGA) }
-		entry(Items.SWEET_BERRIES) { count(6).rarity(ItemRarity.COMMON).biome(Biomes.TAIGA) }
-
-		entry(Items.BAMBOO) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.JUNGLE) }
-
-		entry(Items.WOOL.gray) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.SCULK) }
-		entry(Items.SCULK_VEIN) { count(5).rarity(ItemRarity.COMMON).biome(Biomes.SCULK) }
+		entry(Items.WOOL.gray) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.SCULK) }
+		entry(Items.SCULK_VEIN) { count(5).rarity(ItemRarity.COMMON).biome(BiomeCategory.SCULK) }
 
 	    // uncommon
 
-		entry(Items.RED_MUSHROOM_BLOCK) { count(3).rarity(ItemRarity.UNCOMMON).biome(Biomes.DARK_FOREST) }
-		entry(Items.BROWN_MUSHROOM_BLOCK) { count(2).rarity(ItemRarity.UNCOMMON).biome(Biomes.DARK_FOREST) }
-		entry(Items.DARK_OAK_LEAVES) { count(12).rarity(ItemRarity.UNCOMMON).biome(Biomes.DARK_FOREST) }
-		entry(Items.DARK_OAK_SAPLING) { count(6).rarity(ItemRarity.UNCOMMON).biome(Biomes.DARK_FOREST) }
+		entry(Items.RED_MUSHROOM_BLOCK) { count(3).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.FOREST) }
+		entry(Items.BROWN_MUSHROOM_BLOCK) { count(2).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.FOREST) }
+		entry(Items.DARK_OAK_LEAVES) { count(12).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.FOREST) } // might have to change?
+		entry(Items.DARK_OAK_SAPLING) { count(6).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.FOREST) } // might have to change?
 
-		entry(Items.TERRACOTTA) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.BADLANDS) }
+		entry(Items.TERRACOTTA) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.BADLANDS) }
 
-		entry(Items.PACKED_ICE) { count(6).rarity(ItemRarity.UNCOMMON).biome(Biomes.ICE) }
+		entry(Items.PACKED_ICE) { count(6).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SNOWY) }
 
-		entry(Items.PRISMARINE_SHARD) { count(4).rarity(ItemRarity.UNCOMMON).biome(Biomes.OCEAN) }
+		entry(Items.PRISMARINE_SHARD) { count(4).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.OCEAN) }
 
-		entry(Items.HONEYCOMB) { count(3).rarity(ItemRarity.UNCOMMON).biome(Biomes.FLOWER) }
+		entry(Items.HONEYCOMB) { count(3).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.FLOWER) }
 
-		entry(Items.COCOA_BEANS) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.JUNGLE) }
+		entry(Items.COCOA_BEANS) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.TROPICAL) }
 
-		entry(Items.AMETHYST_SHARD) { count(4).rarity(ItemRarity.UNCOMMON).biome(Biomes.CAVES) }
-		entry(Items.WOOL.gray) { count(32).rarity(ItemRarity.UNCOMMON).biome(Biomes.SCULK) }
-		entry(Items.SCULK) { count(16).rarity(ItemRarity.UNCOMMON).biome(Biomes.SCULK) }
-		entry(Items.CANDLE) { count(5).rarity(ItemRarity.UNCOMMON).biome(Biomes.SCULK) }
+		entry(Items.AMETHYST_SHARD) { count(4).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.CAVE) }
+		entry(Items.WOOL.gray) { count(32).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SCULK) }
+		entry(Items.SCULK) { count(16).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SCULK) }
+		entry(Items.CANDLE) { count(5).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SCULK) }
     }
     private fun registerNether() { // TODO
-		entry(Items.GLOWSTONE_DUST) { count(12).rarity(ItemRarity.COMMON).biome(Biomes.NETHER_LIST) }
-		entry(Items.NETHERRACK) { count(32).rarity(ItemRarity.COMMON).biome(Biomes.NETHER_LIST) }
-		entry(Items.NETHER_BRICK) { count(8).rarity(ItemRarity.COMMON).biome(Biomes.NETHER_LIST) }
+		entry(Items.GLOWSTONE_DUST) { count(12).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }
+		entry(Items.NETHERRACK) { count(32).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }
+		entry(Items.NETHER_BRICK) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }
 
-		entry(Items.SOUL_SAND) { count(12).rarity(ItemRarity.COMMON).biome(Biomes.SOUL) }
-		entry(Items.SOUL_SOIL) { count(12).rarity(ItemRarity.COMMON).biome(Biomes.SOUL) }
-		entry(Items.BASALT) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.BASALT) }
-		entry(Items.BLACKSTONE) { count(16).rarity(ItemRarity.COMMON).biome(Biomes.BASALT) }
-		entry(Items.MAGMA_CREAM) { count(2).rarity(ItemRarity.COMMON).biome(Biomes.BASALT) }
-		entry(Items.CRIMSON_ROOTS) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.CRIMSON) }
-		entry(Items.WARPED_ROOTS) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.WARPED) }
-		entry(Items.NETHER_SPROUTS) { count(6).rarity(ItemRarity.COMMON).biome(Biomes.WARPED) }
+		entry(Items.SOUL_SAND) { count(12).rarity(ItemRarity.COMMON).biome(BiomeCategory.SOUL_SAND) }
+		entry(Items.SOUL_SOIL) { count(12).rarity(ItemRarity.COMMON).biome(BiomeCategory.SOUL_SAND) }
+		entry(Items.BASALT) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.BASALT) }
+		entry(Items.BLACKSTONE) { count(16).rarity(ItemRarity.COMMON).biome(BiomeCategory.BASALT) }
+		entry(Items.MAGMA_CREAM) { count(2).rarity(ItemRarity.COMMON).biome(BiomeCategory.BASALT) }
+		entry(Items.CRIMSON_ROOTS) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.CRIMSON) }
+		entry(Items.WARPED_ROOTS) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.WARPED) }
+		entry(Items.NETHER_SPROUTS) { count(6).rarity(ItemRarity.COMMON).biome(BiomeCategory.WARPED) }
 
-		entry(Items.QUARTZ) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.NETHER_LIST) }
-		entry(Items.GOLD_INGOT) { count(2).rarity(ItemRarity.UNCOMMON).biome(Biomes.NETHER_LIST) }
-		entry(Items.GLOWSTONE) { count(2).rarity(ItemRarity.UNCOMMON).biome(Biomes.NETHER_LIST) }
+		entry(Items.QUARTZ) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.NETHER) }
+		entry(Items.GOLD_INGOT) { count(2).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.NETHER) }
+		entry(Items.GLOWSTONE) { count(2).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.NETHER) }
 
-		entry(Items.GHAST_TEAR) { count(1).rarity(ItemRarity.UNCOMMON).biome(Biomes.SOUL) }
-		entry(Items.BLAZE_POWDER) { count(2).rarity(ItemRarity.UNCOMMON).biome(Biomes.NETHER_LIST) }
-		entry(Items.CRIMSON_STEM) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.CRIMSON) }
-		entry(Items.WARPED_STEM) { count(8).rarity(ItemRarity.UNCOMMON).biome(Biomes.WARPED) }
-		entry(Items.CRIMSON_FUNGUS) { count(3).rarity(ItemRarity.UNCOMMON).biome(Biomes.CRIMSON) }
-		entry(Items.WARPED_FUNGUS) { count(3).rarity(ItemRarity.UNCOMMON).biome(Biomes.WARPED) }
+		entry(Items.GHAST_TEAR) { count(1).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SOUL_SAND) }
+		entry(Items.BLAZE_POWDER) { count(2).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.NETHER) }
+		entry(Items.CRIMSON_STEM) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.CRIMSON) }
+		entry(Items.WARPED_STEM) { count(8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.WARPED) }
+		entry(Items.CRIMSON_FUNGUS) { count(3).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.CRIMSON) }
+		entry(Items.WARPED_FUNGUS) { count(3).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.WARPED) }
 	}
 	private fun registerEnd() {
-		entry(Items.END_STONE) { count(32, 64).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.END_ROD) { count(2).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.PHANTOM_MEMBRANE) { count(2, 4).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.STAINED_GLASS.black) { count(16, 32).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.CHORUS_FRUIT) { count(2).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.POPPED_CHORUS_FRUIT) { count(4).rarity(ItemRarity.COMMON).biome(Biomes.END_LIST) }
-		entry(Items.ENDER_PEARL) { rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST) }
+		entry(Items.END_STONE) { count(32, 64).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.END_ROD) { count(2).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.PHANTOM_MEMBRANE) { count(2, 4).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.STAINED_GLASS.black) { count(16, 32).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.CHORUS_FRUIT) { count(2).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.POPPED_CHORUS_FRUIT) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.END) }
+		entry(Items.ENDER_PEARL) { rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END) }
 
-		entry(Items.CHORUS_FRUIT) { count(8, 16).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST) }
-		entry(Items.POPPED_CHORUS_FRUIT) { count(6, 12).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST) }
-		entry(Items.ENDER_PEARL) { count(4, 8).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST) }
-		entry(Items.CONCRETE.purple) { count(16, 32).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(8, 12).rarity(ItemRarity.UNCOMMON).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(1, emptyList())) }} // duration 1
+		entry(Items.CHORUS_FRUIT) { count(8, 16).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END) }
+		entry(Items.POPPED_CHORUS_FRUIT) { count(6, 12).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END) }
+		entry(Items.ENDER_PEARL) { count(4, 8).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END) }
+		entry(Items.CONCRETE.purple) { count(16, 32).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(8, 12).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(1, emptyList())) }} // duration 1
 
-		entry(Items.END_ROD) { count(8, 12).rarity(ItemRarity.RARE).biome(Biomes.END_LIST) }
-		entry(Items.PURPUR_BLOCK) { count(16, 32).rarity(ItemRarity.RARE).biome(Biomes.END_LIST) }
-		entry(Items.DRAGON_BREATH) { count(2, 4).rarity(ItemRarity.RARE).biome(Biomes.END_LIST) }
-		entry(Items.ENDERMITE_SPAWN_EGG) { rarity(ItemRarity.RARE).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(8, 14).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }}
-		entry(Items.DIAMOND_PICKAXE) { rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.END_ROD) { count(8, 12).rarity(ItemRarity.RARE).biome(BiomeCategory.END) }
+		entry(Items.PURPUR_BLOCK) { count(16, 32).rarity(ItemRarity.RARE).biome(BiomeCategory.END) }
+		entry(Items.DRAGON_BREATH) { count(2, 4).rarity(ItemRarity.RARE).biome(BiomeCategory.END) }
+		entry(Items.ENDERMITE_SPAWN_EGG) { rarity(ItemRarity.RARE).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(8, 14).rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }}
+		entry(Items.DIAMOND_PICKAXE) { rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), it.random.nextIntBetweenInclusive(1, 2))
 			enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), it.random.nextIntBetweenInclusive(2, 3))
 		}}
 
-		entry(Items.SHULKER_SHELL) { count(2, 4).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST) }
-		entry(Items.ENDER_CHEST) { count(2).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST) }
-		entry(Items.CRYING_OBSIDIAN) { count(12, 24).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST) }
-		entry(Items.GLAZED_TERRACOTTA.purple) { count(16, 32).rarity(ItemRarity.EPIC).biome(Biomes.END_LIST) }
-		entry(Items.POTION) { rarity(ItemRarity.EPIC).biome(Biomes.END_LIST).name(Component.literal("Special Liquid")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0xFFFFFF), listOf(MobEffectInstance(MobEffects.NAUSEA, 200, 15)), Optional.empty<String>())) }}
+		entry(Items.SHULKER_SHELL) { count(2, 4).rarity(ItemRarity.EPIC).biome(BiomeCategory.END) }
+		entry(Items.ENDER_CHEST) { count(2).rarity(ItemRarity.EPIC).biome(BiomeCategory.END) }
+		entry(Items.CRYING_OBSIDIAN) { count(12, 24).rarity(ItemRarity.EPIC).biome(BiomeCategory.END) }
+		entry(Items.GLAZED_TERRACOTTA.purple) { count(16, 32).rarity(ItemRarity.EPIC).biome(BiomeCategory.END) }
+		entry(Items.POTION) { rarity(ItemRarity.EPIC).biome(BiomeCategory.END).name(Component.literal("Special Liquid")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0xFFFFFF), listOf(MobEffectInstance(MobEffects.NAUSEA, 200, 15)), Optional.empty<String>())) }}
 
-		entry(Items.POTION) { rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST).name(Component.literal("Dragon's Breath")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0x9B59B6), listOf(MobEffectInstance(MobEffects.REGENERATION, 400, 1), MobEffectInstance(MobEffects.RESISTANCE, 600, 0), MobEffectInstance(MobEffects.SLOW_FALLING, 600, 0)), Optional.empty<String>())) }}
-		entry(Items.SHULKER_SHELL) { count(6, 10).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST) }
-		entry(Items.END_CRYSTAL) { count(2).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST) }
-		entry(Items.OBSIDIAN) { count(32, 64).rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(16, 24).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }}
-		entry(Items.DIAMOND_CHESTPLATE) { rarity(ItemRarity.LEGENDARY).biome(Biomes.END_LIST).name(Component.literal("Voidbound Cuirass").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.POTION) { rarity(ItemRarity.LEGENDARY).biome(BiomeCategory.END).name(Component.literal("Dragon's Breath")).modify { set(DataComponents.POTION_CONTENTS, PotionContents(Optional.empty<Holder<Potion>>(), Optional.of(0x9B59B6), listOf(MobEffectInstance(MobEffects.REGENERATION, 400, 1), MobEffectInstance(MobEffects.RESISTANCE, 600, 0), MobEffectInstance(MobEffects.SLOW_FALLING, 600, 0)), Optional.empty<String>())) }}
+		entry(Items.SHULKER_SHELL) { count(6, 10).rarity(ItemRarity.LEGENDARY).biome(BiomeCategory.END) }
+		entry(Items.END_CRYSTAL) { count(2).rarity(ItemRarity.LEGENDARY).biome(BiomeCategory.END) }
+		entry(Items.OBSIDIAN) { count(32, 64).rarity(ItemRarity.LEGENDARY).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(16, 24).rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(2, emptyList())) }}
+		entry(Items.DIAMOND_CHESTPLATE) { rarity(ItemRarity.LEGENDARY).biome(BiomeCategory.END).name(Component.literal("Voidbound Cuirass").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.PROTECTION), it.random.nextIntBetweenInclusive(3, 4))
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 			enchant(enchants.getOrThrow(Enchantments.THORNS), it.random.nextIntBetweenInclusive(5, 7))
 		}}
 
-		entry(Items.END_CRYSTAL) { count(3, 4).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST) }
-		entry(Items.NETHER_STAR) { count(1).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST) }
-		entry(Items.DRAGON_HEAD) { count(1).rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(24, 28).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(3, emptyList())) }}
-		entry(Items.NETHERITE_PICKAXE) { rarity(ItemRarity.MYTHIC).biome(Biomes.END_LIST).name(Component.literal("Void Excavator").withStyle(ChatFormatting.LIGHT_PURPLE)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.END_CRYSTAL) { count(3, 4).rarity(ItemRarity.MYTHIC).biome(BiomeCategory.END) }
+		entry(Items.NETHER_STAR) { count(1).rarity(ItemRarity.MYTHIC).biome(BiomeCategory.END) }
+		entry(Items.DRAGON_HEAD) { count(1).rarity(ItemRarity.MYTHIC).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(24, 28).rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(3, emptyList())) }}
+		entry(Items.NETHERITE_PICKAXE) { rarity(ItemRarity.MYTHIC).biome(BiomeCategory.END).name(Component.literal("Void Excavator").withStyle(ChatFormatting.LIGHT_PURPLE)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), it.random.nextIntBetweenInclusive(7, 10))
 			enchant(enchants.getOrThrow(Enchantments.SILK_TOUCH), 1)
 		}}
 
-		entry(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE) { count(2, 8).rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST) }
-		entry(Items.NETHERITE_INGOT) { count(18).rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(16, 18).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(4, emptyList())) }}
-		entry(Items.NETHERITE_SWORD) { rarity(ItemRarity.CHROMATIC).biome(Biomes.END_LIST).name(Component.literal("Void's Edge").withStyle(ChatFormatting.RED)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE) { count(2, 8).rarity(ItemRarity.CHROMATIC).biome(BiomeCategory.END) }
+		entry(Items.NETHERITE_INGOT) { count(18).rarity(ItemRarity.CHROMATIC).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(16, 18).rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(4, emptyList())) }}
+		entry(Items.NETHERITE_SWORD) { rarity(ItemRarity.CHROMATIC).biome(BiomeCategory.END).name(Component.literal("Void's Edge").withStyle(ChatFormatting.RED)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.SHARPNESS), 2)
 			enchant(enchants.getOrThrow(Enchantments.LOOTING), it.random.nextIntBetweenInclusive(7, 9))
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 2)
 			enchant(enchants.getOrThrow(Enchantments.SWEEPING_EDGE), 4)
 		}}
 
-		entry(Items.BEACON) { count(1).rarity(ItemRarity.ASTRAL).biome(Biomes.END_LIST) }
-		entry(Items.FIREWORK_ROCKET) { count(36, 40).rarity(ItemRarity.RARE).biome(Biomes.END_LIST).modify { set(DataComponents.FIREWORKS, Fireworks(10, emptyList())) }}
-		entry(Items.NETHERITE_CHESTPLATE) { rarity(ItemRarity.ASTRAL).biome(Biomes.END_LIST).name(Component.literal("Astral Deity's Aegis").withStyle(ChatFormatting.AQUA)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.BEACON) { count(1).rarity(ItemRarity.ASTRAL).biome(BiomeCategory.END) }
+		entry(Items.FIREWORK_ROCKET) { count(36, 40).rarity(ItemRarity.RARE).biome(BiomeCategory.END).modify { set(DataComponents.FIREWORKS, Fireworks(10, emptyList())) }}
+		entry(Items.NETHERITE_CHESTPLATE) { rarity(ItemRarity.ASTRAL).biome(BiomeCategory.END).name(Component.literal("Astral Deity's Aegis").withStyle(ChatFormatting.AQUA)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.PROTECTION), 10) 
 		}}
 	}

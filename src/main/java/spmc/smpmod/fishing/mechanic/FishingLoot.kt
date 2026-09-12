@@ -12,7 +12,6 @@ import net.minecraft.util.RandomSource
 import spmc.smpmod.SMPMod
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.fishing.BiomeCategory
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.FishTracker.Companion.get
 import spmc.smpmod.fishing.RodTiers

@@ -95,7 +95,9 @@ object IndustrialRegistry {
         registerHead("compressed_carbon", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x22252A))
         registerHead("carbon_chunk", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIxZDQ5NTE2NTc0OGQzMTE2Zjk5ZDZiNWJkNWQ0MmViOGJhNTkyYmNkZmFkMzdmZDk1ZjliNmMwNGEzYiJ9fX0=", TextColor.fromRgb(0x111317))
         registerHead("nether_core", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTQyNDEyMjhhZWY4NGUzNTY3MWNjMzEwMTE2ZDExYjhkMGYwODc2MjIwNTM1NTNjMGRjNGU0YTVkYWMzYzQwNSJ9fX0=", TextColor.DARK_RED)
-    }
+
+		// compressed variants of ores? TODO: think if suitable
+	}
 
     internal fun registerBlocks() {
         SCULK_ENTITY = PolymerRegistry.createBlockWithItemEntity("sculk_compressor", ::SculkCompressorBlock, BlockBehaviour.Properties.of(), ::SculkCompressorEntity, Items.SCULK_CATALYST)

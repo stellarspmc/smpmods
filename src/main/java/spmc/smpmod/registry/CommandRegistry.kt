@@ -1,5 +1,6 @@
 package spmc.smpmod.registry
 
+import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
@@ -28,6 +29,7 @@ import net.minecraft.commands.arguments.GameProfileArgument
 import net.minecraft.commands.arguments.item.ItemArgument
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.players.NameAndId
 import net.minecraft.sounds.SoundEvents
@@ -36,7 +38,9 @@ import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.levelgen.Heightmap
+import net.minecraft.world.level.portal.TeleportTransition
 import spmc.smpmod.utils.UtilityFunctions.isAdmin
 import java.net.URI
 import java.util.*
@@ -51,7 +55,7 @@ object CommandRegistry {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext) {
         dispatcher.register(buildBalanceNode("bal"))
         dispatcher.register(buildBalanceNode("balance"))
-        dispatcher.register(Commands.literal("baltop")
+        dispatcher.register(Commands.literal("baltop") // TODO: add for /top
             .executes { executeTop(it, 1) }
             .then(Commands.argument<Int>("page", IntegerArgumentType.integer(1))
 				.executes { executeTop(it, IntegerArgumentType.getInteger(it, "page")) }))
@@ -61,22 +65,16 @@ object CommandRegistry {
                 .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0.1))
                     .executes(CommandRegistry::executeSend))))
 
-        dispatcher.register(Commands.literal("deposit")
-            .executes(CommandRegistry::executeDepositHand)
-            .then(Commands.literal("all")
-                .executes(CommandRegistry::executeDepositAll)))
+        dispatcher.register(buildDepositNode("deposit"))
+	    dispatcher.register(buildDepositNode("sell"))
 
         dispatcher.register(Commands.literal("market")
             .executes(CommandRegistry::executeMarketAll)
             .then(Commands.argument("item", ItemArgument.item(context)).suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf()))
                 .executes(CommandRegistry::executeMarketItem)))
 
-        dispatcher.register(Commands.literal("withdraw")
-            .then(Commands.argument("item", ItemArgument.item(context))
-                .suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf())) // TODO: add diamonds
-                .executes { executeWithdraw(it, 1) }
-                .then(Commands.argument("count", IntegerArgumentType.integer(1))
-                    .executes { executeWithdraw(it, IntegerArgumentType.getInteger(it, "count")) })))
+        dispatcher.register(buildWithdrawNode("withdraw", context))
+	    dispatcher.register(buildWithdrawNode("buy", context))
 
         dispatcher.register(Commands.literal("mapart")
             .then(Commands.argument("url", StringArgumentType.greedyString())
@@ -99,13 +97,30 @@ object CommandRegistry {
         dispatcher.register(Commands.literal("quests").executes(CommandRegistry::executeQuests))
         dispatcher.register(Commands.literal("surface").executes(CommandRegistry::executeSurface))
         dispatcher.register(Commands.literal("enderchest") .executes(CommandRegistry::executeEnderChest))
-    }
+
+	    dispatcher.register(Commands.literal("webshop").executes { it.source.sendFailure(Component.literal("coming soon...").withColor(TextColor.RED)); return@executes 0 }) // TODO: web shop
+	    dispatcher.register(Commands.literal("rtp").executes(CommandRegistry::executeRTP))
+		// TODO: /home, /tpa, ...
+	}
 
     private fun buildBalanceNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
         return Commands.literal(name).executes { executeBalance(it, NameAndId((it.getSource().player?: return@executes -1).gameProfile)) }
             .then(Commands.argument("player", GameProfileArgument.gameProfile())
             .executes { executeBalance(it, GameProfileArgument.getGameProfiles(it, "player").iterator().next()) })
     }
+
+	private fun buildDepositNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
+		return Commands.literal(name).executes(CommandRegistry::executeDepositHand)
+			.then(Commands.literal("all").executes(CommandRegistry::executeDepositAll))
+	}
+
+	private fun buildWithdrawNode(name: String, context: CommandBuildContext): LiteralArgumentBuilder<CommandSourceStack> {
+		return Commands.literal(name).then(Commands.argument("item", ItemArgument.item(context))
+				.suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf())) // TODO: add diamonds
+				.executes { executeWithdraw(it, 1) }
+				.then(Commands.argument("count", IntegerArgumentType.integer(1))
+					.executes { executeWithdraw(it, IntegerArgumentType.getInteger(it, "count")) }))
+	}
 
     private fun executeBalance(ctx: CommandContext<CommandSourceStack>, target: NameAndId): Int {
         val eco: EconomyData = EconomyData.get() ?: return -1
@@ -273,14 +288,14 @@ object CommandRegistry {
 						sendSuccess(player, String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost))
 					}
 				}
-			} catch (e: Exception) { SMPMod.minecraftServer?.execute { if (!player.isRemoved) sendError(player, "Failed to process image URL: " + e.message) }}
+			} catch (e: Exception) { SMPMod.minecraftServer?.execute { if (!player.isRemoved) sendError(player, "Failed to process image URL: ${e.message}") }}
 		}
 		return 1
 	}
 
     private fun executeSurface(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().player?: return -1
-        player.teleportTo(player.x, ctx.source.level.getHeight(Heightmap.Types.WORLD_SURFACE, floor(player.x).toInt(), floor(player.z).toInt()).toDouble(), player.z)
+        player.teleportTo(player.x, player.level().getHeight(Heightmap.Types.WORLD_SURFACE, player.x.toInt(), player.z.toInt()).toDouble(), player.z)
         player.playSound(SoundEvents.WITHER_SHOOT, 3f, .5f)
         return 1
     }
@@ -292,7 +307,46 @@ object CommandRegistry {
         return 1
     }
 
-    private fun executeMarketAll(ctx: CommandContext<CommandSourceStack>): Int {
+	private fun executeRTP(ctx: CommandContext<CommandSourceStack>): Int {
+		val player = ctx.getSource().player?: return -1
+		val eco = EconomyData.get()?: return -1
+		val range = 150000
+		if (player.level().dimension() != Level.OVERWORLD) return sendError(player, "/rtp only works for the overworld!")
+		if (eco.changeBalance(player.uuid, -300.0)) {
+			val x = player.level().random.nextIntBetweenInclusive(-range, range)
+			val z = player.level().random.nextIntBetweenInclusive(-range, range)
+			player.teleportTo(x.toDouble(), player.level().getHeight(Heightmap.Types.WORLD_SURFACE, x, z).toDouble(), z.toDouble())
+			return sendSuccess(player, "You have been successfully teleported to ($x, $z)!")
+		}
+		return sendError(player, "Insufficient funds! You need $300 for a random teleport.")
+	}
+
+	private fun executeTPA(ctx: CommandContext<CommandSourceStack>): Int {
+		val player = ctx.getSource().player?: return -1
+		val eco = EconomyData.get()?: return -1
+		if (eco.changeBalance(player.uuid, -2.0)) {
+			TODO("implement tpa, tpaccept, tpadeny, tpahere")
+		}
+		return sendError(player, "Insufficient funds! You need $2 to teleport to a player!") // TODO: should be the one whos teleporting take money
+	}
+
+	private fun executeHome(ctx: CommandContext<CommandSourceStack>): Int {
+		val player = ctx.getSource().player?: return -1
+		val eco = EconomyData.get()?: return -1
+		val price = when (val stubValue = player.level().random.nextIntBetweenInclusive(0, 100)) {
+			in 0..2 -> stubValue * 200
+			3 -> 1000
+			in 4..6 -> 2500 * (stubValue - 3)
+			else -> 225000 * (stubValue - 6)
+		} // this is home set pricing
+
+		if (eco.changeBalance(player.uuid, -2.0)) {
+			TODO("implement home (set?) (tp) (list) + BACKWARDS COMPATIBILITY")
+		}
+		return sendError(player, "Insufficient funds! You need $2 to teleport to a player!")
+	}
+
+	private fun executeMarketAll(ctx: CommandContext<CommandSourceStack>): Int {
         ctx.getSource().sendSuccess({ Component.literal("Market Prices").withStyle(ChatFormatting.GOLD) }, false)
 	    (MarketState.state?: return -1).all.values.sortedBy { it.defaultPrice }.asReversed()
             .forEach {

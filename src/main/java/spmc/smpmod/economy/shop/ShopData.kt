@@ -10,11 +10,9 @@ import net.minecraft.core.UUIDUtil
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.permissions.PermissionLevel
 import net.minecraft.world.Container
 import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.Display.ItemDisplay
@@ -50,7 +48,8 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         this.receipts.addFirst(receipt)
         while (this.receipts.size > 27) this.receipts.removeLast()
         ShopManager.get(this.level?: return).setDirty()
-    }
+    } // TODO: yuu ($1 -> 1 pt, 100pt -> $1)
+	// TODO: webshop
 
     val availableStock: Int get() {
         if (this.isCreative) return Int.MAX_VALUE

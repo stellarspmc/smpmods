@@ -7,18 +7,19 @@ import spmc.smpmod.core.ItemRarity
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
+import spmc.smpmod.core.BiomeCategory
 
 class TreasureEntry private constructor(
 		val item: Item,
 		val minCount: Int,
 		val maxCount: Int,
 		val rarity: ItemRarity,
-		val allowedBiomes: Set<TreasureHelper.Biomes>,
+		val allowedBiomes: Set<BiomeCategory>,
 		val modifiers: List<ItemStack.(ServerLevel) -> Unit>,
 		val name: Component?,
 		val lore: List<Component>
 ) {
-	fun isValid(rarity: ItemRarity, biome: TreasureHelper.Biomes): Boolean {
+	fun isValid(rarity: ItemRarity, biome: BiomeCategory): Boolean {
 		if (this.rarity != rarity) return false
 		if (minCount !in 1 .. maxCount) return false
 		return allowedBiomes.isEmpty() || allowedBiomes.contains(biome)
@@ -39,7 +40,7 @@ class TreasureEntry private constructor(
 		var minCount: Int = 1
 		var maxCount: Int = 1
 		var rarity: ItemRarity = ItemRarity.COMMON
-		val allowedBiomes: MutableSet<TreasureHelper.Biomes> = mutableSetOf()
+		val allowedBiomes: MutableSet<BiomeCategory> = mutableSetOf()
 		val modifiers = mutableListOf<ItemStack.(ServerLevel) -> Unit>()
 		var name: Component? = null
 		val lore = mutableListOf<Component>()
@@ -49,9 +50,9 @@ class TreasureEntry private constructor(
 		fun count(min: Int, max: Int) = apply { minCount = min; maxCount = max }
 
 		fun rarity(rarity: ItemRarity) = apply { this.rarity = rarity }
-		fun biome(vararg biomes: TreasureHelper.Biomes) = apply { allowedBiomes.addAll(biomes) }
-		fun biome(biomes: List<TreasureHelper.Biomes>) = apply { allowedBiomes.addAll(biomes) }
-		fun biome(biome: TreasureHelper.Biomes) = apply { allowedBiomes.add(biome) }
+		fun biome(vararg biomes: BiomeCategory) = apply { allowedBiomes.addAll(biomes) }
+		fun biome(biomes: List<BiomeCategory>) = apply { allowedBiomes.addAll(biomes) }
+		fun biome(biome: BiomeCategory) = apply { allowedBiomes.add(biome) }
 		fun modify(modifier: ItemStack.(ServerLevel) -> Unit) = apply { modifiers.add(modifier) }
 		fun name(name: Component) = apply { this.name = name }
 		fun lore(vararg lines: Component) = apply { lore.addAll(lines) }

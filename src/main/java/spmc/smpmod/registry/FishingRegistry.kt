@@ -1,16 +1,18 @@
 package spmc.smpmod.registry
 
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import spmc.smpmod.core.BiomeCategory
+import spmc.smpmod.core.BiomeCategory.Companion.getPlayerCategories
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.fishing.BiomeCategory
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.RodItem
 import spmc.smpmod.fishing.RodTiers
 import spmc.smpmod.utils.MessageUtils.formatName
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.Items
-import java.util.Locale
+import java.util.*
 
-object FishingRegistry {
+object FishingRegistry { // might have to switch up how this works? TODO
     private val FISH_REGISTRY: MutableMap<String, Item> = HashMap()
     @JvmField val FISH: MutableList<Item> = ArrayList()
     @JvmField val PLAINS: MutableList<Item> = ArrayList()
@@ -30,6 +32,19 @@ object FishingRegistry {
         listToBeAdded.add(item)
         FISH_REGISTRY[id] = item
     }
+
+	fun getAvailableFish(player: ServerPlayer): MutableList<Item> {
+		val categories: Set<BiomeCategory> = getPlayerCategories(player)
+		val result: MutableList<Item> = ArrayList()
+
+		for (category in categories) {
+			result.addAll(ArrayList(allFish))
+		}
+
+		result.addAll(FISH)
+
+		return result // TODO: fix code
+	}
 
     fun getFish(id: String): Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
 
@@ -65,7 +80,6 @@ object FishingRegistry {
         registerDeep()
         registerEnd()
         registerSky()
-        BiomeCategory.initLookupMap()
     }
 
     private fun registerDefault() {

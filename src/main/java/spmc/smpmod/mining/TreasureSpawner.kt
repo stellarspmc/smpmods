@@ -22,10 +22,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.BarrelBlock
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BarrelBlockEntity
+import spmc.smpmod.core.BiomeCategory
 import kotlin.math.max
 
 object TreasureSpawner {
-    fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: TreasureHelper.Biomes) {
+    fun spawnTreasureContainer(world: ServerLevel, pos: BlockPos, rarity: ItemRarity, player: Player, biomes: BiomeCategory) {
 	    val list = TreasureRegistry.getEligibleTreasures(biomes, rarity)
 	    if (list.isEmpty()) return
 
