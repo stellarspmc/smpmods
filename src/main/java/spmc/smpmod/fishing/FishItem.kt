@@ -13,7 +13,6 @@ import spmc.smpmod.utils.BasePolymerItem
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: String, @JvmField val basePrice: Double, @JvmField val rarity: ItemRarity): BasePolymerItem(settings.stacksTo(64), vanillaItem) {
 	override fun modifyItem(stack: ItemStack, stackData: ItemStack) {

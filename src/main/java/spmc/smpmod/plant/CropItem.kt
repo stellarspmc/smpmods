@@ -12,7 +12,6 @@ import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.utils.BasePolymerItem
 import spmc.smpmod.utils.UtilFunc.rnd2DP
 import java.util.*
-import kotlin.math.roundToInt
 
 class CropItem(settings: Properties, vanillaItem: Item, val cropName: String, val basePrice: Double, val rarity: ItemRarity): BasePolymerItem(settings, vanillaItem) {
 	override fun buildName(stack: ItemStack): Component {

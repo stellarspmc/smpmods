@@ -16,6 +16,7 @@ import static spmc.smpmod.SMPMod.messageChannel;
 public class MixinPlayerData {
     @Shadow private ServerPlayer player;
 
+    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "setAfk", at = @At("TAIL"))
     private void onSetAfkTail(boolean afk, CallbackInfo ci) {
         if (this.player != null) {

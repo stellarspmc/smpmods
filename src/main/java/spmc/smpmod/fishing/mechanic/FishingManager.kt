@@ -1,7 +1,6 @@
 package spmc.smpmod.fishing.mechanic
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.projectile.FishingHook
 import spmc.smpmod.fishing.RodItem

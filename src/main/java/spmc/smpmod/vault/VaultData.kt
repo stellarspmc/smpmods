@@ -104,7 +104,7 @@ class VaultData: SavedData {
 	}
 
 	private val availableEvents: MutableList<ConfiguredEvent> get() = currentTier.eventPool.filter { !this.activeEvents.contains(it) }.toMutableList()
-	private val availablePerks: MutableList<ActivePerk> get() = currentTier.perks.filter { this.activePerks.none() { a -> a.type == it.type && a.level >= it.level }}.toMutableList()
+	private val availablePerks: MutableList<ActivePerk> get() = currentTier.perks.filter { this.activePerks.none { a -> a.type == it.type && a.level >= it.level }}.toMutableList()
 	internal val topDonors get() = this.leaderboard.entries.sortedBy { it.value }.asReversed().take(5)
 
 	class DonateAnvilGui(player: ServerPlayer?): AnvilInputGui(player, false) {
