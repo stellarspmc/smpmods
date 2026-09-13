@@ -1,0 +1,25 @@
+{
+  "parent": "smpmod:fishing/pinnacle/corgravian",
+  "display": {
+    "icon": {
+      "id": "smpmod:astral_fishing_rod"
+    },
+    "title": "The Ultimate Of Rods",
+    "description": "Craft the Astral Rod, the most powerful rod in the game",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_diamond_rod": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "smpmod:astral_fishing_rod"
+          }
+        ]
+      }
+    }
+  }
+}

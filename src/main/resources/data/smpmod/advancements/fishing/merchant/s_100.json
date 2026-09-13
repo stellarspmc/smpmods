@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/merchant/s_54",
+  "display": {
+    "icon": {
+      "id": "minecraft:nether_star"
+    },
+    "title": "Wholesale Mogul",
+    "description": "Sell 100 fish in a single transaction",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

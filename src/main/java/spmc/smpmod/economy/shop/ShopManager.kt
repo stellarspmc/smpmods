@@ -2,7 +2,7 @@ package spmc.smpmod.economy.shop
 
 import com.mojang.math.Transformation
 import com.mojang.serialization.Codec
-import spmc.smpmod.utils.MessageUtils.sendError
+import spmc.smpmod.utils.sendError
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -25,7 +25,7 @@ import org.joml.Vector3f
 import java.util.*
 import kotlin.math.roundToInt
 
-class ShopManager : SavedData() {
+class ShopManager: SavedData() {
     private val shopsByInteractionUuid: MutableMap<UUID, ShopData> = HashMap()
     private val shopsByBarrelPos: MutableMap<BlockPos, ShopData> = HashMap()
     private val shopsById: MutableMap<UUID, ShopData> = HashMap()
@@ -44,6 +44,7 @@ class ShopManager : SavedData() {
         @JvmStatic fun createCreativeShop(pos: BlockPos, price: Double, sellItem: ItemStack, level: ServerLevel) { createShop(null, pos, price, sellItem, level, true) }
         @JvmStatic fun get(level: ServerLevel): ShopManager { return level.dataStorage.computeIfAbsent(TYPE) }
 	    fun getAllShops(server: MinecraftServer): List<ShopData> = server.allLevels.flatMap { get(it).shopsById.values }
+	    fun getAllShopsByLevel(level: ServerLevel): List<ShopData> = ArrayList(get(level).shopsById.values)
 
         @JvmOverloads
         fun createShop(owner: ServerPlayer?, pos: BlockPos, price: Double, sellItem: ItemStack, level: ServerLevel, isCreative: Boolean = false) {

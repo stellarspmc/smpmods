@@ -43,13 +43,13 @@ import org.slf4j.LoggerFactory
 import spmc.smpmod.core.BedrockSkinFetcher
 import spmc.smpmod.core.BountySystem
 import spmc.smpmod.core.ChunkLoader
-import spmc.smpmod.discord.DiscordWebhook
 import spmc.smpmod.discord.EventHandler
-import spmc.smpmod.discord.config.ConfigLoader
+import spmc.smpmod.discord.ConfigLoader
+import spmc.smpmod.discord.sendChatMessage
 import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.economy.shop.ShopManager
-import spmc.smpmod.fishing.mechanic.FishingManager
+import spmc.smpmod.fishing.FishingManager
 import spmc.smpmod.mining.ChunkPool
 import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.mobs.ServerMobEvents
@@ -58,11 +58,12 @@ import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
 import spmc.smpmod.registry.PlantRegistry
 import spmc.smpmod.registry.PolymerRegistry
+import spmc.smpmod.utils.checkNotCreative
 import spmc.smpmod.vault.VaultData
 import java.util.concurrent.CompletableFuture
 
 @Environment(EnvType.SERVER)
-class SMPMod : DedicatedServerModInitializer {
+class SMPMod: DedicatedServerModInitializer {
     override fun onInitializeServer() {
         PolymerRegistry.init()
 
@@ -81,6 +82,8 @@ class SMPMod : DedicatedServerModInitializer {
 	        }
 
 	        FishingManager.register()
+
+
 	        MarketState.register()
 	        VaultData.register()
 	        NPCManager.register()
@@ -102,7 +105,7 @@ class SMPMod : DedicatedServerModInitializer {
 
 	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // players only
 	        val player = entity as? ServerPlayer ?: return@register
-		    if (player.level().dimension().identifier().namespace != "minecraft") return@register
+		    if (checkNotCreative(player)) return@register
 		    messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(player).string + " at (" + player.x.toInt() + ", " + player.y.toInt() + ", " + player.z.toInt() + ")"))?.queue()
 		    val headItem = ItemStack(Items.PLAYER_HEAD)
 		    headItem.applyComponents(DataComponentMap.builder().set(DataComponents.PROFILE, player.profile).build())
@@ -143,7 +146,7 @@ class SMPMod : DedicatedServerModInitializer {
 	    }
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }
-	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> DiscordWebhook.sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) } // TODO: diff between creative and survival
+	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) } // TODO: diff between creative and survival
 	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)

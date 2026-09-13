@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:spyglass"
+    },
+    "title": "Finders keepers!",
+    "description": "Unlock 35 unique fish species in your Fish Codex",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

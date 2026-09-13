@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:diamond"
+    },
+    "title": "In the Zone",
+    "description": "Maintain a 15-fish catching streak without failing",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

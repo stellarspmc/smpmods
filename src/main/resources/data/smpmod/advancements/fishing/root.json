@@ -1,0 +1,18 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:fishing_rod"
+    },
+    "title": "Master Angler",
+    "description": "Begin your journey into the deep blue",
+    "background": "minecraft:textures/block/prismarine.png",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "catch_fish": {
+      "trigger": "minecraft:fishing_rod_hooked_line"
+    }
+  }
+}

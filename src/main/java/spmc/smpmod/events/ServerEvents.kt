@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import spmc.smpmod.SMPMod.Companion.minecraftServer
-import spmc.smpmod.utils.UtilFunc.getY
+import spmc.smpmod.utils.getY
 import java.util.Locale
 
 object ServerEvents {

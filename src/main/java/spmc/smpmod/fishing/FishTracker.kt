@@ -16,9 +16,10 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
-import spmc.smpmod.SMPMod
+import spmc.smpmod.SMPMod.Companion.minecraftServer
 import spmc.smpmod.registry.FishingRegistry.allFish
 import spmc.smpmod.registry.FishingRegistry.getCategoryFromFish
+import spmc.smpmod.utils.*
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.max
@@ -30,11 +31,13 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 
 	fun getUnlockedFish(id: UUID) = unlocked.getOrDefault(id, ArrayList())
 	fun addFish(id: UUID, fish: String) {
-		val list = unlocked.computeIfAbsent(id) { _ -> ArrayList() }
+		val list = unlocked.computeIfAbsent(id) { ArrayList() }
 		if (!list.contains(fish)) {
 			list.add(fish)
 			this.setDirty()
 		}
+
+		addAdvancement(list.size, minecraftServer?.playerList?.getPlayer(id) ?: return)
 	}
 
 	companion object {
@@ -42,7 +45,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 
 		val CODEC: Codec<FishTracker> = RecordCodecBuilder.create { it.group(UNLOCKED_CODEC.fieldOf("unlocked").forGetter(FishTracker::unlocked)).apply(it, ::FishTracker) }
 		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "fish_tracker"), { FishTracker() }, CODEC, DataFixTypes.PLAYER)
-		@JvmStatic fun get(): FishTracker? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
+		@JvmStatic fun get(): FishTracker? = minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
 		fun openFishIndexMenu(player: ServerPlayer): Int {
 			openFishIndexMenu(player, 0)
@@ -82,6 +85,15 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 			if (page > 0) gui.setSlot(45, GuiElementBuilder(Items.ARROW).setName(Component.literal("← Previous Page").withColor(TextColor.fromRgb(0xFFFF55))).setCallback { _ -> openFishIndexMenu(player, page - 1) })
 			gui.setSlot(49, GuiElementBuilder(Items.PAPER).setName(Component.literal("Page " + (page + 1) + " of " + maxPages).withColor(TextColor.fromRgb(0xFFFFFF))).addLoreLine(Component.literal("Unlocked: " + unlockedList.size + " / " + allFish.size).withColor(TextColor.fromRgb(0xAAFFAA))))
 			if (page < maxPages - 1) gui.setSlot(53, GuiElementBuilder(Items.ARROW).setName(Component.literal("Next Page →").withColor(TextColor.fromRgb(0xFFFF55))).setCallback { _ -> openFishIndexMenu(player, page + 1) })
+		}
+
+		private fun addAdvancement(size: Int, player: ServerPlayer) {
+			if (size >= 35) grant(player, "fishing/codex/c_35")
+			if (size >= 50) grant(player, "fishing/codex/c_50")
+			if (size >= 100) grant(player, "fishing/codex/c_100")
+			if (size >= 250) grant(player, "fishing/codex/c_250")
+			if (size >= 350) grant(player, "fishing/codex/c_350")
+			if (size >= 405) grant(player, "fishing/codex/c_final") // right now, its 405
 		}
 	}
 }

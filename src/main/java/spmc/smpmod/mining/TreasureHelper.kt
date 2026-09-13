@@ -3,6 +3,7 @@ package spmc.smpmod.mining
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.enchantment.EnchantmentHelper
@@ -19,6 +20,7 @@ import spmc.smpmod.mining.ChunkPool.checkChunkPool
 import spmc.smpmod.mining.ChunkPool.increment
 import spmc.smpmod.mining.ChunkPool.multiplier
 import spmc.smpmod.mining.TreasureSpawner.spawnTreasureContainer
+import spmc.smpmod.utils.checkNotCreative
 import java.util.*
 import kotlin.enums.enumEntries
 
@@ -38,7 +40,7 @@ object TreasureHelper {
 
     fun onBlockBreak(world: Level, player: Player, pos: BlockPos, state: BlockState, ignored: BlockEntity?) {
         if (world.isClientSide) return
-	    if (player.level().dimension().identifier().namespace != "minecraft") return
+	    if (checkNotCreative(player as ServerPlayer)) return
 
         val mainHand = player.mainHandItem // TODO: fortune increases chances
         val enchantmentRegistry = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)

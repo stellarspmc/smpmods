@@ -3,7 +3,7 @@ package spmc.smpmod.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import spmc.smpmod.fishing.mechanic.FishingManager;
+import spmc.smpmod.fishing.FishingManager;
 import spmc.smpmod.fishing.RodItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;

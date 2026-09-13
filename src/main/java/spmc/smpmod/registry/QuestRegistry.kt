@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer
 import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.Quest.QuestReward
 import spmc.smpmod.quest.QuestManager.Companion.getQuests
+import spmc.smpmod.utils.checkNotCreative
 import java.util.*
 
 object QuestRegistry {
@@ -18,8 +19,8 @@ object QuestRegistry {
 		initWeekly()
 
 		PlayerBlockBreakEvents.AFTER.register { _, player, _, state, _ ->
-			if (player.level().dimension().identifier().namespace != "minecraft") return@register
-			getQuests(player as ServerPlayer).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
+			if (checkNotCreative(player as? ServerPlayer ?: return@register)) return@register
+			getQuests(player).activeQuests.forEach { activeQuest -> val quest = activeQuest.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) activeQuest.increment(1)
 			}
 		}

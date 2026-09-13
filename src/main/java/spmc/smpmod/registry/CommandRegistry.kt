@@ -16,9 +16,6 @@ import spmc.smpmod.npc.NPCManager
 import spmc.smpmod.quest.PlayerQuestData.ActiveQuest
 import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.QuestManager
-import spmc.smpmod.utils.MessageUtils.sendError
-import spmc.smpmod.utils.MessageUtils.sendSuccess
-import spmc.smpmod.utils.UtilFunc.streamToSuggestion
 import spmc.smpmod.vault.VaultData
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandBuildContext
@@ -41,9 +38,8 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import spmc.smpmod.core.BountySystem
-import spmc.smpmod.utils.UtilFunc.getY
-import spmc.smpmod.utils.UtilFunc.isAdmin
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.economy.shop.CentralizedShopManager
+import spmc.smpmod.utils.*
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -55,10 +51,8 @@ object CommandRegistry {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>, context: CommandBuildContext) {
         dispatcher.register(buildBalanceNode("bal"))
         dispatcher.register(buildBalanceNode("balance"))
-        dispatcher.register(Commands.literal("baltop") // TODO: add for /top
-            .executes { executeTop(it, 1) }
-            .then(Commands.argument<Int>("page", IntegerArgumentType.integer(1))
-				.executes { executeTop(it, IntegerArgumentType.getInteger(it, "page")) }))
+        dispatcher.register(buildTopNode("baltop"))
+	    dispatcher.register(buildTopNode("top"))
 
         dispatcher.register(Commands.literal("send")
             .then(Commands.argument("player", GameProfileArgument.gameProfile())
@@ -106,7 +100,7 @@ object CommandRegistry {
         dispatcher.register(Commands.literal("surface").executes(CommandRegistry::executeSurface))
         dispatcher.register(Commands.literal("enderchest") .executes(CommandRegistry::executeEnderChest))
 
-	    dispatcher.register(Commands.literal("webshop").executes { it.source.sendFailure(Component.literal("coming soon...").withColor(TextColor.RED)); return@executes 0 }) // TODO: web shop
+	    dispatcher.register(Commands.literal("webshop").executes { CentralizedShopManager.organizeShopsAsInventory(it.getSource().player?: return@executes -1); return@executes 0 }) // TODO: testing
 	    dispatcher.register(Commands.literal("rtp").executes(CommandRegistry::executeRTP))
 		// TODO: /home, /tpa, ...
 	}
@@ -116,6 +110,12 @@ object CommandRegistry {
             .then(Commands.argument("player", GameProfileArgument.gameProfile())
             .executes { executeBalance(it, GameProfileArgument.getGameProfiles(it, "player").iterator().next()) })
     }
+
+	private fun buildTopNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
+		return Commands.literal(name).executes { executeTop(it, 1) }
+			.then(Commands.argument<Int>("page", IntegerArgumentType.integer(1))
+				.executes { executeTop(it, IntegerArgumentType.getInteger(it, "page")) })
+	}
 
 	private fun buildDepositNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
 		return Commands.literal(name).executes(CommandRegistry::executeDepositHand)
@@ -197,7 +197,7 @@ object CommandRegistry {
 
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().player?: return -1
-	    if (player.level().dimension().identifier().namespace != "minecraft") return -1
+	    if (checkNotCreative(player)) return -1
         var totalPayout = .0
 
         for (i in 0..<player.inventory.containerSize) {
@@ -402,7 +402,7 @@ object CommandRegistry {
     private fun executeWithdraw(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
         val item = ItemArgument.getItem(ctx, "item").item().value()
         val player = ctx.getSource().player?: return -1
-	    if (player.level().dimension().identifier().namespace != "minecraft") return -1
+	    if (checkNotCreative(player)) return -1
         val totalCost = MarketState.buyMineral(player, item, count)
         if (totalCost == -2.0) {
             player.sendSystemMessage(Component.literal("✖: ").append(Component.translatable(item.getDescriptionId())).append(" is not a tradeable market item.").withStyle(ChatFormatting.RED))

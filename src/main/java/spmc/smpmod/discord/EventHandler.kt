@@ -10,7 +10,7 @@ import net.minecraft.network.chat.TextColor
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.economy.fluctuate.MarketState.Companion.state
-import spmc.smpmod.utils.MessageUtils.parseMarkdown
+import spmc.smpmod.utils.parseMarkdown
 import kotlin.String
 
 class EventHandler: ListenerAdapter() {

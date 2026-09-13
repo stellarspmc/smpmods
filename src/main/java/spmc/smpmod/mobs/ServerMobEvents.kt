@@ -48,7 +48,7 @@ object ServerMobEvents {
         mobList.add(Minotaur())
     }
 
-    private fun <T : Entity> replaceMob(original: Entity, newType: EntityType<T>, level: ServerLevel) {
+    private fun <T: Entity> replaceMob(original: Entity, newType: EntityType<T>, level: ServerLevel) {
         val stray = newType.create(level, EntitySpawnReason.TRIGGERED) ?: return
         stray.setPos(original.position())
         level.addFreshEntity(stray)

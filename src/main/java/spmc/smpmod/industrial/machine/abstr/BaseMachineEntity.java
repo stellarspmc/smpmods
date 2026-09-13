@@ -56,7 +56,7 @@ public abstract class BaseMachineEntity<I extends RecipeInput, R extends Recipe<
 
     @Override
     public boolean isEmpty() {
-        for (ItemStack stack : this.items) if (!stack.isEmpty()) return false;
+        for (ItemStack stack: this.items) if (!stack.isEmpty()) return false;
         return true;
     }
 
@@ -104,7 +104,7 @@ public abstract class BaseMachineEntity<I extends RecipeInput, R extends Recipe<
 
     protected boolean canOutput(ItemStack recipeResult) {
         if (recipeResult.isEmpty()) return true;
-        for (int slot : output) {
+        for (int slot: output) {
             ItemStack current = getItem(slot);
             if (current.isEmpty()) return true;
             if (ItemStack.isSameItemSameComponents(current, recipeResult)
@@ -116,7 +116,7 @@ public abstract class BaseMachineEntity<I extends RecipeInput, R extends Recipe<
 
     protected void produceOutput(ItemStack recipeResult) {
         if (recipeResult.isEmpty()) return;
-        for (int slot : output) {
+        for (int slot: output) {
             ItemStack current = getItem(slot);
             if (!current.isEmpty() && ItemStack.isSameItemSameComponents(current, recipeResult)) {
                 int maxCount = Math.min(getMaxStackSize(), recipeResult.getMaxStackSize());
@@ -127,7 +127,7 @@ public abstract class BaseMachineEntity<I extends RecipeInput, R extends Recipe<
             }
         }
 
-        for (int slot : output) {
+        for (int slot: output) {
             ItemStack current = getItem(slot);
             if (current.isEmpty()) {
                 setItem(slot, recipeResult.copy());
@@ -147,7 +147,7 @@ public abstract class BaseMachineEntity<I extends RecipeInput, R extends Recipe<
     @Override public @NonNull ItemStack removeItem(int slot, int amount) { return ContainerHelper.removeItem(this.items, slot, amount); }
     @Override public @NonNull ItemStack removeItemNoUpdate(int slot) { return ContainerHelper.takeItem(this.items, slot); }
     @Override public boolean stillValid(@NonNull Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public int @NonNull [] getSlotsForFace(@NonNull Direction direction) { return direction == Direction.DOWN ? output : input; }
+    @Override public int @NonNull [] getSlotsForFace(@NonNull Direction direction) { return direction == Direction.DOWN ? output: input; }
     @Override public boolean canPlaceItemThroughFace(int slot, @NonNull ItemStack itemStack, @Nullable Direction direction) { return Arrays.stream(input).anyMatch((a) -> Objects.equals(a, slot)); }
     @Override public boolean canTakeItemThroughFace(int slot, @NonNull ItemStack itemStack, @NonNull Direction direction) { return Arrays.stream(output).anyMatch((a) -> Objects.equals(a, slot)); }
     @Override public void clearContent() { this.items.clear(); }

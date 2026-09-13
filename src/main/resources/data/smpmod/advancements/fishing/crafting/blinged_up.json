@@ -1,0 +1,25 @@
+{
+  "parent": "smpmod:fishing/root",
+  "display": {
+    "icon": {
+      "id": "smpmod:golden_fishing_rod"
+    },
+    "title": "Blinged Up",
+    "description": "Obtain a Golden Fishing Rod",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_golden_rod": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "smpmod:golden_fishing_rod"
+          }
+        ]
+      }
+    }
+  }
+}

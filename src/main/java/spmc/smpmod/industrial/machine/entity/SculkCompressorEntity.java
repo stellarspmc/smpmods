@@ -35,7 +35,7 @@ public class SculkCompressorEntity extends BaseMachineEntity<SingleRecipeInput, 
     @Override
     protected SingleRecipeInput createRecipeInput() {
         ItemStack stack = getItem(input[0]);
-        return stack.isEmpty() ? null : new SingleRecipeInput(stack);
+        return stack.isEmpty() ? null: new SingleRecipeInput(stack);
     }
 
     @Override protected ItemStack getRecipeResult(CompressorRecipe recipe, ServerLevel level) { return recipe.result().create(); }

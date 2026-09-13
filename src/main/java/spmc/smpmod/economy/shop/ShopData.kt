@@ -25,9 +25,7 @@ import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.utils.MessageUtils.sendError
-import spmc.smpmod.utils.UtilFunc.isAdmin
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.utils.*
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -35,7 +33,7 @@ import kotlin.math.min
 class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey<Level>, val barrelPos: BlockPos, val interactionEntityUuid: UUID, val itemDisplayUuid: UUID, val textDisplayUuid: UUID, private var itemSold: ItemStack, private var stack: Int, private var price: Double, receipts: MutableList<ShopReceipt>, val isCreative: Boolean) {
     val receipts: MutableList<ShopReceipt> = ArrayList<ShopReceipt>(receipts)
 
-    constructor(shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, creative: Boolean) : this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, ArrayList<ShopReceipt>(), creative)
+    constructor(shopId: UUID, ownerUuid: UUID, dimension: ResourceKey<Level>, barrelPos: BlockPos, interaction: UUID, item: UUID, text: UUID, itemSold: ItemStack, stack: Int, price: Double, creative: Boolean): this(shopId, ownerUuid, dimension, barrelPos, interaction, item, text, itemSold, stack, price, ArrayList<ShopReceipt>(), creative)
     fun getItemSold() = itemSold
     fun getStack() = stack
     fun getPrice() = price
@@ -48,8 +46,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         this.receipts.addFirst(receipt)
         while (this.receipts.size > 27) this.receipts.removeLast()
         ShopManager.get(this.level?: return).setDirty()
-    } // TODO: yuu ($1 -> 1 pt, 100pt -> $1)
-	// TODO: webshop
+    }
 
     val availableStock: Int get() {
         if (this.isCreative) return Int.MAX_VALUE
@@ -159,7 +156,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         }
 
         private fun openJavaGui(player: ServerPlayer, shopData: ShopData) {
-            val gui: SimpleGui = object : SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player, shopData) }}
+            val gui: SimpleGui = object: SimpleGui(MenuType.GENERIC_9x3, player, false) { override fun onOpen() { refreshGui(this, player, shopData) }}
             gui.setTitle(Component.literal("Shop Settings"))
             refreshGui(gui, player, shopData)
             gui.open()

@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:copper_ingot"
+    },
+    "title": "A Honest Haul",
+    "description": "Sell 15 fish at once to Aquamaray",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

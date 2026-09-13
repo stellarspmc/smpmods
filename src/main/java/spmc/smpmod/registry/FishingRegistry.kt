@@ -10,7 +10,7 @@ import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.core.TierSystem
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.RodItem
-import spmc.smpmod.utils.MessageUtils.formatName
+import spmc.smpmod.utils.formatName
 import java.util.*
 
 object FishingRegistry { // might have to switch up how this works? TODO
@@ -69,21 +69,21 @@ object FishingRegistry { // might have to switch up how this works? TODO
 	fun getRod(id: String): Item = ROD_REGISTRY[id]?: throw IllegalStateException("Rod ID doesn't exist / Rod registry hasn't started")
 
 	internal fun registerRods() { // durability, luck, lure in /s, green zone
-		registerRod("wooden", 0xB18A56, Items.OAK_PLANKS, RodItem.RodStats(34, 1f, 1, .23f), TierSystem.T1)
+		registerRod("wooden", 0xB18A56, Items.OAK_PLANKS, RodItem.RodStats(34, 1f, 1, .23f), TierSystem.T1) // TODO: rework rods
 		registerRod("cactus", 0x09750D, Items.CACTUS, RodItem.RodStats(89, 1.15f, 1, .25f), TierSystem.T2)
 		registerRod("copper", 0xE07A5F, Items.COPPER_INGOT, RodItem.RodStats(177, 1.15f, 1, .25f), TierSystem.T2)
 		registerRod("gold", 0xFFD700, Items.GOLD_INGOT, RodItem.RodStats(49, 1.6f, 8, .25f), TierSystem.T2)
-		registerRod("iron", 0xD0D7DC, Items.IRON_INGOT, RodItem.RodStats(48, 1.15f, 1), TierSystem.T3)
-		registerRod("emerald", 0x2ECC71, Items.EMERALD, RodItem.RodStats(), TierSystem.T4)
-		registerRod("diamond", 0x3498DB, Items.DIAMOND, RodItem.RodStats(), TierSystem.T5)
-		registerRod("netherite", 0x09750D, Items.NETHERITE_SCRAP, RodItem.RodStats(), TierSystem.T6)
-		registerRod("uranium", 0x95D600, Items.CACTUS, RodItem.RodStats(), TierSystem.T6)
-		registerRod("death", 0x09750D, Items.CACTUS, RodItem.RodStats(), TierSystem.T6) // thinking about a rename?
-		registerRod("breeze", 0x09750D, Items.BREEZE_ROD, RodItem.RodStats(), TierSystem.T6)
-		registerRod("prismarine", 0x09750D, getFish("prismite"), RodItem.RodStats(), TierSystem.T6)
-		registerRod("sculk", 0x09750D, getFish("sculk_infused_cod"), RodItem.RodStats(), TierSystem.T6)
-		registerRod("elementite", 0x09750D, (PolymerRegistry.getItem("elementite")?: return).value(), RodItem.RodStats(), TierSystem.T7)
-		registerRod("chromatic", 0x09750D, (PolymerRegistry.getItem("chromatic_glint")?: return).value(), RodItem.RodStats(), TierSystem.T7)
+		registerRod("iron", 0xD0D7DC, Items.IRON_INGOT, RodItem.RodStats(48, 1.15f, 1, 0f), TierSystem.T3)
+		registerRod("emerald", 0x2ECC71, Items.EMERALD, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T4)
+		registerRod("diamond", 0x3498DB, Items.DIAMOND, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T5)
+		registerRod("netherite", 0x09750D, Items.NETHERITE_SCRAP, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6)
+		registerRod("uranium", 0x95D600, Items.CACTUS, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6)
+		registerRod("death", 0x09750D, Items.CACTUS, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6) // thinking about a rename?
+		registerRod("breeze", 0x09750D, Items.BREEZE_ROD, RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6)
+		registerRod("prismarine", 0x09750D, getFish("prismite"), RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6)
+		registerRod("sculk", 0x09750D, getFish("sculk_infused_cod"), RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T6)
+		registerRod("elementite", 0x09750D, (PolymerRegistry.getItem("elementite")?: return).value(), RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T7)
+		registerRod("chromatic", 0x09750D, (PolymerRegistry.getItem("chromatic_glint")?: return).value(), RodItem.RodStats(0, 0f, 0, 0f), TierSystem.T7)
 		registerRod("astral", 0x09750D, (PolymerRegistry.getItem("astral_fabric")?: return).value(), RodItem.RodStats(3775, 2f, 7, .3f), TierSystem.T8)
     }
 

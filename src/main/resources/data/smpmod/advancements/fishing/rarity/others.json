@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/rarity/legendary",
+  "display": {
+    "icon": {
+      "id": "minecraft:tropical_fish"
+    },
+    "title": "Starlight Scales",
+    "description": "Catch a Mythic, Chromatic, or Astral fish",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

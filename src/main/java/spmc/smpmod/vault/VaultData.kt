@@ -20,7 +20,7 @@ import net.minecraft.world.level.saveddata.SavedDataType
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.npc.NPCData
-import spmc.smpmod.utils.MessageUtils.sendError
+import spmc.smpmod.utils.sendError
 import spmc.smpmod.vault.entries.ActivePerk
 import spmc.smpmod.vault.entries.ConfiguredEvent
 import spmc.smpmod.vault.entries.VaultEntry

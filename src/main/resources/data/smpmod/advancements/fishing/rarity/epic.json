@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/rarity/rare",
+  "display": {
+    "icon": {
+      "id": "minecraft:salmon"
+    },
+    "title": "Epic? Skillz",
+    "description": "Catch your first epic fish",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

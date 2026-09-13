@@ -15,10 +15,10 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
-import spmc.smpmod.utils.MessageUtils.sendError
-import spmc.smpmod.utils.MessageUtils.sendSuccess
+import spmc.smpmod.utils.sendError
+import spmc.smpmod.utils.sendSuccess
 
-class ChunkLoader @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()) : SavedData() {
+class ChunkLoader @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> = HashSet<BlockPos>()): SavedData() {
     private val activeLoaders: MutableSet<BlockPos> = HashSet(activeLoaders)
     private var suspended = false
 

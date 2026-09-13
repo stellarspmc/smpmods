@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/codex/c_50",
+  "display": {
+    "icon": {
+      "id": "minecraft:spyglass"
+    },
+    "title": "Century Club",
+    "description": "Unlock 100 unique fish species in your Fish Codex",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

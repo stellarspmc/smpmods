@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/merchant/s_35",
+  "display": {
+    "icon": {
+      "id": "minecraft:diamond"
+    },
+    "title": "Bin Buster",
+    "description": "Completely fill the merchant bin (54 fish) and sell it",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

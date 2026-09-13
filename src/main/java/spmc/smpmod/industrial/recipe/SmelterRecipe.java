@@ -31,7 +31,7 @@ public record SmelterRecipe(List<Ingredient> ingredients, int count, ItemStackTe
 
         if (inputs.size() != this.ingredients.size()) return false;
         boolean[] matched = new boolean[inputs.size()];
-        for (Ingredient ingredient : this.ingredients) {
+        for (Ingredient ingredient: this.ingredients) {
             boolean foundMatch = false;
             for (int i = 0; i < inputs.size(); i++) {
                 if (!matched[i] && ingredient.test(inputs.get(i))) {

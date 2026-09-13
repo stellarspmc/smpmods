@@ -25,7 +25,7 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomySystem.Companion.get
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.utils.rnd2DP
 import java.util.UUID
 import kotlin.collections.forEach
 

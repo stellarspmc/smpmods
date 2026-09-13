@@ -23,7 +23,7 @@ import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 import java.util.*
 
-class NPCData : SavedData {
+class NPCData: SavedData {
     constructor()
     constructor(npcs: MutableMap<String, UUID>) { npcMap.putAll(npcs) }
 

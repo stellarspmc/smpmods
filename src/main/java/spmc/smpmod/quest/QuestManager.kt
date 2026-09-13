@@ -13,7 +13,7 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.math.min
 
-class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQuestData> = HashMap()) : SavedData() {
+class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQuestData> = HashMap()): SavedData() {
     private val playerQuests: MutableMap<UUID, PlayerQuestData> = HashMap(questData)
 
     fun checkAndResetRotations(player: ServerPlayer) {

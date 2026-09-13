@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.core.scrap.ScrapItem
+import spmc.smpmod.core.ScrapItem
 import spmc.smpmod.industrial.mineral.BaseMineralItem
 import java.util.function.Function
 
@@ -50,7 +50,7 @@ object PolymerRegistry {
 		TreasureRegistry.register()
 	}
 
-	fun <T : Item> createItem(id: String, factory: Function<Item.Properties, T>): T {
+	fun <T: Item> createItem(id: String, factory: Function<Item.Properties, T>): T {
 		val key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("smpmod", id))
 		return Registry.register(BuiltInRegistries.ITEM, key, factory.apply(Item.Properties().setId(key)))
 	}
@@ -68,7 +68,7 @@ object PolymerRegistry {
 		return Registry.register(BuiltInRegistries.BLOCK, identifier, blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier))))
 	}
 
-	fun <T : BlockEntity> createBlockWithItemEntity(id: String, blockFactory: Function<BlockBehaviour.Properties, Block>, properties: BlockBehaviour.Properties, entityFactory: FabricBlockEntityTypeBuilder.Factory<out T>, item: Item): BlockEntityType<T> {
+	fun <T: BlockEntity> createBlockWithItemEntity(id: String, blockFactory: Function<BlockBehaviour.Properties, Block>, properties: BlockBehaviour.Properties, entityFactory: FabricBlockEntityTypeBuilder.Factory<out T>, item: Item): BlockEntityType<T> {
 		val identifier = Identifier.fromNamespaceAndPath("smpmod", id)
 		val blockId = BlockItemId.create(identifier, identifier)
 		val block = blockFactory.apply(properties.setId(ResourceKey.create(Registries.BLOCK, identifier)))
@@ -79,13 +79,13 @@ object PolymerRegistry {
 		return type
 	}
 
-	fun <T : Recipe<*>> registerRecipeType(id: String): RecipeType<T> {
+	fun <T: Recipe<*>> registerRecipeType(id: String): RecipeType<T> {
 		val identifier = Identifier.fromNamespaceAndPath("smpmod", id)
-		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object : RecipeType<T> { override fun toString() = identifier.toString() })
+		return Registry.register(BuiltInRegistries.RECIPE_TYPE, identifier, object: RecipeType<T> { override fun toString() = identifier.toString() })
 	}
 
 	// recipe serializer
-	fun <T : Recipe<*>> registerRecipeSerializer(id: String, codec: MapCodec<T>, streamCodec: StreamCodec<RegistryFriendlyByteBuf, T>): RecipeSerializer<T> = Registry.register<RecipeSerializer<*>, RecipeSerializer<T>>(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), RecipeSerializer(codec, streamCodec))
+	fun <T: Recipe<*>> registerRecipeSerializer(id: String, codec: MapCodec<T>, streamCodec: StreamCodec<RegistryFriendlyByteBuf, T>): RecipeSerializer<T> = Registry.register<RecipeSerializer<*>, RecipeSerializer<T>>(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("smpmod", id), RecipeSerializer(codec, streamCodec))
 	fun <T: LivingEntity> registerEntity(id: String, builder: EntityType.Builder<T>, supplier: AttributeSupplier.Builder) {
 		val key: ResourceKey<EntityType<*>> = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("smpmod", id))
 		val type: EntityType<T> = Registry.register<EntityType<*>, EntityType<T>>(BuiltInRegistries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("smpmod", id), builder.build(key))

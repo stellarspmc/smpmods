@@ -12,9 +12,9 @@ import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
 import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.economy.fluctuate.MarketState
-import spmc.smpmod.utils.MessageUtils.sendError
-import spmc.smpmod.utils.MessageUtils.sendSuccess
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.utils.sendError
+import spmc.smpmod.utils.sendSuccess
+import spmc.smpmod.utils.rnd2DP
 import kotlin.math.min
 
 object ATMMenu {

@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/codex/c_350",
+  "display": {
+    "icon": {
+      "id": "minecraft:echo_shard"
+    },
+    "title": "Master of Fishing",
+    "description": "Unlock all 405 unique fish species in your Fish Codex",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

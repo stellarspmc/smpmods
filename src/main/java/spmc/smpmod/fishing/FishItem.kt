@@ -10,7 +10,7 @@ import net.minecraft.world.item.component.CustomData
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.utils.BasePolymerItem
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.utils.rnd2DP
 import java.util.*
 import kotlin.math.min
 

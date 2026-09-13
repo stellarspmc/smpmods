@@ -1,0 +1,25 @@
+{
+  "parent": "smpmod:fishing/crafting/blinged_up",
+  "display": {
+    "icon": {
+      "id": "smpmod:diamond_fishing_rod"
+    },
+    "title": "Ka-Ching",
+    "description": "Obtain a Diamond Fishing Rod",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_diamond_rod": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "smpmod:diamond_fishing_rod"
+          }
+        ]
+      }
+    }
+  }
+}

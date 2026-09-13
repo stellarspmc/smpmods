@@ -35,7 +35,7 @@ dependencies {
     implementation "eu.pb4:polymer-core:0.17.3+26.2" // 26.3
     implementation "eu.pb4:placeholder-api:3.1.0-beta.1+26.2" // 26.3
 
-    include implementation("net.dv8tion:JDA:6.4.2") // TODO: could strip for less space? 2.2MiB
+    include implementation("net.dv8tion:JDA:6.4.2") // 2.2MiB
     include "com.neovisionaries:nv-websocket-client:2.14"
     include "org.jetbrains:annotations:26.0.2"
 

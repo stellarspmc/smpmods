@@ -88,7 +88,7 @@ public class MixinEnchantment {
         boolean aInGroup = false;
         boolean bInGroup = false;
 
-        for (ResourceKey<Enchantment> key : keys) {
+        for (ResourceKey<Enchantment> key: keys) {
             if (a.is(key)) aInGroup = true;
             if (b.is(key)) bInGroup = true;
         }

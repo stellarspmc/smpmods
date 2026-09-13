@@ -31,7 +31,7 @@ public class SeedBlock extends CropBlock implements PolymerBlock {
     private final int[] boneMealAffection = new int[]{0, 1, 1, 3, 3, 5};
 
     public SeedBlock(Properties properties, Supplier<CropItem> cropItemSupplier) {
-        super(properties.mapColor(state -> state.getValue(CropBlock.AGE) >= 6 ? MapColor.COLOR_YELLOW : MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY));
+        super(properties.mapColor(state -> state.getValue(CropBlock.AGE) >= 6 ? MapColor.COLOR_YELLOW: MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY));
         this.cropItemSupplier = cropItemSupplier;
         this.registerDefaultState(this.stateDefinition.any().setValue(getAgeProperty(), 0).setValue(BONEMEAL_COUNT, 0));
     }

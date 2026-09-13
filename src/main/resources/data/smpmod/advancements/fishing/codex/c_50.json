@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/codex/c_35",
+  "display": {
+    "icon": {
+      "id": "minecraft:spyglass"
+    },
+    "title": "Half-Century Haul!",
+    "description": "Unlock 50 unique fish species in your Fish Codex",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

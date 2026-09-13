@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.util.RandomSource
 import net.minecraft.world.item.Item
-import spmc.smpmod.utils.UtilFunc.rnd2DP
+import spmc.smpmod.utils.rnd2DP
 import kotlin.math.max
 import kotlin.math.min
 

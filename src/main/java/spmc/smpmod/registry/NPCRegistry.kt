@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
 import spmc.smpmod.core.CreativeData
+import spmc.smpmod.utils.grant
 
 object NPCRegistry {
     internal fun init() {
@@ -42,10 +43,14 @@ object NPCRegistry {
                                 sellContainer.setItem(i, ItemStack.EMPTY)
                             }
                             if (totalPayout > 0) {
+								if (totalFishCount >= 15) grant(player as ServerPlayer, "merchant/s_15")
+	                            if (totalFishCount >= 35) grant(player as ServerPlayer, "merchant/s_35")
+	                            if (totalFishCount >= 54) grant(player as ServerPlayer, "merchant/s_54")
+	                            if (totalFishCount >= 100) grant(player as ServerPlayer, "merchant/s_100")
                                 EconomySystem.get()?.changeBalance(player.getUUID(), totalPayout)
                                 talkAsMannequin(mannequin, Component.literal(String.format("Fine catch! I'll buy those %d fish for $%.2f. Smooth sailing!", totalFishCount, totalPayout)), player as ServerPlayer)
                             } else talkAsMannequin(mannequin, Component.literal("Bah! You didn't leave any fish in the bin... Come back when you've got something with scales!"), player as ServerPlayer)
-                        }} }, Component.literal("Fish Merchant - Sell Bin"))) }
+                        }} }, Component.literal("Aquamaray - Sell Bin"))) }
             .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I don't have any quests to offer you.. yet."), player) }
             .build()
         )

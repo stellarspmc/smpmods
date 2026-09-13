@@ -1,10 +1,8 @@
 package spmc.smpmod.registry
 
 import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.plant.CropItem
-import spmc.smpmod.plant.SeedBlock
-import spmc.smpmod.plant.SeedItem
-import spmc.smpmod.utils.MessageUtils
+import spmc.smpmod.plant.*
+import spmc.smpmod.utils.*
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.state.BlockBehaviour
@@ -27,9 +25,9 @@ object PlantRegistry {
 
     private fun registerPlant(cropId: String, baseCrop: Item, basePrice: Double, rarity: ItemRarity) {
         val baseSeed = getBaseSeed(baseCrop)
-        val cropItem = PolymerRegistry.createItem(cropId) { CropItem(it, baseCrop, MessageUtils.formatName(cropId), basePrice, rarity) }
+        val cropItem = PolymerRegistry.createItem(cropId) { CropItem(it, baseCrop, formatName(cropId), basePrice, rarity) }
         val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { SeedBlock(it) { cropItem }}, BlockBehaviour.Properties.of()) as SeedBlock
-        val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { SeedItem(seedBlock, it, baseSeed, MessageUtils.formatName(cropId + "_seeds")) }
+        val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { SeedItem(seedBlock, it, baseSeed, formatName(cropId + "_seeds")) }
         SEEDS.putIfAbsent(cropId, seedItem)
     }
 

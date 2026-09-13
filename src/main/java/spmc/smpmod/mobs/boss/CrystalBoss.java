@@ -87,7 +87,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
     protected void dropCustomDeathLoot(@NonNull ServerLevel level, @NonNull DamageSource damageSource, boolean flag) {
         super.dropCustomDeathLoot(level, damageSource, flag);
 
-        for (EndCrystal crystal : orbitingCrystals) if (crystal != null) {
+        for (EndCrystal crystal: orbitingCrystals) if (crystal != null) {
             crystal.remove(RemovalReason.DISCARDED);
             crystal.discard();
         }

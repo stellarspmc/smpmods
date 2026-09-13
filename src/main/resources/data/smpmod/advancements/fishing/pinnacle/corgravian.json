@@ -1,0 +1,25 @@
+{
+  "parent": "smpmod:fishing/root",
+  "display": {
+    "icon": {
+      "id": "smpmod:corgravian"
+    },
+    "title": "The Corgravian Legacy",
+    "description": "Craft the Corgravian",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_diamond_rod": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "smpmod:corgravian"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -2,14 +2,11 @@ package spmc.smpmod.registry
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import spmc.smpmod.industrial.machine.SculkCompressorBlock
-import spmc.smpmod.industrial.machine.SmelteryBlock
-import spmc.smpmod.industrial.machine.entity.SculkCompressorEntity
-import spmc.smpmod.industrial.machine.entity.SmelteryEntity
+import spmc.smpmod.industrial.machine.*
+import spmc.smpmod.industrial.machine.entity.*
 import spmc.smpmod.industrial.mineral.BaseMineralItem
-import spmc.smpmod.industrial.recipe.CompressorRecipe
-import spmc.smpmod.industrial.recipe.SmelterRecipe
-import spmc.smpmod.utils.MessageUtils
+import spmc.smpmod.industrial.recipe.*
+import spmc.smpmod.utils.*
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
@@ -25,10 +22,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
 
 object IndustrialRegistry {
-    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) }}
+    private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, Component.literal(formatName(id)).withColor(textColor)) }}
     private fun registerMineral(id: String, vanillaModel: Item, name: Component) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, name) }}
     private fun registerKarat(id: String, karat: Int, goldColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, Items.GOLD_INGOT, Component.literal("Gold Ingot ").withColor(goldColor).append(Component.literal("($karat Carat)").withColor(TextColor.fromRgb(0xAAAAAA)))) }}
-    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, texture, Component.literal(MessageUtils.formatName(id)).withColor(textColor)) }}
+    private fun registerHead(id: String, texture: String, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, texture, Component.literal(formatName(id)).withColor(textColor)) }}
 
     @JvmField var COMPRESSOR_TYPE: RecipeType<CompressorRecipe>? = null
     @JvmField var COMPRESSOR_SERIALIZER: RecipeSerializer<CompressorRecipe>? = null

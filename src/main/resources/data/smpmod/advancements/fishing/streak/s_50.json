@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/streak/s_50",
+  "display": {
+    "icon": {
+      "id": "minecraft:netherite_block"
+    },
+    "title": "Unstoppable Reel",
+    "description": "Achieve a 50-fish catching streak",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

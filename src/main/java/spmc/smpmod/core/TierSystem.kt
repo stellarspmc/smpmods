@@ -9,8 +9,8 @@ enum class TierSystem(vararg val type: String) {
 	T6("netherite", "void", "adamantite", "sculk"),
 	T7("elemental", "chromatic", "celestial"),
 	T8("astral");
-	// TODO
 	// if stats unified, whats the point?
 
 	fun getColor() = ItemRarity.entries[this.ordinal].color
+	// TODO: add smt idk lol
 }

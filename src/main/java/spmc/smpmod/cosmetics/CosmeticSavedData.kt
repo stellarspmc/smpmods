@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.saveddata.SavedData
 
-object CosmeticSavedData : SavedData() {
+object CosmeticSavedData: SavedData() {
     fun register() {
         Placeholders.registerServer<Any?>(Identifier.fromNamespaceAndPath("smpmod", "prefix")) { context: ServerPlaceholderContext, _: String ->
             if (context.hasPlayer()) {

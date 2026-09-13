@@ -1,0 +1,18 @@
+{
+  "parent": "smpmod:fishing/rarity/epic",
+  "display": {
+    "icon": {
+      "id": "minecraft:pufferfish"
+    },
+    "title": "Four-Leaf Clover",
+    "description": "Reel in a Legendary fish",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "unlocked_in_code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
