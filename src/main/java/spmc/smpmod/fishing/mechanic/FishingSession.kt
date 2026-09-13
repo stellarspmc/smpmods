@@ -1,14 +1,14 @@
 package spmc.smpmod.fishing.mechanic
 
-import spmc.smpmod.fishing.RodTiers
 import spmc.smpmod.utils.MessageUtils.sendError
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.projectile.FishingHook
+import spmc.smpmod.fishing.RodItem
 import spmc.smpmod.utils.sessions.MechanicSession
 
-class FishingSession(private val player: ServerPlayer, private val hook: FishingHook, private val tier: RodTiers): MechanicSession() {
+class FishingSession(private val player: ServerPlayer, private val hook: FishingHook, private val item: RodItem): MechanicSession() {
     private var cursor = .0f
     private var movingRight = true
     private var wasJumping: Boolean
@@ -19,7 +19,7 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
     private val greenEnd: Float
 
     init {
-        val zoneWidth: Float = tier.greenZoneSize
+        val zoneWidth: Float = item.stats.greenZone
         this.greenStart = .5f - (zoneWidth / 2f)
         this.greenEnd = .5f + (zoneWidth / 2f)
         this.wasJumping = player.isJumping
@@ -81,7 +81,7 @@ class FishingSession(private val player: ServerPlayer, private val hook: Fishing
 
     private fun onSuccess() {
         if (streak > 0) streak++
-        FishingLoot.rewardFish(player, tier, streak)
+        FishingLoot.rewardFish(player, item, streak)
         hook.discard()
     }
 

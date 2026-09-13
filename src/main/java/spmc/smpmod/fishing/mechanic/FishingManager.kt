@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.projectile.FishingHook
 import spmc.smpmod.fishing.RodItem
-import spmc.smpmod.fishing.RodTiers
 import java.util.*
 
 object FishingManager {
@@ -15,6 +14,6 @@ object FishingManager {
 	fun startMinigame(player: ServerPlayer, hook: FishingHook) {
 		if (player.level().dimension().identifier().namespace != "minecraft") return
 		if (ACTIVE_SESSIONS.containsKey(player.getUUID())) return
-		ACTIVE_SESSIONS[player.getUUID()] = FishingSession(player, hook, (player.mainHandItem.item as? RodItem)?.tier ?: RodTiers.NORMAL)
+		ACTIVE_SESSIONS[player.getUUID()] = FishingSession(player, hook, player.mainHandItem.item as? RodItem ?: return)
 	}
 }

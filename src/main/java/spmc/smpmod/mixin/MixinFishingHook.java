@@ -44,8 +44,8 @@ public abstract class MixinFishingHook {
         ServerPlayer player = (ServerPlayer) hook.getPlayerOwner();
 
         if (player != null && player.getMainHandItem().getItem() instanceof RodItem rod) {
-            if (rod.canLavaFish() && hook.isInLava()) return true;
-            if (rod.canVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
+            if (rod.getStats().getLavaFish() && hook.isInLava()) return true;
+            if (rod.getStats().getVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
         }
 
         return originalIsWater;
@@ -107,8 +107,8 @@ public abstract class MixinFishingHook {
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
                 if (tagKey == FluidTags.WATER) {
-                    if (item.canLavaFish() && (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA))) return true;
-                    if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
+                    if (item.getStats().getLavaFish() && (instance.is(FluidTags.WATER) || instance.is(FluidTags.LAVA))) return true;
+                    if (item.getStats().getVoidFish() && hook.level().dimension() == ServerLevel.END && hook.getY() < 0) return true;
                 }
             }
         }
@@ -121,8 +121,8 @@ public abstract class MixinFishingHook {
         ServerPlayer player = (ServerPlayer) getPlayerOwner();
         if (player != null) {
             if (player.getMainHandItem().getItem() instanceof RodItem item) {
-                if (item.canLavaFish() && hook.isInLava()) hook.clearFire();
-                if (item.canVoidFish() && hook.level().dimension() == ServerLevel.END) {
+                if (item.getStats().getLavaFish() && hook.isInLava()) hook.clearFire();
+                if (item.getStats().getVoidFish() && hook.level().dimension() == ServerLevel.END) {
                     if (hook.getY() < -4) {
                         if (!hook.isNoGravity()) hook.setNoGravity(true);
                         hook.setPos(hook.getX(), -4, hook.getZ());

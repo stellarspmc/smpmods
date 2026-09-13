@@ -31,9 +31,9 @@ dependencies {
     implementation "org.geysermc.floodgate:api:2.2.5-SNAPSHOT"
     implementation "net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20"
 
-    include implementation("eu.pb4:sgui:2.1.0+26.2")
-    implementation "eu.pb4:polymer-core:0.17.3+26.2"
-    implementation "eu.pb4:placeholder-api:3.1.0-beta.1+26.2"
+    include implementation("eu.pb4:sgui:2.1.0+26.2") // 26.3
+    implementation "eu.pb4:polymer-core:0.17.3+26.2" // 26.3
+    implementation "eu.pb4:placeholder-api:3.1.0-beta.1+26.2" // 26.3
 
     include implementation("net.dv8tion:JDA:6.4.2") // TODO: could strip for less space? 2.2MiB
     include "com.neovisionaries:nv-websocket-client:2.14"

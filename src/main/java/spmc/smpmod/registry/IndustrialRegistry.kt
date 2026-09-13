@@ -76,6 +76,7 @@ object IndustrialRegistry {
         registerMineral("hardened_metal_ingot", Items.IRON_INGOT, Component.literal("Hardened Metal").withColor(TextColor.fromRgb(0x2E3440)).withStyle(ChatFormatting.BOLD))
         registerMineral("reinforced_alloy_ingot", Items.IRON_INGOT, Component.literal("Reinforced Alloy Ingot").withColor(TextColor.fromRgb(0x434C5E)).withStyle(ChatFormatting.BOLD))
 
+	    registerMineral("uranium_ingot", Items.COPPER_INGOT, TextColor.fromRgb(0x95D600))
         registerMineral("compressed_nether_star", Items.NETHER_STAR, TextColor.GREEN)
 
         registerKarat("gold_4k", 4, TextColor.fromRgb(0xD8CC9B))

@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.component.Fireworks
+import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.item.enchantment.Enchantments
 import spmc.smpmod.core.BiomeCategory
 import spmc.smpmod.core.ItemRarity
@@ -129,7 +130,7 @@ object TreasureRegistry {
 		entry(Items.COAL_BLOCK) { count(16, 36).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.LAPIS_BLOCK) { count(6, 10).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.REDSTONE_BLOCK) { count(12, 16).rarity(ItemRarity.LEGENDARY) }
-	    // TODO: eme rod FISHING
+	    entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.LEGENDARY) }
 		// entry(compressed carbon).count(2, 5) { rarity(ItemRarity.LEGENDARY) } TODO: hooks
 		entry(Items.DIAMOND_PICKAXE) { rarity(ItemRarity.LEGENDARY).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 6)
@@ -196,9 +197,9 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 8)
 			enchant(enchants.getOrThrow(Enchantments.SILK_TOUCH), 1)
 		}}
-	    // TODO: dia rod FISHING
+	    entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.MYTHIC) }
 
-		entry(Items.DIAMOND_BLOCK) { count(7, 8).rarity(ItemRarity.CHROMATIC) }
+	    entry(Items.DIAMOND_BLOCK) { count(7, 8).rarity(ItemRarity.CHROMATIC) }
 		entry(Items.IRON_BLOCK) { count(32, 45).rarity(ItemRarity.CHROMATIC) }
 		entry(Items.GOLD_BLOCK) { count(16, 22).rarity(ItemRarity.CHROMATIC) }
 		entry(Items.TOTEM_OF_UNDYING) { count(1, 3).rarity(ItemRarity.CHROMATIC) }
@@ -237,7 +238,7 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 		}}
 		entry(Items.HEAVY_CORE) { rarity(ItemRarity.CHROMATIC) }
-	    // TODO: any t6 rod
+	    // TODO: any t6 rod (entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.LEGENDARY) } )
 		entry(Items.TRIDENT) { rarity(ItemRarity.CHROMATIC).name(Component.literal("Copper Spear").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.RIPTIDE), 3)
 			enchant(enchants.getOrThrow(Enchantments.IMPALING), 6)
@@ -245,7 +246,9 @@ object TreasureRegistry {
 		}}
 
 		entry(Items.WIND_CHARGE) { count(1, 3).rarity(ItemRarity.ASTRAL) } // TODO: add to epic+
-		// TODO: add wind charge BOOK lvl 3
+	    entry(Items.ENCHANTED_BOOK) { rarity(ItemRarity.ASTRAL).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		    enchant(enchants.getOrThrow(Enchantments.WIND_BURST), 3)
+	    }}
 		entry(Items.LEATHER_BOOTS) { rarity(ItemRarity.ASTRAL).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.FROST_WALKER), it.random.nextIntBetweenInclusive(10, 24))
 			enchant(enchants.getOrThrow(Enchantments.VANISHING_CURSE), 1)

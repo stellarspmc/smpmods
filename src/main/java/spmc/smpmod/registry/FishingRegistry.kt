@@ -1,18 +1,22 @@
 package spmc.smpmod.registry
 
+import eu.pb4.polymer.core.api.item.PolymerBlockItem
+import net.minecraft.network.chat.TextColor
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import spmc.smpmod.core.BiomeCategory
+import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
+import spmc.smpmod.core.TierSystem
 import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.fishing.RodItem
-import spmc.smpmod.fishing.RodTiers
 import spmc.smpmod.utils.MessageUtils.formatName
 import java.util.*
 
 object FishingRegistry { // might have to switch up how this works? TODO
     private val FISH_REGISTRY: MutableMap<String, Item> = HashMap()
-    @JvmField val FISH: MutableList<Item> = ArrayList()
+	private val ROD_REGISTRY: MutableMap<String, Item> = HashMap()
+	@JvmField val FISH: MutableList<Item> = ArrayList()
     @JvmField val PLAINS: MutableList<Item> = ArrayList()
     @JvmField val TROPICAL: MutableList<Item> = ArrayList()
     @JvmField val DESERT: MutableList<Item> = ArrayList()
@@ -23,7 +27,11 @@ object FishingRegistry { // might have to switch up how this works? TODO
     @JvmField val SKY: MutableList<Item> = ArrayList()
 
     val allFish: List<Item> get() = listOf(FISH, PLAINS, TROPICAL, DESERT, SNOWY, LAVA, DEEP, END, SKY).flatten().distinct()
-    private fun registerRod(tier: RodTiers) { PolymerRegistry.createItem(tier.name.lowercase(Locale.getDefault()) + "_fishing_rod") { RodItem(it, tier) }}
+    private fun registerRod(material: String, color: Int, repairItem: Item, stats: RodItem.RodStats, tier: TierSystem, vararg mod: ItemModifier) {
+		val id = material + "_fishing_rod"
+		val item = PolymerRegistry.createItem(id) { RodItem(it, material, TextColor.fromRgb(color), mods = mod, repairItem, stats, tier) }
+	    ROD_REGISTRY[id] = item
+    }
 
     private fun registerFish(id: String, vanillaModel: Item, basePrice: Double, rarity: ItemRarity, listToBeAdded: MutableList<Item>) {
         val item = PolymerRegistry.createItem(id) { FishItem(it, vanillaModel, formatName(id), basePrice, rarity) }
@@ -58,26 +66,25 @@ object FishingRegistry { // might have to switch up how this works? TODO
 	}
 
     fun getFish(id: String): Item = FISH_REGISTRY[id]?: throw IllegalStateException("Fish ID doesn't exist / Fish registry hasn't started")
+	fun getRod(id: String): Item = ROD_REGISTRY[id]?: throw IllegalStateException("Rod ID doesn't exist / Rod registry hasn't started")
 
-    internal fun registerRods() {
-        registerRod(RodTiers.NORMAL)
-        registerRod(RodTiers.RAINBOW)
-        registerRod(RodTiers.COPPER)
-        registerRod(RodTiers.IRON)
-        registerRod(RodTiers.GOLD)
-        registerRod(RodTiers.EMERALD)
-        registerRod(RodTiers.LUNA)
-        registerRod(RodTiers.DIAMOND)
-        registerRod(RodTiers.NETHERITE)
-        registerRod(RodTiers.TOXIC)
-        registerRod(RodTiers.DEATH)
-        registerRod(RodTiers.AIR)
-        registerRod(RodTiers.SEA)
-        registerRod(RodTiers.FLICKERING)
-        registerRod(RodTiers.CELESTIAL)
-        registerRod(RodTiers.ELEMENTAL)
-        registerRod(RodTiers.CTHULHU)
-        registerRod(RodTiers.EVERYTHING)
+	internal fun registerRods() { // durability, luck, lure in /s, green zone
+		registerRod("wooden", 0xB18A56, Items.OAK_PLANKS, RodItem.RodStats(34, 1f, 1, .23f), TierSystem.T1)
+		registerRod("cactus", 0x09750D, Items.CACTUS, RodItem.RodStats(89, 1.15f, 1, .25f), TierSystem.T2)
+		registerRod("copper", 0xE07A5F, Items.COPPER_INGOT, RodItem.RodStats(177, 1.15f, 1, .25f), TierSystem.T2)
+		registerRod("gold", 0xFFD700, Items.GOLD_INGOT, RodItem.RodStats(49, 1.6f, 8, .25f), TierSystem.T2)
+		registerRod("iron", 0xD0D7DC, Items.IRON_INGOT, RodItem.RodStats(48, 1.15f, 1), TierSystem.T3)
+		registerRod("emerald", 0x2ECC71, Items.EMERALD, RodItem.RodStats(), TierSystem.T4)
+		registerRod("diamond", 0x3498DB, Items.DIAMOND, RodItem.RodStats(), TierSystem.T5)
+		registerRod("netherite", 0x09750D, Items.NETHERITE_SCRAP, RodItem.RodStats(), TierSystem.T6)
+		registerRod("uranium", 0x95D600, Items.CACTUS, RodItem.RodStats(), TierSystem.T6)
+		registerRod("death", 0x09750D, Items.CACTUS, RodItem.RodStats(), TierSystem.T6) // thinking about a rename?
+		registerRod("breeze", 0x09750D, Items.BREEZE_ROD, RodItem.RodStats(), TierSystem.T6)
+		registerRod("prismarine", 0x09750D, getFish("prismite"), RodItem.RodStats(), TierSystem.T6)
+		registerRod("sculk", 0x09750D, getFish("sculk_infused_cod"), RodItem.RodStats(), TierSystem.T6)
+		registerRod("elementite", 0x09750D, (PolymerRegistry.getItem("elementite")?: return).value(), RodItem.RodStats(), TierSystem.T7)
+		registerRod("chromatic", 0x09750D, (PolymerRegistry.getItem("chromatic_glint")?: return).value(), RodItem.RodStats(), TierSystem.T7)
+		registerRod("astral", 0x09750D, (PolymerRegistry.getItem("astral_fabric")?: return).value(), RodItem.RodStats(3775, 2f, 7, .3f), TierSystem.T8)
     }
 
     internal fun registerFishes() {
