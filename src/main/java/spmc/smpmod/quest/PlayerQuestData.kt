@@ -17,8 +17,8 @@ class PlayerQuestData {
             if (this.isCompleted) return false
 
             this.currentCount += amount
-            if (this.currentCount >= QuestRegistry.get(this.questId)?.requiredCount!!) { // TODO: type checks
-                this.currentCount = QuestRegistry.get(this.questId)?.requiredCount!!
+            if (this.currentCount >= (QuestRegistry.get(this.questId)?: return false).requiredCount) {
+                this.currentCount = (QuestRegistry.get(this.questId)?: return false).requiredCount
                 this.isCompleted = true
             }
             return this.isCompleted

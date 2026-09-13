@@ -22,7 +22,7 @@ object BountySystem {
 
 			if (totalLost > 0) {
 				eco.changeBalance(player.getUUID(), -totalLost)
-				sendError<Int>(player, String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
+				sendError<Int>(player, message = String.format("You died and lost $%.2f (%.1f%% of your balance)!", totalLost, lossPercent * 100))
 				if (damageSource.entity?.getUUID() != player.getUUID()) changeBounty(player, damageSource.entity as? ServerPlayer?: return, totalLost)
 			}
 		}
@@ -38,25 +38,21 @@ object BountySystem {
 
 		killCooldowns[pair] = now
 		if (isFarming) {
-			sendError<Int>(killer, "You killed ${victim.scoreboardName} too recently! No bounty or cash awarded.")
+			sendError<Int>(killer, message = "You killed ${victim.scoreboardName} too recently! No bounty or cash awarded.")
 			return
 		}
-		var totalReward = 0.0
 
-		if (activeBounty > 0.0) {
+		var totalReward = .0
+		if (activeBounty > .0) {
 			totalReward += activeBounty
 			clearBounty(victim)
 			killer.sendSystemMessage(Component.literal(String.format("⚔ You claimed a $%.2f bounty placed on %s!", activeBounty, victim.scoreboardName)).withStyle(ChatFormatting.GOLD))
 		}
 
-		if (lost > .0) {
-			val dropReward = rnd2DP(lost * 0.9)
-			totalReward += dropReward
-		}
-
-		if (totalReward > 0.0) {
+		if (lost > .0) totalReward += rnd2DP(lost * 0.9)
+		if (totalReward > .0) {
 			eco.changeBalance(killer.uuid, totalReward)
-			sendSuccess<Int>(killer, String.format("Total payout received: $%.2f", totalReward))
+			sendSuccess<Int>(killer, message = String.format("Total payout received: $%.2f", totalReward))
 			killer.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).update { it.putDouble("bounty", it.getDoubleOr("bounty", 250.0) * 1.1) }
 		}
 	}
@@ -69,14 +65,11 @@ object BountySystem {
 				it.putDouble("bounty", originalBounty + bounty)
 				victim.sendSystemMessage(Component.literal("${if (anonymous) "Someone" else adder.scoreboardName} has added a bounty of ${rnd2DP(bounty)} on you!"), false)
 			}
-			return sendSuccess(adder, "Added a bounty of ${rnd2DP(bounty)} to ${victim.scoreboardName}.")
-		} else return sendError(adder, "Insufficient funds! You need ${rnd2DP(bounty)}.")
+			return sendSuccess(adder, message = "Added a bounty of ${rnd2DP(bounty)} to ${victim.scoreboardName}.")
+		} else return sendError(adder, message = "Insufficient funds! You need ${rnd2DP(bounty)}.")
 	}
 
-	fun checkBounty(player: ServerPlayer): Double {
-		val tag = player.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag()
-		return if (tag.contains("bounty")) tag.getDouble("bounty").get() else .0
-	}
+	fun checkBounty(player: ServerPlayer) = player.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getDoubleOr("bounty", .0)
 
 	private fun clearBounty(player: ServerPlayer) { player.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).update { it.remove("bounty") } }
 }

@@ -16,6 +16,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.levelgen.Heightmap
 import spmc.smpmod.SMPMod.Companion.minecraftServer
+import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
@@ -28,9 +29,8 @@ fun getY(x: Int, z: Int, level: ServerLevel) = level.getHeight(Heightmap.Types.W
 fun checkNotCreative(players: Collection<ServerPlayer>) = players.all { it.level().dimension().identifier().namespace == "minecraft" }
 fun checkNotCreative(vararg players: ServerPlayer) = checkNotCreative(players.asList())
 
-fun <T> sendError(player: ServerPlayer, message: String, returnValue: T = -1 as T): T { player.sendSystemMessage(Component.literal("✖: $message").withStyle(ChatFormatting.RED)); return returnValue }
-fun <T> sendSuccess(player: ServerPlayer, message: String, returnValue: T = 1 as T): T { player.sendSystemMessage(Component.literal("✔: $message").withStyle(ChatFormatting.GREEN)); return returnValue }
-// TODO: merge functions, but i dont wanna carry infrastructure debt so later
+fun <T> sendError(vararg player: ServerPlayer, message: String, returnValue: T = -1 as T): T { return sendError(player.asList(), message, returnValue) }
+fun <T> sendSuccess(vararg player: ServerPlayer, message: String, returnValue: T = 1 as T): T { return sendSuccess(player.asList(), message, returnValue) }
 fun <T> sendError(players: Collection<ServerPlayer>, message: String, returnValue: T = -1 as T): T { players.forEach { it.sendSystemMessage(Component.literal("✖: $message").withStyle(ChatFormatting.RED)) }; return returnValue }
 fun <T> sendSuccess(players: Collection<ServerPlayer>, message: String, returnValue: T = 1 as T): T { players.forEach { it.sendSystemMessage(Component.literal("✔: $message").withStyle(ChatFormatting.GREEN)) }; return returnValue }
 

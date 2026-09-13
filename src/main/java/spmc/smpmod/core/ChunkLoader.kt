@@ -78,7 +78,7 @@ class ChunkLoader @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> 
 
 		            if (!data.isLoader(pos)) {
 			            data.addLoader(serverLevel, pos)
-			            return@register sendSuccess(player as ServerPlayer, "Chunk loader activated.", InteractionResult.SUCCESS)
+			            return@register sendSuccess(player as ServerPlayer, message = "Chunk loader activated.", returnValue = InteractionResult.SUCCESS)
 		            }
 	            }
 	            return@register InteractionResult.PASS
@@ -91,7 +91,7 @@ class ChunkLoader @JvmOverloads constructor(activeLoaders: MutableSet<BlockPos> 
 
 		            if (data.isLoader(pos)) {
 			            data.removeLoader(serverLevel, pos)
-			            return@register sendError(player as ServerPlayer, "Chunk loader deactivated.", true)
+			            return@register sendError(player as ServerPlayer, message = "Chunk loader deactivated.", returnValue = true)
 		            }
 	            }
 	            return@register true

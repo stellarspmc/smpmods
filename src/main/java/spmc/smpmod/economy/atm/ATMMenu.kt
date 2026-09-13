@@ -81,7 +81,7 @@ object ATMMenu {
 			if (!player.inventory.add(stack)) player.drop(stack, false)?.setNoPickUpDelay()
 			totalCount -= stackSize
 		}
-		sendSuccess<Int>(player, String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100))
+		sendSuccess<Int>(player, message = String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100))
 	}
 
 	private fun getDepositItems(player: ServerPlayer): Double {
@@ -98,8 +98,8 @@ object ATMMenu {
 			}
 		}
 
-		if (totalPayout > 0) sendSuccess<Int>(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout))
-		sendError<Int>(player, "No valid market currency items found in inventory.")
+		if (totalPayout > 0) sendSuccess<Int>(player, message = String.format("Deposited all valid items for $%.2f to your account.", totalPayout))
+		sendError<Int>(player, message = "No valid market currency items found in inventory.")
 		return totalPayout
 	}
 }

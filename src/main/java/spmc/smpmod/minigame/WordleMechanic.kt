@@ -21,7 +21,7 @@ class WordleSession(val player: ServerPlayer): GameSession(listOf(player)) {
 	override fun onEnd(reason: SessionEndReason) {
 		when (reason) {
 			SessionEndReason.SUCCESS -> TODO("reward player")
-			else -> sendError(player, reason.name)
+			else -> sendError(player, message = reason.name)
 		}
 	}
 }

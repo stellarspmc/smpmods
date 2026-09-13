@@ -42,9 +42,9 @@ object FishingManager: SessionManager<FishingSession>() {
 }
 
 class FishingSession(val player: ServerPlayer, private val hook: FishingHook, private val item: RodItem): GameSession(listOf(player)) {
-	private var cursor = 0.0f
+	private var cursor = 0f
 	private var movingRight = true
-	private var wasJumping: Boolean = player.isJumping
+	private var wasJumping = player.isJumping
 	private var ticksLeft = 100
 	private var streak = 0
 
@@ -53,8 +53,8 @@ class FishingSession(val player: ServerPlayer, private val hook: FishingHook, pr
 
 	init {
 		val zoneWidth: Float = item.stats.greenZone
-		this.greenStart = 0.5f - (zoneWidth / 2f)
-		this.greenEnd = 0.5f + (zoneWidth / 2f)
+		this.greenStart = .5f - (zoneWidth / 2f)
+		this.greenEnd = .5f + (zoneWidth / 2f)
 	}
 
 	override fun tick(): Boolean {
@@ -63,7 +63,7 @@ class FishingSession(val player: ServerPlayer, private val hook: FishingHook, pr
 			return true
 		}
 
-		val speed = 0.05f
+		val speed = .05f
 		if (movingRight) {
 			cursor += speed
 			if (cursor >= 1f) {
@@ -101,7 +101,7 @@ class FishingSession(val player: ServerPlayer, private val hook: FishingHook, pr
 			}
 			SessionEndReason.FAIL -> {
 				streak = 0
-				sendError(player, "Missed the timing or time ran out!", 0)
+				sendError<Int>(player, message = "Missed the timing or time ran out!")
 				player.sendSystemMessage(Component.empty(), true)
 			}
 			SessionEndReason.CANCELLED, SessionEndReason.DISCONNECTED -> { player.sendSystemMessage(Component.empty(), true) }
@@ -133,7 +133,7 @@ object FishingLoot {
 		val random = SMPMod.minecraftServer?.overworld()?.getRandom() ?: return
 
 		if (streak >= 15) {
-			//TODO("fish mob to kill (like the new game)")
+			FishingMob.spawnMob("test", player.blockPosition())
 			grant(player, "streak/s_15")
 		}
 		if (streak >= 50) grant(player, "streak/s_50")

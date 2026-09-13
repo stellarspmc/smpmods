@@ -74,10 +74,10 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
 
     fun processPurchase(buyer: ServerPlayer): Int {
         val availableBatches = this.availableStock
-        if (availableBatches < 1) return sendError(buyer, "This shop is out of stock!", 0)
+        if (availableBatches < 1) return sendError(buyer, message = "This shop is out of stock!")
 
         val eco: EconomySystem = EconomySystem.get() ?: return 0
-        if (eco.getBalance(buyer.getUUID()) < price) return sendError(buyer, String.format("✖: Insufficient funds! You need $%.2f.", price), 0)
+        if (eco.getBalance(buyer.getUUID()) < price) return sendError(buyer, message = String.format("✖: Insufficient funds! You need $%.2f.", price))
 
         if (eco.changeBalance(buyer.getUUID(), -price)) {
             if (!this.isCreative) {

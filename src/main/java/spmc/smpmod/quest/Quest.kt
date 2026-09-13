@@ -7,10 +7,13 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.item.ItemStack
 import spmc.smpmod.economy.EconomySystem.Companion.get
+import spmc.smpmod.quest.Quest.QuestType
+import spmc.smpmod.utils.*
 import java.util.*
 
 @JvmRecord
-data class Quest(val id: String, val title: String, val description: String, @JvmField val type: QuestType, @JvmField val target: Identifier, val requiredCount: Int, val questType: QuestCategory, val questReward: QuestReward, val npcId: Optional<String>, val preQuestId: Optional<String>) {
+data class Quest(val id: String, val title: String, val description: String, @JvmField val type: QuestType, @JvmField val target: Identifier, val requiredCount: Int, val questType: QuestCategory, val questReward: QuestReward, val npcId: Optional<String> = Optional.empty(), val preQuestId: Optional<String> = Optional.empty()) {
+	constructor(id: String, title: String, type: QuestType, target: String, requiredCount: Int, questType: QuestCategory, questReward: QuestReward): this(id, title, createDescription(target,requiredCount, type), type, Identifier.withDefaultNamespace(target), requiredCount, questType, questReward)
 	val isNpcQuest: Boolean get() = this.questType == QuestCategory.NPC
 
 	enum class QuestCategory: StringRepresentable {
@@ -35,7 +38,9 @@ data class Quest(val id: String, val title: String, val description: String, @Jv
 	}
 
 	@JvmRecord
-	data class QuestReward(val money: Double, val experience: Int, val items: MutableList<ItemStack>) {
+	data class QuestReward(val money: Double, val experience: Int = 0, val items: MutableList<ItemStack> = mutableListOf()) {
+		constructor(money: Int, experience: Int): this(money.toDouble(), experience)
+
 		fun grant(player: ServerPlayer) {
 			if (money > 0) get()?.changeBalance(player.getUUID(), money)
 			if (experience > 0) player.giveExperiencePoints(experience)
@@ -50,4 +55,14 @@ data class Quest(val id: String, val title: String, val description: String, @Jv
 	companion object {
 		val CODEC: Codec<Quest> = RecordCodecBuilder.create { it.group(Codec.STRING.fieldOf("id").forGetter(Quest::id), Codec.STRING.fieldOf("title").forGetter(Quest::title), Codec.STRING.fieldOf("description").forGetter(Quest::description), QuestType.CODEC.fieldOf("type").forGetter(Quest::type), Identifier.CODEC.fieldOf("target").forGetter(Quest::target), Codec.INT.fieldOf("required_count").forGetter(Quest::requiredCount), QuestCategory.CODEC.fieldOf("quest_type").forGetter(Quest::questType), QuestReward.CODEC.fieldOf("reward").forGetter(Quest::questReward), Codec.STRING.optionalFieldOf("npc_id").forGetter(Quest::npcId), Codec.STRING.optionalFieldOf("prerequisite_quest_id").forGetter(Quest::preQuestId)).apply(it, ::Quest) }
 	}
+}
+
+private fun createDescription(target: String, requiredCount: Int, questType: QuestType) = when(questType) {
+	QuestType.MINE_BLOCK -> "Mine $requiredCount ${formatName(target)}"
+	QuestType.KILL_MOB -> "Kill $requiredCount ${formatName(target)}" + if (requiredCount > 1) "s" else ""
+	//QuestType.GATHER_ITEM -> "Gather $requiredCount ${formatName(target)}"
+	QuestType.CRAFTING -> "Craft $requiredCount ${formatName(target)}"
+	QuestType.FISHING -> "Fish $requiredCount Time" + if (requiredCount > 1) "s" else ""
+	//QuestType.TRADE_MARKET -> "Trade $requiredCount ${formatName(target)}"
+	else -> "" // for later cases
 }

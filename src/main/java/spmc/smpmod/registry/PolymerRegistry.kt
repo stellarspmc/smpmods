@@ -100,13 +100,12 @@ object PolymerRegistry {
 
 
 	private fun registerMisc() {
-		createItem("unidentified_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.COMMON) } // TODO
 		createItem("common_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.COMMON) }
 		createItem("uncommon_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.UNCOMMON) }
-		createItem("rare_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.RARE) }
-		createItem("epic_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.EPIC) } // maybe dont call it scrap?
-		createItem("legendary_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.LEGENDARY) }
-		createItem("mythic_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.MYTHIC) }
+		createItem("rare_relic") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.RARE) }
+		createItem("epic_catalyst") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.EPIC) } // maybe dont call it scrap?
+		createItem("legendary_matrix") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.LEGENDARY) }
+		createItem("mythic_singularity") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.MYTHIC) }
 		createItem("chromatic_glint") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.CHROMATIC) }
 		createItem("astral_fabric") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.ASTRAL) }
 

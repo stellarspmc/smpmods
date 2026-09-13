@@ -112,14 +112,14 @@ class ShopManager: SavedData() {
 	        UseBlockCallback.EVENT.register { player, world, _, hitResult ->
 	            if (world.isClientSide) return@register InteractionResult.PASS
 	            val shop: ShopData = getByPos(world as ServerLevel, hitResult.blockPos) ?: return@register InteractionResult.PASS
-	            if (!shop.isOwner(player as ServerPlayer)) return@register sendError(player, "You cannot open someone else's shop barrel!", InteractionResult.FAIL)
+	            if (!shop.isOwner(player as ServerPlayer)) return@register sendError(player, message = "You cannot open someone else's shop barrel!", returnValue = InteractionResult.FAIL)
 	            return@register InteractionResult.PASS
             }
 
 	        PlayerBlockBreakEvents.BEFORE.register { world, player, pos, _, _ ->
 	            if (world.isClientSide) return@register true
 	            if (getByPos(world as ServerLevel, pos) == null) return@register true
-	            return@register sendError(player as ServerPlayer, "You cannot break a shop!", false)
+	            return@register sendError(player as ServerPlayer, message = "You cannot break a shop!", returnValue = false)
             }
         }
 

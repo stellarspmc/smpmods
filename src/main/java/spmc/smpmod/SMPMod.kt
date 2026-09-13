@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory
 import spmc.smpmod.core.BedrockSkinFetcher
 import spmc.smpmod.core.BountySystem
 import spmc.smpmod.core.ChunkLoader
+import spmc.smpmod.core.ScrapHandler
 import spmc.smpmod.discord.EventHandler
 import spmc.smpmod.discord.ConfigLoader
 import spmc.smpmod.discord.sendChatMessage
@@ -139,8 +140,8 @@ class SMPMod: DedicatedServerModInitializer {
 	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // non-players only
 			if (entity is ServerPlayer) return@register
 		    when (entity.type.category) {
-			    MobCategory.MONSTER -> {} // all aggressive
-			    MobCategory.MISC -> {} // villagers, golems, non-mob types (!!!)
+			    MobCategory.MONSTER -> ScrapHandler.handleMonsterScrap(entity) // all aggressive
+			    MobCategory.MISC -> ScrapHandler.handleGolemScrap(entity) // villagers, golems, non-mob types (!!!)
 			    else -> return@register
 			}
 	    }
@@ -158,7 +159,7 @@ class SMPMod: DedicatedServerModInitializer {
 	        if (world.isClientSide) return@register
 	        if (world.dimension().identifier().namespace != "minecraft") return@register
 	        if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
-		        if (world.getRandom().nextFloat() < 0.08f) PlantRegistry.SEEDS["wheat"]?.let { Block.popResource(world, pos, ItemStack(it)) }
+		        if (world.getRandom().nextFloat() < .08f) PlantRegistry.SEEDS["wheat"]?.let { Block.popResource(world, pos, ItemStack(it)) }
 	        }
         }
 

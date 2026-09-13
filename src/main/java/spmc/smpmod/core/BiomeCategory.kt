@@ -12,37 +12,36 @@ import spmc.smpmod.utils.createBiomeTag
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
+enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) { // TODO: check if any stupid things
 	BADLANDS(listOf(BiomeTags.IS_BADLANDS)),
 	DESERT(listOf(ConventionalBiomeTags.IS_DRY_OVERWORLD, ConventionalBiomeTags.IS_DESERT)),
 	SNOWY(listOf(ConventionalBiomeTags.IS_SNOWY, ConventionalBiomeTags.IS_COLD_OVERWORLD)),
-	TROPICAL(listOf(ConventionalBiomeTags.IS_JUNGLE, ConventionalBiomeTags.IS_SAVANNA, ConventionalBiomeTags.IS_SWAMP, createBiomeTag("is_tropical"), BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)), // TODO: remove tropical tag with ConventionalBiomeTags
+	TROPICAL(listOf(ConventionalBiomeTags.IS_JUNGLE, ConventionalBiomeTags.IS_SAVANNA, ConventionalBiomeTags.IS_SWAMP, BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)), // TODO: ConventionalBiomeTags.IS_TROPICAL?
 	OCEAN(listOf(ConventionalBiomeTags.IS_OCEAN, ConventionalBiomeTags.IS_RIVER, BiomeTags.IS_OCEAN, BiomeTags.IS_RIVER, BiomeTags.IS_BEACH)),
-	FOREST(listOf(ConventionalBiomeTags.IS_FOREST)), // TODO
+	FOREST(listOf(ConventionalBiomeTags.IS_FOREST, BiomeTags.IS_FOREST)),
 	TAIGA(listOf(BiomeTags.IS_TAIGA, ConventionalBiomeTags.IS_TAIGA)),
-	PLAINS(listOf(BiomeTags.IS_HILL, ConventionalBiomeTags.IS_HILL)), // TODO: check
-	FLOWER(listOf(ConventionalBiomeTags.IS_FLORAL, ConventionalBiomeTags.IS_FLOWER_FOREST)), // TODO
-	MOUNTAIN(listOf(BiomeTags.IS_MOUNTAIN)), // TODO: checks "peaks", "slopes", "stony", "windswept"
+	PLAINS(listOf(ConventionalBiomeTags.IS_PLAINS)),
+	FLOWER(listOf(ConventionalBiomeTags.IS_FLORAL, ConventionalBiomeTags.IS_FLOWER_FOREST)),
+	MOUNTAIN(listOf(BiomeTags.IS_MOUNTAIN, ConventionalBiomeTags.IS_MOUNTAIN, BiomeTags.IS_HILL, ConventionalBiomeTags.IS_HILL)),
 	MUSHROOM(listOf(BiomeTags.WITHOUT_ZOMBIE_SIEGES)),
 
 	CAVE(listOf(ConventionalBiomeTags.IS_CAVE)),
-	SCULK(listOf(BiomeTags.HAS_ANCIENT_CITY)), // TODO
+	SCULK(listOf(BiomeTags.HAS_ANCIENT_CITY)),
 
 	DEEP,
 	SKY,
 
 	NETHER(listOf(BiomeTags.IS_NETHER)), // general nether
-	CRIMSON,
+	CRIMSON, // TODO
 	WARPED,
 	SOUL_SAND,
 	BASALT,
 	NETHER_WASTES,
 
 	END(listOf(BiomeTags.IS_END)), // probably includes every end biome? TODO: add nullscape diversity (not a good idea to put here)
-	// END_ISLANDS? Identifier.fromNamespaceAndPath("c", "end_islands"))
+	// END_ISLANDS? ConventionalBiomeTags.END_ISLANDS)
 	DEFAULT;
 
-	override fun toString() = name[0].toString() + name.substring(1).lowercase(Locale.getDefault())
 	companion object {
 		val OVERWORLD = listOf(BADLANDS, DESERT, CAVE, FOREST, SCULK, MUSHROOM, TROPICAL, TAIGA, OCEAN, FLOWER, MOUNTAIN, SNOWY, SKY)
 
@@ -54,8 +53,9 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 			val yPos = player.y
 
 			if (level.dimension() == Level.NETHER) {
-				val biome = getGroup(level.getBiome(player.blockPosition()))
-				return if (biome != DEFAULT) EnumSet.of(biome) else EnumSet.of(NETHER_WASTES)
+				return EnumSet.of(NETHER) // , CRIMSON, WARPED, SOUL_SAND, NETHER_WASTES
+				/*val biome = getGroup(level.getBiome(player.blockPosition()))
+				return if (biome != DEFAULT) EnumSet.of(biome) else EnumSet.of(NETHER_WASTES)*/ // TODO
 			}
 			if (level.dimension() == Level.END) return EnumSet.of(END)
 

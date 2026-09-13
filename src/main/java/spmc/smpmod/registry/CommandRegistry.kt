@@ -157,7 +157,7 @@ object CommandRegistry {
 		val amount = DoubleArgumentType.getDouble(ctx, "amount")
 		val anon = BoolArgumentType.getBool(ctx, "anonymous")
 		val source = ctx.source.player ?: return -1
-		if (source.uuid == player.uuid) return sendError(source, "You can't set a bounty on yourself!") // TODO: can you set a bounty on yourself?
+		if (source.uuid == player.uuid) return sendError(source, message = "You can't set a bounty on yourself!") // TODO: can you set a bounty on yourself?
 		return BountySystem.addPlayerBounty(source, player, amount, anon)
 	}
 
@@ -165,7 +165,7 @@ object CommandRegistry {
         val target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()
         val sender = ctx.getSource().player?: return -1
         val amount = rnd2DP(DoubleArgumentType.getDouble(ctx, "amount"))
-        if (sender.getUUID() == target.id()) return sendError(sender, "You cannot send money to yourself.")
+        if (sender.getUUID() == target.id()) return sendError(sender, message = "You cannot send money to yourself.")
 
         val eco: EconomySystem = EconomySystem.get() ?: return -1
         if (eco.changeBalance(sender.getUUID(), -amount)) {
@@ -178,21 +178,21 @@ object CommandRegistry {
                 .append(Component.literal(sender.name.string).withStyle(ChatFormatting.RED))
             )
 
-            return sendSuccess(sender, String.format("Sent $%.2f to %s.", amount, target.name()))
+            return sendSuccess(sender, message = String.format("Sent $%.2f to %s.", amount, target.name()))
         }
 
-        return sendError(sender, "Insufficient funds.")
+        return sendError(sender, message = "Insufficient funds.")
     }
 
     private fun executeDepositHand(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.getSource().player?: return -1
         val hand = player.inventory.selectedItem
 
-        if (hand.isEmpty) return sendError(player, "Hold a valid market item or use /deposit all.")
+        if (hand.isEmpty) return sendError(player, message = "Hold a valid market item or use /deposit all.")
         val payout = MarketState.processItemDeposit(player, hand)
-        if (payout <= 0) return sendError(player, "This item cannot be deposited into the market.")
+        if (payout <= 0) return sendError(player, message = "This item cannot be deposited into the market.")
         hand.count = 0
-        return sendSuccess(player, String.format("Deposited items for $%.2f to your account.", payout))
+        return sendSuccess(player, message = String.format("Deposited items for $%.2f to your account.", payout))
     }
 
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
@@ -211,8 +211,8 @@ object CommandRegistry {
             }
         }
 
-        if (totalPayout > 0) return sendSuccess(player, String.format("Deposited all valid items for $%.2f to your account.", totalPayout), 1)
-        return sendError(player, "No valid market currency items found in inventory.", 0)
+        if (totalPayout > 0) return sendSuccess(player, message = String.format("Deposited all valid items for $%.2f to your account.", totalPayout))
+        return sendError(player, message = "No valid market currency items found in inventory.")
     }
 
     private fun executeNpcKill(ctx: CommandContext<CommandSourceStack>): Int {
@@ -234,9 +234,9 @@ object CommandRegistry {
         val player = ctx.getSource().player?: return -1
         val id = StringArgumentType.getString(ctx, "id")
 
-        if (NPCData.get()?.hasNpc(id) == true) return sendError(player, "Mannequin already exists!")
-        NPCManager.spawn(id, level, BlockPos.containing(ctx.getSource().position))?: return sendError(player, "Mannequin already exists / id doesn't exist!")
-        return sendSuccess(player, "Mannequin created successfully!")
+        if (NPCData.get()?.hasNpc(id) == true) return sendError(player, message = "Mannequin already exists!")
+        NPCManager.spawn(id, level, BlockPos.containing(ctx.getSource().position))?: return sendError(player, message = "Mannequin already exists / id doesn't exist!")
+        return sendSuccess(player, message = "Mannequin created successfully!")
     }
 
     private fun executeQuests(ctx: CommandContext<CommandSourceStack>): Int {
@@ -278,14 +278,14 @@ object CommandRegistry {
 		val player = ctx.getSource().player?: return -1
 		val url = StringArgumentType.getString(ctx, "url")
 
-		if (!url.startsWith("http://") && !url.startsWith("https://")) return sendError(player, "Invalid URL! Must start with http:// or https://")
+		if (!url.startsWith("http://") && !url.startsWith("https://")) return sendError(player, message = "Invalid URL! Must start with http:// or https://")
 		CompletableFuture.runAsync {
 			try {
 				val img = ImageIO.read(URI(url).toURL())
 				if (img == null) {
 					SMPMod.minecraftServer?.execute {
 						if (player.isRemoved) return@execute
-						sendError(player, "Could not load image from the provided URL.")
+						sendError(player, message = "Could not load image from the provided URL.")
 					}
 					return@runAsync
 				}
@@ -299,7 +299,7 @@ object CommandRegistry {
 
 					val eco = EconomySystem.get() ?: return@execute
 					if (eco.getBalance(player.uuid) < cost) {
-						sendError<Int>(player, String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH))
+						sendError<Int>(player, message = String.format("Insufficient funds! You need $%.2f for a %dx%d map.", cost, mapW, mapH))
 						return@execute
 					}
 
@@ -308,10 +308,10 @@ object CommandRegistry {
 						val command = String.format("image2map create none %s", url)
 
 						SMPMod.minecraftServer?.commands?.performPrefixedCommand(sourceStack, command)
-						sendSuccess(player, String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost))
+						sendSuccess(player, message = String.format("Created a %dx%d map art for $%.2f!", mapW, mapH, cost))
 					}
 				}
-			} catch (e: Exception) { SMPMod.minecraftServer?.execute { if (!player.isRemoved) sendError(player, "Failed to process image URL: ${e.message}") }}
+			} catch (e: Exception) { SMPMod.minecraftServer?.execute { if (!player.isRemoved) sendError(player, message = "Failed to process image URL: ${e.message}") }}
 		}
 		return 1
 	}
@@ -334,14 +334,14 @@ object CommandRegistry {
 		val player = ctx.getSource().player?: return -1
 		val eco = EconomySystem.get()?: return -1
 		val range = 150000
-		if (player.level().dimension() != Level.OVERWORLD) return sendError(player, "/rtp only works for the overworld!")
+		if (player.level().dimension() != Level.OVERWORLD) return sendError(player, message = "/rtp only works for the overworld!")
 		if (eco.changeBalance(player.uuid, -300.0)) {
 			val x = player.level().random.nextIntBetweenInclusive(-range, range)
 			val z = player.level().random.nextIntBetweenInclusive(-range, range)
 			player.teleportTo(x.toDouble(), getY(player.x.toInt(), player.z.toInt(), player.level()).toDouble(), z.toDouble())
-			return sendSuccess(player, "You have been successfully teleported to ($x, $z)!")
+			return sendSuccess(player, message = "You have been successfully teleported to ($x, $z)!")
 		}
-		return sendError(player, "Insufficient funds! You need $300 for a random teleport.")
+		return sendError(player, message = "Insufficient funds! You need $300 for a random teleport.")
 	}
 
 	private fun executeTPA(ctx: CommandContext<CommandSourceStack>): Int {
@@ -350,7 +350,7 @@ object CommandRegistry {
 		if (eco.changeBalance(player.uuid, -2.0)) {
 			TODO("implement tpa, tpaccept, tpadeny, tpahere")
 		}
-		return sendError(player, "Insufficient funds! You need $2 to teleport to a player!") // TODO: should be the one whos teleporting take money
+		return sendError(player, message = "Insufficient funds! You need $2 to teleport to a player!") // TODO: should be the one whos teleporting take money
 	}
 
 	private fun executeHome(ctx: CommandContext<CommandSourceStack>): Int {
@@ -366,7 +366,7 @@ object CommandRegistry {
 		if (eco.changeBalance(player.uuid, -2.0)) {
 			TODO("implement home (set?) (tp) (list) + BACKWARDS COMPATIBILITY")
 		}
-		return sendError(player, "Insufficient funds! You need $2 to teleport to a player!")
+		return sendError(player, message = "Insufficient funds! You need $2 to teleport to a player!")
 	}
 
 	private fun executeMarketAll(ctx: CommandContext<CommandSourceStack>): Int {
@@ -391,7 +391,7 @@ object CommandRegistry {
     private fun executeMarketItem(ctx: CommandContext<CommandSourceStack>): Int {
         val targetItem = ItemArgument.getItem(ctx, "item").item().value()
         val market = MarketState.state?: return -1
-        val data = market.get(targetItem) ?: return sendError(ctx.getSource().player?: return -1, "This item is not tracked by the market.", 0)
+        val data = market.get(targetItem) ?: return sendError(ctx.getSource().player?: return -1, message = "This item is not tracked by the market.")
 
         ctx.getSource().sendSuccess({ Component.literal(String.format(" Base Price: $%.2f", data.defaultPrice)).withStyle(ChatFormatting.GRAY) }, false)
         ctx.getSource().sendSuccess({ Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE) }, false)

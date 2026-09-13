@@ -57,7 +57,7 @@ class VaultData: SavedData {
 
 		var unlockedSomething = false
 		while (canAdvance()) {
-			currentMoney = max(0.0, currentMoney - currentTier.costGoal)
+			currentMoney = max(.0, currentMoney - currentTier.costGoal)
 			advance()
 			unlockedSomething = true
 		}
@@ -146,7 +146,7 @@ class VaultData: SavedData {
 				if ((EconomySystem.get() ?: return@Consumer).changeBalance(player.getUUID(), -finalAmount)) {
 					vaultData.recordDonation(player.getUUID(), finalAmount)
 					player.sendSystemMessage(Component.literal("Thank you! You donated ").withStyle(ChatFormatting.GREEN).append(Component.literal(String.format("$%.2f", finalAmount)).withStyle(ChatFormatting.GOLD)).append(Component.literal(" to the Vault!")))
-				} else sendError(player, "You do not have enough money to donate to the Vault.")
+				} else sendError(player, message = "You do not have enough money to donate to the Vault.")
 				this.close()
 			})
 		}
