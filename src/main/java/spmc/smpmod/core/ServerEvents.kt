@@ -1,10 +1,11 @@
-package spmc.smpmod.events
+package spmc.smpmod.core
 
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import spmc.smpmod.SMPMod.Companion.minecraftServer
-import spmc.smpmod.utils.*
+import spmc.smpmod.utils.formatName
+import spmc.smpmod.utils.getY
 
 object ServerEvents {
 	fun spawnEvent() { // only in overworld!

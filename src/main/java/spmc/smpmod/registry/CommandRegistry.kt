@@ -26,12 +26,20 @@ import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import spmc.smpmod.SMPMod
-import spmc.smpmod.core.*
-import spmc.smpmod.economy.*
+import spmc.smpmod.core.BountySystem
+import spmc.smpmod.core.NPCData
+import spmc.smpmod.core.NPCManager
+import spmc.smpmod.economy.CentralizedShopManager
+import spmc.smpmod.economy.EconomySystem
+import spmc.smpmod.economy.MarketState
+import spmc.smpmod.economy.processItemDeposit
 import spmc.smpmod.fishing.FishTracker
-import spmc.smpmod.quest.*
+import spmc.smpmod.quest.PlayerQuestData
+import spmc.smpmod.quest.Quest
+import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.utils.*
 import spmc.smpmod.vault.VaultData
 import java.net.URI
@@ -96,9 +104,8 @@ object CommandRegistry {
         dispatcher.register(Commands.literal("surface").executes(CommandRegistry::executeSurface))
         dispatcher.register(Commands.literal("enderchest") .executes(CommandRegistry::executeEnderChest))
 
-	    dispatcher.register(Commands.literal("webshop").executes { CentralizedShopManager.organizeShopsAsInventory(it.source.player?: return@executes -1); return@executes 0 }) // TODO: testing
+	    dispatcher.register(Commands.literal("webshop").executes { CentralizedShopManager.organizeShopsAsInventory(it.source.player?: return@executes -1); return@executes 0 })
 	    dispatcher.register(Commands.literal("rtp").executes(CommandRegistry::executeRTP))
-		// TODO: /home, /tpa, ...
 	}
 
     private fun buildBalanceNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
@@ -120,7 +127,7 @@ object CommandRegistry {
 
 	private fun buildWithdrawNode(name: String, context: CommandBuildContext): LiteralArgumentBuilder<CommandSourceStack> {
 		return Commands.literal(name).then(Commands.argument("item", ItemArgument.item(context))
-				.suggests(streamToSuggestion(MarketState.state?.all?.keys ?: setOf())) // TODO: add diamonds
+				.suggests(streamToSuggestion(MarketState.state?.all?.keys?.apply { add(Items.DIAMOND) } ?: setOf()))
 				.executes { executeWithdraw(it, 1) }
 				.then(Commands.argument("count", IntegerArgumentType.integer(1))
 					.executes { executeWithdraw(it, IntegerArgumentType.getInteger(it, "count")) }))
@@ -153,7 +160,7 @@ object CommandRegistry {
 		val amount = DoubleArgumentType.getDouble(ctx, "amount")
 		val anon = BoolArgumentType.getBool(ctx, "anonymous")
 		val source = ctx.source.player ?: return -1
-		if (source.uuid == player.uuid) return sendError(source, message = "You can't set a bounty on yourself!") // TODO: can you set a bounty on yourself?
+		if (source.uuid == player.uuid) return sendError(source, message = "You can't set a bounty on yourself!")
 		return BountySystem.addPlayerBounty(source, player, amount, anon)
 	}
 

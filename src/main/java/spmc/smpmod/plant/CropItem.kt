@@ -66,5 +66,5 @@ class CropItem(settings: Properties, vanillaItem: Item, val cropName: String, va
 			if (tag.getCompound("modifier").isPresent) tag.getCompound("modifier").get().forEach { id, level -> ItemModifier.fromId(id).ifPresent { mod -> level.asInt().ifPresent { map[mod] = it } } }
 			return map
 		}
-	}
+	} // TODO: plant rework before final release
 }

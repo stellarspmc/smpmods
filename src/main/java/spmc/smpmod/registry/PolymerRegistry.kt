@@ -3,7 +3,6 @@ package spmc.smpmod.registry
 import com.mojang.serialization.MapCodec
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils
-import spmc.smpmod.utils.BaseImplementedItem
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
 import net.minecraft.core.Holder
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour
 import spmc.smpmod.core.ItemRarity
 import spmc.smpmod.core.ScrapItem
 import spmc.smpmod.industrial.mineral.BaseMineralItem
+import spmc.smpmod.utils.BaseImplementedItem
 import java.util.function.Function
 
 @Suppress("unused")
@@ -92,9 +92,6 @@ object PolymerRegistry {
 		PolymerEntityUtils.registerType(type)
 		FabricDefaultAttributeRegistry.register(type, supplier)
 	}
-
-	// TODO: create things to migrate all items
-	fun migration(originalId: String, newId: String) {}
 
 	fun getItem(id: String): Holder<Item>? = BuiltInRegistries.ITEM.get(Identifier.fromNamespaceAndPath("smpmod", id)).orElse(null)
 

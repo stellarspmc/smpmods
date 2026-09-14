@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import spmc.smpmod.SMPMod
 import spmc.smpmod.core.NPCData
+import spmc.smpmod.core.ScrapHandler
 import spmc.smpmod.economy.FluctuationData
 import spmc.smpmod.mining.TreasureHelper
 import java.util.function.BiConsumer
@@ -77,9 +78,8 @@ class ConfiguredEvent @JvmOverloads constructor(val type: EventType, val modifie
 		TREASURE_ALWAYS_RARE(15 * 20 * 60, { _, _ -> TreasureHelper.rigTreasures = true }, { TreasureHelper.rigTreasures = false }),
 		EXTENDED_EFFECT_DURATION(120 * 20 * 60, { amplifier, _ -> VaultData.buffValue = amplifier.toFloat() }, { VaultData.buffValue = 0f }),
 		LUCK_EFFECT(120 * 20 * 60, { amplifier, level -> level.server.playerList.players.forEach(( { applyEffects(it, MobEffects.LUCK, amplifier.toInt()) })) }),
-		RPG_MOB_DROP_LUCK(180 * 20 * 60, { _, _ -> TODO() }),
-		MACHINE_SPEED_BOOST(120 * 20 * 60, { _, _ -> TODO() }),
-		PLANT_BUFFY_DISCOUNT(360 * 20 * 60, { _, _ -> TODO() });
+		RPG_MOB_DROP_LUCK(180 * 20 * 60, { boostPercent, _ -> ScrapHandler.buffMultiplier = 1 * boostPercent.toFloat() }, { ScrapHandler.buffMultiplier = 1f }),
+		MACHINE_SPEED_BOOST(120 * 20 * 60, { _, _ -> TODO("not urgent") });
 
 		// start, end
 		constructor(durationTick: Int, startCallback: BiConsumer<Double, ServerLevel>, endCallback: Consumer<ServerLevel>): this(durationTick, startCallback, { _, _ -> }, endCallback)
@@ -126,7 +126,7 @@ data class ActivePerk(val type: PerkType, val level: Int): VaultEntry {
 		BONUS_PROTECTION({ tierLevel, player ->
 			player.getAttribute(Attributes.ARMOR)?.addOrReplacePermanentModifier(AttributeModifier(Identifier.fromNamespaceAndPath("smpmod", "perk_bonus_protection"), tierLevel * 2.0, AttributeModifier.Operation.ADD_VALUE))
 		}),
-		GATHERING_INCOME({ _, _ -> TODO() });
+		GATHERING_INCOME({ _, _ -> TODO("not urgent") });
 
 		fun trigger(tierLevel: Int, player: ServerPlayer) { applyCallback.accept(tierLevel, player) }
 		override fun getSerializedName() = this.name
@@ -138,7 +138,7 @@ data class ActivePerk(val type: PerkType, val level: Int): VaultEntry {
 	}
 }
 
-private fun toRomanNumeral(level: Int): String { // TODO: above level 5
+private fun toRomanNumeral(level: Int): String { // not here to solve leetcode (totally not incompetent)
 	return when (level) {
 		1 -> "I"
 		2 -> "II"

@@ -1,94 +1,93 @@
-package spmc.smpmod.plant;
+package spmc.smpmod.plant
 
-import eu.pb4.polymer.core.api.block.PolymerBlock;
-import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.material.PushReaction;
-import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import eu.pb4.polymer.core.api.block.PolymerBlock
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext
+import net.minecraft.ChatFormatting
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.util.RandomSource
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.CropBlock
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.IntegerProperty
+import net.minecraft.world.level.material.MapColor
+import net.minecraft.world.level.material.PushReaction
+import spmc.smpmod.utils.BasePolymerBlockItem
+import java.util.function.Supplier
+import kotlin.math.pow
 
-import java.util.Map;
-import java.util.function.Supplier;
+class SeedBlock(properties: Properties, private val cropItemSupplier: Supplier<CropItem>): CropBlock(properties.mapColor { if (it.getValue(AGE) >= 6) MapColor.COLOR_YELLOW else MapColor.PLANT }.noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY)), PolymerBlock {
+	private val boneMealAffection = intArrayOf(0, 1, 1, 3, 3, 5)
 
-public class SeedBlock extends CropBlock implements PolymerBlock {
-    public static final IntegerProperty BONEMEAL_COUNT = IntegerProperty.create("bonemeal_count", 0, 5);
-    private final Supplier<CropItem> cropItemSupplier;
-    private final int[] boneMealAffection = new int[]{0, 1, 1, 3, 3, 5};
+	override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+		super.createBlockStateDefinition(builder)
+		builder.add(BONEMEAL_COUNT)
+	}
 
-    public SeedBlock(Properties properties, Supplier<CropItem> cropItemSupplier) {
-        super(properties.mapColor(state -> state.getValue(CropBlock.AGE) >= 6 ? MapColor.COLOR_YELLOW: MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY));
-        this.cropItemSupplier = cropItemSupplier;
-        this.registerDefaultState(this.stateDefinition.any().setValue(getAgeProperty(), 0).setValue(BONEMEAL_COUNT, 0));
-    }
+	override fun getPolymerBlockState(state: BlockState, context: PacketContext?) = Blocks.WHEAT.defaultBlockState().setValue(AGE, state.getValue(ageProperty)) // TODO
 
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.@NonNull Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(BONEMEAL_COUNT);
-    }
+	override fun performBonemeal(level: ServerLevel, random: RandomSource, pos: BlockPos, state: BlockState) {
+		super.performBonemeal(level, random, pos, state)
+		val updatedState = level.getBlockState(pos)
+		val currentBonemeal: Int = state.getValue(BONEMEAL_COUNT)
+		if (currentBonemeal < 5 && updatedState.`is`(this)) level.setBlock(pos, updatedState.setValue(BONEMEAL_COUNT, currentBonemeal + 1), UPDATE_CLIENTS)
+	}
 
-    @Override
-    public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) {
-        int age = state.getValue(getAgeProperty());
-        return Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, age);
-    }
+	override fun playerDestroy(level: Level, player: Player, pos: BlockPos, state: BlockState, blockEntity: BlockEntity?, tool: ItemStack) {
+		if (!level.isClientSide && isMaxAge(state)) {
+			val bonemealUsed: Int = state.getValue(BONEMEAL_COUNT) // basic impl, TODO: make this more sophisticated -> impl fusing
+			val finalQuality = Math.clamp((rollStarQuality(level.getRandom(), player.luck) - boneMealAffection[bonemealUsed]).toLong(), -2, 5)
 
-    @Override
-    public void performBonemeal(@NotNull ServerLevel level, @NotNull RandomSource random, @NotNull BlockPos pos, @NotNull BlockState state) {
-        super.performBonemeal(level, random, pos, state);
-        BlockState updatedState = level.getBlockState(pos);
-        int currentBonemeal = state.getValue(BONEMEAL_COUNT);
-        if (currentBonemeal < 5 && updatedState.is(this)) level.setBlock(pos, updatedState.setValue(BONEMEAL_COUNT, currentBonemeal + 1), Block.UPDATE_CLIENTS);
-    }
+			val cropItem = cropItemSupplier.get()
+			val harvestedCrop = cropItem.createCropInstance(finalQuality, mutableMapOf())
 
-    @Override
-    public void playerDestroy(Level level, @NonNull Player player, @NonNull BlockPos pos, @NonNull BlockState state, @Nullable BlockEntity blockEntity, @NonNull ItemStack tool) {
-        if (!level.isClientSide() && isMaxAge(state)) {
-            int bonemealUsed = state.getValue(BONEMEAL_COUNT); // basic impl, TODO: make this more sophisticated -> impl fusing
-            int finalQuality = Math.clamp(rollStarQuality(level.getRandom(), player.getLuck()) - boneMealAffection[bonemealUsed], -2, 5);
+			popResource(level, pos, harvestedCrop)
+		}
+		super.playerDestroy(level, player, pos, state, blockEntity, tool)
+	}
 
-            CropItem cropItem = cropItemSupplier.get();
-            ItemStack harvestedCrop = cropItem.createCropInstance(finalQuality, Map.of());
+	init {
+		this.registerDefaultState(this.stateDefinition.any().setValue(ageProperty, 0).setValue(BONEMEAL_COUNT, 0))
+	}
 
-            popResource(level, pos, harvestedCrop);
-        } super.playerDestroy(level, player, pos, state, blockEntity, tool);
-    }
+	companion object {
+		val BONEMEAL_COUNT: IntegerProperty = IntegerProperty.create("bonemeal_count", 0, 5)
+		private val BASE_STAR_WEIGHTS = doubleArrayOf(1000.0, 600.0, 300.0, 120.0, 35.0, 6.0)
 
-    private static final double[] BASE_STAR_WEIGHTS = { 1000, 600, 300, 120, 35, 6 };
+		private fun rollStarQuality(random: RandomSource, luckBonus: Float): Int { // copied from fishing, TODO: change it bruv
+			val adjustedWeights = DoubleArray(BASE_STAR_WEIGHTS.size)
+			var totalWeight = 0.0
 
-    private static int rollStarQuality(RandomSource random, float luckBonus) { // copied from fishing, TODO: change it bruv
-        double[] adjustedWeights = new double[BASE_STAR_WEIGHTS.length];
-        double totalWeight = 0;
+			for (star in BASE_STAR_WEIGHTS.indices) {
+				val weight: Double = BASE_STAR_WEIGHTS[star] * luckBonus.toDouble().pow(star.toDouble())
+				adjustedWeights[star] = weight
+				totalWeight += weight
+			}
 
-        for (int star = 0; star < BASE_STAR_WEIGHTS.length; star++) {
-            double weight = BASE_STAR_WEIGHTS[star] * Math.pow(luckBonus, star);
-            adjustedWeights[star] = weight;
-            totalWeight += weight;
-        }
+			val roll = random.nextDouble() * totalWeight
+			var cumulative = 0.0
 
-        double roll = random.nextDouble() * totalWeight;
-        double cumulative = 0;
+			for (star in adjustedWeights.indices) {
+				cumulative += adjustedWeights[star]
+				if (roll < cumulative) return star
+			}
 
-        for (int star = 0; star < adjustedWeights.length; star++) {
-            cumulative += adjustedWeights[star];
-            if (roll < cumulative) return star;
-        }
+			return 0
+		}
+	}
+}
 
-        return 0;
-    }
+class SeedItem(block: Block, settings: Properties, vanillaItem: Item, private val seedName: String): BasePolymerBlockItem(block, settings, vanillaItem) {
+	override fun buildName(stack: ItemStack) = Component.literal(seedName).withStyle(ChatFormatting.GREEN).withStyle { it.withItalic(false) }
+	override fun buildLore(stack: ItemStack): MutableList<Component> = mutableListOf(Component.literal("Plant on Farmland to grow " + seedName.replace(" Seeds", "")).withStyle(ChatFormatting.GRAY).withStyle { it.withItalic(false) })
+	override fun modifyItem(stack: ItemStack, stackData: ItemStack) {}
 }

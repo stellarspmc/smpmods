@@ -1,11 +1,13 @@
 package spmc.smpmod.registry
 
-import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.plant.*
-import spmc.smpmod.utils.*
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.state.BlockBehaviour
+import spmc.smpmod.core.ItemRarity
+import spmc.smpmod.plant.CropItem
+import spmc.smpmod.plant.SeedBlock
+import spmc.smpmod.plant.SeedItem
+import spmc.smpmod.utils.formatName
 
 object PlantRegistry {
     val SEEDS: HashMap<String, SeedItem> = HashMap()
@@ -26,7 +28,7 @@ object PlantRegistry {
     private fun registerPlant(cropId: String, baseCrop: Item, basePrice: Double, rarity: ItemRarity) {
         val baseSeed = getBaseSeed(baseCrop)
         val cropItem = PolymerRegistry.createItem(cropId) { CropItem(it, baseCrop, formatName(cropId), basePrice, rarity) }
-        val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { SeedBlock(it) { cropItem }}, BlockBehaviour.Properties.of()) as SeedBlock
+        val seedBlock = PolymerRegistry.createBlockOnly(cropId + "_crop", { SeedBlock(it) { cropItem } }, BlockBehaviour.Properties.of()) as SeedBlock
         val seedItem = PolymerRegistry.createItem(cropId + "_seeds") { SeedItem(seedBlock, it, baseSeed, formatName(cropId + "_seeds")) }
         SEEDS.putIfAbsent(cropId, seedItem)
     }
@@ -44,12 +46,12 @@ object PlantRegistry {
 	    registerPlant("strawberry", Items.SWEET_BERRIES, 14.0, ItemRarity.UNCOMMON)
 	    registerPlant("pumpkin", Items.PUMPKIN, 24.6, ItemRarity.UNCOMMON)
 	    registerPlant("melon", Items.MELON, 22.5, ItemRarity.UNCOMMON)
-	    registerPlant("carrot", Items.CARROT, 3.6, ItemRarity.COMMON)
+	    //registerPlant("carrot", Items.CARROT, 3.6, ItemRarity.COMMON)
 
 	    registerPlant("torch_flower", Items.SWEET_BERRIES, 45.0, ItemRarity.RARE)
 	    registerPlant("cucumber", Items.MELON, 67.5, ItemRarity.RARE)
 	    registerPlant("eggplant", Items.TORCHFLOWER, 69.0, ItemRarity.RARE) // 3522-eggplant
-	    registerPlant("piranha", Items.TORCHFLOWER, 69.0, ItemRarity.RARE) // 127088-piranha-plant OR 127087-piranha-plant-facing-up
+	    registerPlant("piranha_plant", Items.TORCHFLOWER, 69.0, ItemRarity.RARE) // 127088-piranha-plant OR 127087-piranha-plant-facing-up
 	    registerPlant("life_mushroom", Items.RED_MUSHROOM, 72.0, ItemRarity.RARE) // 128174-life-mushroom
 	    registerPlant("rose", Items.ROSE_BUSH, 80.0, ItemRarity.RARE) // 126801-rose
     }

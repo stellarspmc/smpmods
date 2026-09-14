@@ -44,7 +44,10 @@ import spmc.smpmod.core.*
 import spmc.smpmod.discord.ConfigLoader
 import spmc.smpmod.discord.EventHandler
 import spmc.smpmod.discord.sendChatMessage
-import spmc.smpmod.economy.*
+import spmc.smpmod.economy.EconomySystem
+import spmc.smpmod.economy.MarketState
+import spmc.smpmod.economy.register
+import spmc.smpmod.economy.serverTickLoop
 import spmc.smpmod.fishing.FishingManager
 import spmc.smpmod.fishing.FishingMob
 import spmc.smpmod.mining.ChunkPool
@@ -143,14 +146,17 @@ class SMPMod: DedicatedServerModInitializer {
 	    }
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }
-	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ -> sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID()) } // TODO: diff between creative and survival
+	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ ->
+			if (checkNotCreative(sender)) sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID())
+			else sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), "${sender.name.string} (In Creative Realm)", sender.getStringUUID())
+	    }
 	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)
-	    //UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) TODO: better handling
+	    //UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) todo: better handling
 	    CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, context, _ -> CommandRegistry.register(dispatcher, context) })
 
-	    // proof of concept, TODO: make it better
+	    // poc, TODO: make it better
         PlayerBlockBreakEvents.AFTER.register { world, _, pos, state, _ ->
 	        if (world.isClientSide) return@register
 	        if (world.dimension().identifier().namespace != "minecraft") return@register

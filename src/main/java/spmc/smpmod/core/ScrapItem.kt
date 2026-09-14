@@ -40,18 +40,20 @@ class ScrapItem(properties: Properties, vanillaItem: Item, val rarity: ItemRarit
 }
 
 object ScrapHandler {
+	var buffMultiplier = 1f
+
 	fun handleMonsterScrap(entity: Entity) {
 		if (entity is SulfurCube) return
 		val random = entity.random
-		if (random.nextFloat() < 0.1f) getScrap(rollScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 3))) }
+		if (random.nextFloat() < (0.1f * buffMultiplier)) getScrap(rollScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 3))) }
 		if (entity is WitherBoss || entity is EnderDragon || entity is ElderGuardian || entity is Warden) getScrap(rollGolemScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 6))) }
 	}
 
 	fun handleGolemScrap(entity: Entity) {
 		if (entity !is IronGolem && entity !is CopperGolem && entity !is SnowGolem) return
 		val random = entity.random
-		if (random.nextFloat() < 0.25f && entity is IronGolem) getScrap(rollGolemScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 4))) }
-		if (random.nextFloat() < 0.4f && entity is CopperGolem || entity is SnowGolem) getScrap(rollScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 3))) }
+		if (random.nextFloat() < (0.25f * buffMultiplier) && entity is IronGolem) getScrap(rollGolemScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 4))) }
+		if (random.nextFloat() < (0.4f * buffMultiplier) && entity is CopperGolem || entity is SnowGolem) getScrap(rollScrapRarity(random))?.let { entity.spawnAtLocation(entity.level() as? ServerLevel ?: return@let, ItemStack(it, random.nextInt(1, 3))) }
 	}
 
 	private fun rollScrapRarity(random: RandomSource): ItemRarity {

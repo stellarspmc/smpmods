@@ -436,7 +436,7 @@ fun register() {
 object CentralizedShopManager {
 	val simpleMemberTracker: MutableMap<UUID, Double> = mutableMapOf()// TODO: yuu ($1 -> 1 pt, 100pt -> $1)
 
-	fun organizeShopsAsInventory(player: ServerPlayer) {// TODO: websho
+	fun organizeShopsAsInventory(player: ServerPlayer) {
 		val level = player.level()
 		val shopList = getAllShopsByLevel(level)
 		val gui = SimpleGui(MenuType.GENERIC_9x6, player, false)
