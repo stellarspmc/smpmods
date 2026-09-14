@@ -1,14 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "WWW",
-    "WFW",
-    "WSW"
+    "  W",
+    " FS",
+    "R S"
   ],
   "key": {
     "W": "minecraft:emerald_block",
     "F": "smpmod:iron_fishing_rod",
-    "S": "smpmod:slcoyd"
+    "R": "smpmod:epic_catalyst",
+    "S": "#smpmod:fish/epic"
   },
   "result": {
     "id": "smpmod:emerald_fishing_rod",

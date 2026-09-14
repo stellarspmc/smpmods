@@ -4,8 +4,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import spmc.smpmod.SMPMod.Companion.minecraftServer
-import spmc.smpmod.utils.getY
-import java.util.Locale
+import spmc.smpmod.utils.*
 
 object ServerEvents {
 	fun spawnEvent() { // only in overworld!
@@ -14,7 +13,7 @@ object ServerEvents {
 		val event = EventType.entries[server.overworld().random.nextInt(EventType.entries.size)]
 
 		// set a 30x30 border for the event
-		server.sendSystemMessage(Component.literal("A $event is happening at (${pos.x}, ${pos.z})!"))
+		server.sendSystemMessage(Component.literal("A ${formatName(event.name)} is happening at (${pos.x}, ${pos.z})!"))
 	}
 
 	private fun getLocation(server: MinecraftServer): BlockPos {
@@ -35,7 +34,5 @@ object ServerEvents {
 		MOB_FIGHT,
 		MINI_BOSS_FIGHT, // TODO
 		METEORITE; // TODO
-
-		override fun toString() = name[0].toString() + name.substring(1).lowercase(Locale.getDefault()) // TODO: should do smt about this?
 	}
 }

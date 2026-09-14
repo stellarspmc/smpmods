@@ -81,7 +81,7 @@ class FishItem(settings: Properties, vanillaItem: Item, @JvmField val fishName: 
 				val quality: Int = getQuality(tag)
 				val modifiers = getModifiers(tag)
 				var price = ((stack.item) as FishItem).basePrice * stack.count
-				for ((key, value) in modifiers) price *= key.priceMultiplier * min(1, value)
+				for ((key, value) in modifiers) price *= key.priceMultiplier * (1 + (min(0, value) / 5))
 				return rnd2DP(price * (quality * .15 + 1))
 			}
 			return ((stack.item) as FishItem).basePrice * stack.count

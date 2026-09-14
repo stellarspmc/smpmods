@@ -124,18 +124,18 @@ class MarketState: SavedData() {
 			if (displayList.isNotEmpty()) return false // this line is for
 			repeat(3) { createScreen(level, pos, it) } // maybe more than 1 screen? 1 screen holds 5 data
 			return true
-		} // TODO: actually, why not merge the functions and put the stuff in repeat?
+		} // actually, why not merge the functions and put the stuff in repeat?
 
 		private fun createScreen(level: ServerLevel, pos: BlockPos, index: Int): Boolean {
-			val worldIndex = index - 2 // TODO: allow for dynamic ODD indices
+			val worldIndex = index - 2 // allow for dynamic ODD indices
 			val canvas = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.TRIGGERED) ?: return false
 			canvas.blockState = Blocks.STAINED_GLASS_PANE.black.defaultBlockState()
-			canvas.blockState.setValue(CrossCollisionBlock.NORTH, true) // TODO: set direction by player orientation? -> e/w then n/s (inverse)
+			canvas.blockState.setValue(CrossCollisionBlock.NORTH, true) //  set direction by player orientation? -> e/w then n/s (inverse)
 			canvas.setTransformation(Transformation(
-				Vector3f(-.1f ,0f, -2f), // translation TODO: x and z
+				Vector3f(-.1f ,0f, -2f), // translation: x and z
 				Quaternionf(0f, 0f, 0f, 1f),
 				Vector3f(1f, 3f, 4f),
-				Quaternionf(0f, 0f, 0f, 1f))) // TODO: check -> quaternion needed to be changed?
+				Quaternionf(0f, 0f, 0f, 1f))) // check -> quaternion needed to be changed?
 			canvas.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
 			canvas.brightnessOverride = Brightness(15, 15)
 			level.addFreshEntity(canvas)
@@ -148,26 +148,26 @@ class MarketState: SavedData() {
 					return false
 				}
 
-				item.itemStack = Items.HEART_OF_THE_SEA.defaultInstance // TODO: actually get top 5 items instead of
+				item.itemStack = Items.HEART_OF_THE_SEA.defaultInstance // actually get top 5 items instead of
 				item.setTransformation(Transformation(
-					Vector3f(.3f, 2.5f - (5 - repeatedValue) * .5f, -1.4f), // translation TODO: x and z
-					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // TODO: translate radians (provided is 270deg)
+					Vector3f(.3f, 2.5f - (5 - repeatedValue) * .5f, -1.4f), // translation x and z
+					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // translate radians (provided is 270deg)
 					Vector3f(.5f, .5f, .5f),
 					Quaternionf(0f, 0f, 0f, 1f)))
 				item.itemTransform = ItemDisplayContext.GUI
 
-				text.text = Component.empty() // TODO: change according to item / stats rn
+				text.text = Component.empty() // change according to item / stats rn
 				text.backgroundColor = 0
 				text.setTransformation(Transformation(
-					Vector3f(.3f, 2.4f - (5 - repeatedValue) * .4f, 2.5f), // translation TODO: x,y and z
-					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // TODO: translate radians (provided is 270deg)
+					Vector3f(.3f, 2.4f - (5 - repeatedValue) * .4f, 2.5f), // translation: x,y and z
+					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // translate radians (provided is 270deg)
 					Vector3f(0.65f, 0.65f, 0.65f),
 					Quaternionf(0f, 0f, 0f, 1f)))
 
 				listOfNotNull(canvas, item, text).forEach { it.brightnessOverride = Brightness(15, 15) }
-				listOfNotNull(item, text).forEach { it.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble()) } // TODO: use worldIndex
+				listOfNotNull(item, text).forEach { it.setPos(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble()) } // use worldIndex
 				listOfNotNull(canvas, item, text).forEach(level::addFreshEntity)
-				listOfNotNull(item, text).forEach { displayList.add(it.uuid) } // TODO: get text (to update value)
+				listOfNotNull(item, text).forEach { displayList.add(it.uuid) } // get text (to update value)
 			}
 
 			displayList.add(canvas.uuid)

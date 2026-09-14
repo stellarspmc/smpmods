@@ -12,7 +12,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.component.Fireworks
-import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.item.enchantment.Enchantments
 import spmc.smpmod.core.BiomeCategory
 import spmc.smpmod.core.ItemRarity
@@ -102,6 +101,7 @@ object TreasureRegistry {
 		    enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 		}}
 
+	    entry(Items.WIND_CHARGE) { count(2).rarity(ItemRarity.EPIC) }
 		entry(Items.DIAMOND) { count(4, 7).rarity(ItemRarity.EPIC) }
 	    entry(Items.DIAMOND_BLOCK) { rarity(ItemRarity.EPIC) }
 		entry(Items.IRON_BLOCK) { count(3, 5).rarity(ItemRarity.EPIC) }
@@ -113,8 +113,8 @@ object TreasureRegistry {
 		entry(Items.OAK_LOG) { count(2, 12).rarity(ItemRarity.EPIC) }
 		entry(Items.LAPIS_BLOCK) { count(3).rarity(ItemRarity.EPIC) }
 		entry(Items.REDSTONE_BLOCK) { count(5, 8).rarity(ItemRarity.EPIC) }
-		//entry(Items.COAL) { count(1, 2).rarity(ItemRarity.EPIC).name(Component.literal("Refined Carbon").withStyle(ChatFormatting.DARK_GRAY)) }
-	    entry(Items.IRON_CHESTPLATE) { rarity(ItemRarity.EPIC).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    entry((PolymerRegistry.getItem("compressed_carbon")?: return).value()) { count(2).rarity(ItemRarity.EPIC) }
+		entry(Items.IRON_CHESTPLATE) { rarity(ItemRarity.EPIC).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.PROTECTION), 3)
 		    enchant(enchants.getOrThrow(Enchantments.MENDING), 1)
 		}}
@@ -123,6 +123,7 @@ object TreasureRegistry {
 					    .add(Attributes.BLOCK_INTERACTION_RANGE, AttributeModifier(ResourceLocation.fromNamespaceAndPath("smpmod", "builder_reach"), 1.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
 					    .build())*/ //TODO: fix
 
+	    entry(Items.WIND_CHARGE) { count(6, 8).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.DIAMOND_BLOCK) { count(1, 3).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.DIAMOND) { count(6, 11).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.IRON_BLOCK) { count(6, 11).rarity(ItemRarity.LEGENDARY) }
@@ -131,7 +132,7 @@ object TreasureRegistry {
 		entry(Items.LAPIS_BLOCK) { count(6, 10).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.REDSTONE_BLOCK) { count(12, 16).rarity(ItemRarity.LEGENDARY) }
 	    entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.LEGENDARY) }
-		// entry(compressed carbon).count(2, 5) { rarity(ItemRarity.LEGENDARY) } TODO: hooks
+	    entry((PolymerRegistry.getItem("compressed_carbon")?: return).value()) { count(2, 5).rarity(ItemRarity.LEGENDARY) }
 		entry(Items.DIAMOND_PICKAXE) { rarity(ItemRarity.LEGENDARY).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.EFFICIENCY), 6)
 			enchant(enchants.getOrThrow(Enchantments.FORTUNE), 3)
@@ -160,6 +161,7 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.PUNCH), 4) 
 		}}
 
+	    entry(Items.WIND_CHARGE) { count(12, 14).rarity(ItemRarity.MYTHIC) }
 		entry(Items.DIAMOND_BLOCK) { count(4, 6).rarity(ItemRarity.MYTHIC) }
 		entry(Items.IRON_BLOCK) { count(13, 24).rarity(ItemRarity.MYTHIC) }
 		entry(Items.GOLD_BLOCK) { count(7, 12).rarity(ItemRarity.MYTHIC) }
@@ -199,6 +201,7 @@ object TreasureRegistry {
 		}}
 	    entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.MYTHIC) }
 
+	    entry(Items.WIND_CHARGE) { count(16, 24).rarity(ItemRarity.CHROMATIC) }
 	    entry(Items.DIAMOND_BLOCK) { count(7, 8).rarity(ItemRarity.CHROMATIC) }
 		entry(Items.IRON_BLOCK) { count(32, 45).rarity(ItemRarity.CHROMATIC) }
 		entry(Items.GOLD_BLOCK) { count(16, 22).rarity(ItemRarity.CHROMATIC) }
@@ -245,7 +248,7 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.VANISHING_CURSE), 1)
 		}}
 
-		entry(Items.WIND_CHARGE) { count(1, 3).rarity(ItemRarity.ASTRAL) } // TODO: add to epic+
+		entry(Items.WIND_CHARGE) { count(36, 48).rarity(ItemRarity.ASTRAL) }
 	    entry(Items.ENCHANTED_BOOK) { rarity(ItemRarity.ASTRAL).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 		    enchant(enchants.getOrThrow(Enchantments.WIND_BURST), 3)
 	    }}

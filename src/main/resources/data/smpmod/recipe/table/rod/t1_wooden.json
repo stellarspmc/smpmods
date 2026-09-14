@@ -1,16 +1,17 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "WWW",
-    "WFW",
-    "WWW"
+    "  W",
+    " FW",
+    "W S"
   ],
   "key": {
     "W": "#minecraft:logs",
-    "F": "minecraft:fishing_rod"
+    "F": "minecraft:fishing_rod",
+    "S": "minecraft:string"
   },
   "result": {
-    "id": "smpmod:normal_fishing_rod",
+    "id": "smpmod:wooden_fishing_rod",
     "count": 1
   }
 }

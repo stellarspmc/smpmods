@@ -29,7 +29,7 @@ import spmc.smpmod.core.TierSystem
 import kotlin.math.min
 
 class RodItem(properties: Properties, val name: String, val color: TextColor, vararg val mods: ItemModifier, repaired: Item, val stats: RodStats,
-              @JvmField val tier: TierSystem): FishingRodItem(properties.stacksTo(1).durability(stats.durability).repairable(repaired)), PolymerItem { // TODO: change repairable
+              @JvmField val tier: TierSystem): FishingRodItem(properties.stacksTo(1).durability(stats.durability).repairable(repaired)), PolymerItem {
 	override fun getPolymerItem(itemStack: ItemStack, context: PacketContext) = Items.FISHING_ROD
 	override fun getPolymerItemModel(stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider?) = BuiltInRegistries.ITEM.getKey(Items.FISHING_ROD)
 	override fun getName(itemStack: ItemStack) = Component.literal("$name Rod").withColor(color).withStyle { it.withItalic(false) }
@@ -37,7 +37,7 @@ class RodItem(properties: Properties, val name: String, val color: TextColor, va
 	override fun modifyBasePolymerItemStack(out: ItemStack, stack: ItemStack, context: PacketContext, lookup: HolderLookup.Provider) {
 		out.set(DataComponents.CUSTOM_NAME, getName(out))
 		out.set(DataComponents.LORE, ItemLore(buildLore()))
-		val glint = stats.luck >= 1.3
+		val glint = tier.ordinal > TierSystem.T5.ordinal
 		stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint)
 		out.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint)
 	}

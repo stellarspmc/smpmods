@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
+import net.minecraft.world.level.block.entity.BarrelBlockEntity
 import java.util.UUID
 import kotlin.math.min
 
@@ -20,10 +21,10 @@ object CentralizedShopManager {
 	fun organizeShopsAsInventory(player: ServerPlayer) {// TODO: websho
 		val level = player.level()
 		val shopList = ShopManager.getAllShopsByLevel(level)
-		//val gui = SimpleGui(MenuType.GENERIC_9x6, player, false)
+		val gui = SimpleGui(MenuType.GENERIC_9x6, player, false)
 
-		//refreshGui(gui, player, 1, shopList)
-		//gui.open()
+		refreshGui(gui, player, 1, shopList)
+		gui.open()
 	}
 
 	private fun refreshGui(gui: SimpleGui, player: ServerPlayer, page: Int, shopList: List<ShopData>) {
@@ -33,11 +34,8 @@ object CentralizedShopManager {
 		val endIndex = min(startIndex + 45, shopList.size)
 		for (i in 0 .. 44) {
 			val index = startIndex + i
-
-			if (index < endIndex) {
-
-				gui.setSlot(i, GuiElementBuilder(createShopItem(shopList[i])).setCallback { it -> callback(it, shopList[i], player) })
-			} else gui.setSlot(i, GuiElementBuilder(Items.AIR))
+			if (index < endIndex) gui.setSlot(i, GuiElementBuilder(createShopItem(shopList[i])).setCallback { it -> callback(it, shopList[i], player) })
+			else gui.setSlot(i, GuiElementBuilder(Items.AIR))
 		}
 
 		for (slot in 45 .. 53) gui.setSlot(slot, GuiElementBuilder(Items.STAINED_GLASS_PANE.lightGray()).setName(Component.literal("")))
@@ -62,8 +60,6 @@ object CentralizedShopManager {
 		if (clickType.isLeft) {
 			if (!data.isOwner(player)) data.processPurchase(player)
 			else data.openOwnerMenu(player)
-		} else if (clickType.isRight && data.isOwner(player)) {
-			data.barrelPos // TODO: open the barrel lol
-		}
+		} else if (clickType.isRight && data.isOwner(player)) (player.level().getBlockEntity(data.barrelPos) as? BarrelBlockEntity ?: return).startOpen(player)
 	}
 }

@@ -1,14 +1,14 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "WWW",
-    "WFW",
-    "WSW"
+    "  W",
+    " FS",
+    "W S"
   ],
   "key": {
     "W": "minecraft:iron_block",
-    "F": "smpmod:copper_fishing_rod",
-    "S": "smpmod:rowlen"
+    "F": "smpmod:golden_fishing_rod",
+    "S": "#smpmod:fish/rare"
   },
   "result": {
     "id": "smpmod:iron_fishing_rod",

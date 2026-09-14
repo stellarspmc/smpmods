@@ -1,22 +1,28 @@
 package spmc.smpmod.fishing
 
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
-import spmc.smpmod.utils.*
 import net.minecraft.ChatFormatting
-import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
+import net.minecraft.server.level.ServerBossEvent
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
+import net.minecraft.util.Mth
 import net.minecraft.util.RandomSource
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.EntityTypes
+import net.minecraft.world.BossEvent.BossBarColor
+import net.minecraft.world.BossEvent.BossBarOverlay
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.entity.ai.targeting.TargetingConditions
+import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.entity.projectile.FishingHook
 import net.minecraft.world.item.Item
+import net.minecraft.world.phys.AABB
 import spmc.smpmod.SMPMod
+import spmc.smpmod.SMPMod.Companion.minecraftServer
 import spmc.smpmod.core.BiomeCategory.Companion.getPlayerCategories
 import spmc.smpmod.core.ItemModifier
 import spmc.smpmod.core.ItemRarity
@@ -24,9 +30,8 @@ import spmc.smpmod.fishing.FishTracker.Companion.get
 import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.QuestManager.Companion.getQuests
 import spmc.smpmod.registry.FishingRegistry.getAvailableFish
-import java.util.ArrayList
-import java.util.Locale
-import kotlin.collections.addAll
+import spmc.smpmod.utils.*
+import java.util.*
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -130,50 +135,53 @@ class FishingSession(val player: ServerPlayer, private val hook: FishingHook, pr
 
 object FishingLoot {
 	fun rewardFish(player: ServerPlayer, item: RodItem, streak: Int) {
-		val random = SMPMod.minecraftServer?.overworld()?.getRandom() ?: return
-
-		if (streak >= 15) {
-			FishingMob.spawnMob("test", player.blockPosition())
-			grant(player, "streak/s_15")
-		}
+		if (streak >= 15) grant(player, "streak/s_15")
 		if (streak >= 50) grant(player, "streak/s_50")
 		if (streak >= 250) grant(player, "streak/s_250")
 
+		if (streak >= 2) {
+			if (player.level().random.nextFloat() < 1.075.pow(streak - 2) - 1) FishingMob.spawnMob(player, item, streak)
+			else createFishItem(player, item, streak)
+		} else createFishItem(player, item, streak)
+	}
+
+	internal fun rollFish(player: ServerPlayer, item: RodItem, streak: Int): FishData {
+		val random = player.level().getRandom()
 		val caughtFish = getRandomFishForTier(player, item)
 		val modMap = mutableMapOf<ItemModifier, Int>()
-		var traitChance = max(.5, (((item.tier.ordinal + 1).toDouble() / 8) * streak) * .2 * item.stats.luck) // TODO
+		var traitChance = max(.45, (((item.tier.ordinal + 1).toDouble() / 8) * streak) / 5)
+		val starQuality = rollStarQuality(random, 1 / item.stats.luck)
 
 		val mods = ItemModifier.entries.filter(ItemModifier::isNotLocked) as MutableList<ItemModifier>
 		mods.addAll(item.mods)
 		while (mods.isNotEmpty() && random.nextDouble() < traitChance) {
-			val index = random.nextInt(mods.size)
-			modMap[mods.removeAt(index)] = random.nextInt(5) + 1
-			traitChance *= max(.4, .2 * item.stats.luck / 1.8)
+			modMap[mods.removeAt(random.nextInt(mods.size))] = random.nextInt(5) + 1
+			traitChance *= max(.55, .2 * item.stats.luck / 1.8)
 		}
 
-		val fishStack = caughtFish.createFishInstance(rollStarQuality(random, 1 / item.stats.luck), modMap)
-		if (!player.inventory.add(fishStack)) player.drop(fishStack, false)
 		player.level().playSound(null, player.x, player.y, player.z, SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1f, 1.2f)
 		player.sendSystemMessage(Component.literal("You caught a ").withStyle(ChatFormatting.GREEN).append(Component.literal(caughtFish.fishName).withColor(caughtFish.rarity.color)).append(Component.literal(".").withStyle(ChatFormatting.GREEN)))
 		get()?.addFish(player.getUUID(), BuiltInRegistries.ITEM.getKey(caughtFish).path)
 		if (caughtFish.rarity.shouldAnnounce()) announceLoot(caughtFish.rarity.toString().uppercase(Locale.getDefault()), caughtFish.fishName, caughtFish.rarity.color, player)
 		getQuests(player).activeQuests.forEach { if (it.getQuest()?.type == Quest.QuestType.FISHING) it.increment(1) }
+		return FishData(caughtFish, starQuality, modMap)
 	}
 
-	private val rates: List<DoubleArray> = listOf( // 8 tiers, so an 8x8 matrix
-		doubleArrayOf(78.0, 18.0, 3.5, .45, .045, .004, .0008, .0002), // normal, t1
-		doubleArrayOf(68.0, 23.0, 7.5, 1.2, .25, .04, .008, .002), // copper, t2
-		doubleArrayOf(56.0, 27.0, 12.0, 3.8, .9, .2, .08, .02), // iron, t3
-		doubleArrayOf(34.0, 31.0, 21.0, 10.0, 3.2, .65, .12, .03), // emerald, t4
-		doubleArrayOf(25.0, 32.0, 25.0, 12.5, 4.2, .95, .3, .05), // t5
-		doubleArrayOf(18.0, 28.0, 31.0, 15.0, 5.0, 2.0, .8, .2), // t6
-		/*doubleArrayOf(20.0, 28.0, 30.0, 14.0, 5.3, 2.0, .5, .2), // toxic / uranium t6
-		doubleArrayOf(15.0, 25.0, 32.0, 16.0, 8.0, 2.8, 1.0, .2), // death / redstone? t6
-		doubleArrayOf(22.0, 30.0, 28.0, 12.0, 5.0, 2.1, .7, .2), // air / breeze t6
-		doubleArrayOf(16.0, 26.0, 32.0, 15.5, 6.0, 2.5, 1.2, .2), // sea / pris t6
-		doubleArrayOf(14.0, 24.0, 30.0, 18.0, 8.0, 3.5, 2.0, .5), // flickering / sculk t6*/
-		doubleArrayOf(10.0, 20.0, 32.0, 20.0, 11.0, 4.5, 2.0, .5), // elemental, t7
-		doubleArrayOf(6.0, 14.0, 30.0, 24.0, 15.0, 7.0, 3.2, .8), // astral, t8 TODO
+	private fun createFishItem(player: ServerPlayer, item: RodItem, streak: Int) {
+		val fishData = rollFish(player, item, streak)
+		val fishStack = fishData.item.createFishInstance(fishData.star, fishData.mods)
+		if (!player.inventory.add(fishStack)) player.drop(fishStack, false)
+	}
+
+	private val rates: List<DoubleArray> = listOf( // 8 tiers, so a 8x8 matrix
+		doubleArrayOf(93.9935, 5.7, .29, .01, .005, .001, .0004, .0001),
+		doubleArrayOf(81.9974, 15.0, 2.8, .19, .01, .002, .0004, .0002),
+		doubleArrayOf(67.9971, 24.0, 7.0, .95, .05, .002, .0006, .0003),
+		doubleArrayOf(49.9992, 32.0, 14.0, 3.5, .48, .02, .0005, .0003),
+		doubleArrayOf(31.9995, 35.0, 22.0, 8.5, 2.3, .18, .02, .0005),
+		doubleArrayOf(20.0, 32.0, 28.0, 13.0, 5.8, 1.0, .18, .02),
+		doubleArrayOf(10.0, 22.0, 30.0, 21.0,  11.0, 4.2, 1.5, .3),
+		doubleArrayOf(5.0, 13.0, 25.0, 28.0, 16.0, 8.0, 4.0, 1.0)
 	)
 
 	private fun getRandomFishForTier(player: ServerPlayer, item: RodItem): FishItem {
@@ -181,7 +189,7 @@ object FishingLoot {
 		val pool: MutableList<Item> = mutableListOf()
 		playerCategories.forEach { pool.addAll(getAvailableFish(it)) }
 		check(pool.isNotEmpty()) { "Fish pool is empty!" }
-		val roll = (SMPMod.minecraftServer?: return pool[0] as FishItem).overworld().getRandom().nextDouble() * 100
+		val roll = (minecraftServer ?: return pool[0] as FishItem).overworld().getRandom().nextDouble() * 100
 		var current = .0
 		var selectedRarity = ItemRarity.COMMON
 
@@ -205,14 +213,13 @@ object FishingLoot {
 			tierTotalWeight += weight
 		}
 
-		val fishRoll = (SMPMod.minecraftServer?: return matchingFish[0]).overworld().getRandom().nextDouble() * tierTotalWeight
+		val fishRoll = (minecraftServer ?: return matchingFish[0]).overworld().getRandom().nextDouble() * tierTotalWeight
 		var fishWeight = .0
 
 		for (i in matchingFish.indices) {
 			fishWeight += fishWeights[i]
 			if (fishRoll <= fishWeight) return matchingFish[i]
 		}
-
 
 		if (finalRarity == ItemRarity.RARE) grant(player, "rarity/rare")
 		if (finalRarity == ItemRarity.EPIC) grant(player, "rarity/epic")
@@ -245,19 +252,77 @@ object FishingLoot {
 	}
 
 	private fun announceLoot(rarityName: String, fishName: String, color: TextColor, player: ServerPlayer) {
-		val chatAnnouncement: Component = Component.literal("★ ").withColor(color).withStyle(ChatFormatting.BOLD).append(Component.literal(player.scoreboardName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)).append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY)).append(Component.literal(rarityName).withColor(color).withStyle(ChatFormatting.BOLD)).append(Component.literal(fishName)).withColor(color).append(Component.literal("! ★").withColor(color).withStyle(ChatFormatting.BOLD))
-
-		SMPMod.minecraftServer?.playerList?.broadcastSystemMessage(chatAnnouncement, false)
+		minecraftServer?.playerList?.broadcastSystemMessage(Component.literal("★ ").withColor(color).withStyle(ChatFormatting.BOLD).append(Component.literal(player.scoreboardName).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD)).append(Component.literal(" has reeled up a ").withStyle(ChatFormatting.GRAY)).append(Component.literal(rarityName).withColor(color).withStyle(ChatFormatting.BOLD)).append(Component.literal(fishName)).withColor(color).append(Component.literal("! ★").withColor(color).withStyle(ChatFormatting.BOLD)), false)
 		SMPMod.messageChannel?.sendMessage("**" + MarkdownSanitizer.escape(player.scoreboardName) + "** just reeled up a **" + rarityName + "** " + fishName + "!")?.queue()
 	}
+
+	internal data class FishData(val item: FishItem, val star: Int, val mods: MutableMap<ItemModifier, Int>)
 }
 
 object FishingMob {
-	val mobsToSpawn: List<EntityType<out Entity>> = listOf(EntityTypes.GUARDIAN, EntityTypes.ELDER_GUARDIAN, EntityTypes.PHANTOM) // TODO: add more mobs
-	val healthRange: IntRange = 15..1250
+	private val mobsToSpawn: List<EntityType<out Mob>> = listOf(EntityTypes.GUARDIAN, EntityTypes.ELDER_GUARDIAN, EntityTypes.PHANTOM, EntityTypes.DROWNED) // TODO: add more mobs (cave spider? slime / magma cube / breeze)
+	private val bossBar: MutableMap<ServerBossEvent, Monster> = mutableMapOf()
 
-	fun spawnMob(id: String, pos: BlockPos) {
-		// TODO
+	fun spawnMob(player: ServerPlayer, item: RodItem, streak: Int) {
+		val fishData = FishingLoot.rollFish(player, item, streak)
+		val mob = mobsToSpawn[player.random.nextInt(mobsToSpawn.size)].create(player.level(), EntitySpawnReason.TRIGGERED) as? Monster ?: return
+		val maxHp = healthRange(fishData.item.rarity, player.random).toDouble()
+		mob.getAttribute(Attributes.MAX_HEALTH)?.baseValue = maxHp
+		mob.health = maxHp.toFloat()
+
+		val dmg = damage(fishData.item.rarity, player.random).toDouble()
+		mob.getAttribute(Attributes.ATTACK_DAMAGE)?.baseValue = dmg
+
+		val rarityColor = fishData.item.rarity.color
+		mob.customName = Component.literal(fishData.item.fishName).withColor(rarityColor)
+		mob.isCustomNameVisible = true
+		mob.target = player
+
+		if (fishData.item.rarity.shouldAnnounce()) {
+			val event = ServerBossEvent(Mth.createInsecureUUID(player.level().random), Component.literal(fishData.item.fishName), BossBarColor.BLUE, BossBarOverlay.PROGRESS)
+			event.addPlayer(player)
+			player.level().getNearbyPlayers(TargetingConditions.DEFAULT, player, AABB(-15.0, -15.0, -15.0, 15.0, 15.0, 15.0)).forEach { event.addPlayer(it as ServerPlayer) }
+
+			bossBar[event] = mob
+		}
+
+		mob.setItemInHand(InteractionHand.MAIN_HAND, fishData.item.createFishInstance(fishData.star, fishData.mods))
+		mob.setDropChance(EquipmentSlot.MAINHAND, 1f)
+		mob.setPos(player.position().add(player.lookAngle.x * 1.5, 0.5, player.lookAngle.z * 1.5))
+
+		player.level().addFreshEntity(mob)
 	}
 
+	private fun healthRange(rarity: ItemRarity, random: RandomSource): Int {
+		return when (rarity) {
+			ItemRarity.COMMON -> random.nextIntBetweenInclusive(15, 35)
+			ItemRarity.UNCOMMON -> random.nextIntBetweenInclusive(35, 50)
+			ItemRarity.RARE -> random.nextIntBetweenInclusive(50, 65)
+			ItemRarity.EPIC -> random.nextIntBetweenInclusive(70, 85)
+			ItemRarity.LEGENDARY -> random.nextIntBetweenInclusive(100, 135)
+			ItemRarity.MYTHIC -> random.nextIntBetweenInclusive(145, 160)
+			ItemRarity.CHROMATIC -> random.nextIntBetweenInclusive(165, 180)
+			ItemRarity.ASTRAL -> random.nextIntBetweenInclusive(195, 230)
+		}
+	}
+
+	private fun damage(rarity: ItemRarity, random: RandomSource): Int {
+		return when (rarity) {
+			ItemRarity.COMMON -> random.nextIntBetweenInclusive(1, 3)
+			ItemRarity.UNCOMMON -> random.nextIntBetweenInclusive(2, 7)
+			ItemRarity.RARE -> random.nextIntBetweenInclusive(5, 10)
+			ItemRarity.EPIC -> random.nextIntBetweenInclusive(12, 16)
+			ItemRarity.LEGENDARY -> random.nextIntBetweenInclusive(17, 21)
+			ItemRarity.MYTHIC -> random.nextIntBetweenInclusive(23, 25)
+			ItemRarity.CHROMATIC -> random.nextIntBetweenInclusive(27, 30)
+			ItemRarity.ASTRAL -> 35
+		}
+	}
+
+	fun serverTickLoop() {
+		bossBar.forEach { (event, mob) -> if (!mob.isAlive || mob.isRemoved) {
+			event.removeAllPlayers()
+			event.isVisible = false
+		} else event.progress = (mob.health / mob.maxHealth).coerceIn(0f, 1f) }
+	}
 }

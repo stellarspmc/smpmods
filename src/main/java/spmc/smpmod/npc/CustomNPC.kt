@@ -25,7 +25,7 @@ class CustomNPC private constructor(builder: Builder) {
 
 	fun lookAtPlayer() = lookAtPlayer
 
-	class Builder(var id: String, lookAtPlayer: Boolean) {
+	class Builder(var id: String, lookAtPlayer: Boolean) { // TODO: could make better
 		var displayName: Component
 		var profile: ResolvableProfile? = null
 		val lookAtPlayer: Boolean

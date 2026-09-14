@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  C",
+    " FC",
+    "C C"
+  ],
+  "key": {
+    "C": "minecraft:cactus",
+    "F": "smpmod:wooden_fishing_rod"
+  },
+  "result": {
+    "id": "smpmod:cactus_fishing_rod",
+    "count": 1
+  }
+}

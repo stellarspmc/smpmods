@@ -1,14 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "WWW",
-    "WFW",
-    "WSW"
+    "  W",
+    " FS",
+    "R S"
   ],
   "key": {
-    "W": "minecraft:diamond",
+    "W": "minecraft:diamond_block",
     "F": "smpmod:emerald_fishing_rod",
-    "S": "smpmod:epic_skillz"
+    "R": "smpmod:legendary_matrix",
+    "S": "#smpmod:fish/legendary"
   },
   "result": {
     "id": "smpmod:diamond_fishing_rod",

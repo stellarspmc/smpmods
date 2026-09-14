@@ -51,6 +51,7 @@ import spmc.smpmod.economy.EconomySystem
 import spmc.smpmod.economy.fluctuate.MarketState
 import spmc.smpmod.economy.shop.ShopManager
 import spmc.smpmod.fishing.FishingManager
+import spmc.smpmod.fishing.FishingMob
 import spmc.smpmod.mining.ChunkPool
 import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.mobs.ServerMobEvents
@@ -122,6 +123,7 @@ class SMPMod: DedicatedServerModInitializer {
 		    if (it.tickCount % 360 == 0) ShopManager.serverTickLoop(it)
 		    if (it.tickCount % 15 == 0) NPCManager.serverTickLoop(it)
 		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
+		    if (it.tickCount % 3 == 0 ) FishingMob.serverTickLoop()
 		    if (it.tickCount % 1200 != 0) return@register
 		    MarketState.serverTickLoop(it)
 
