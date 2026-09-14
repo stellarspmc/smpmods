@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import spmc.smpmod.economy.ShopSystemKt;
 
 import java.util.List;
 
@@ -52,19 +53,19 @@ public class MixinServerGamePacketListenerImpl {
             price = Double.parseDouble(priceText.replace("$", "").trim());
             if (price < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            sendError(player, "Invalid price format on line 2! Use e.g. $10.50", 0);
+            sendError(new ServerPlayer[]{player}, "Invalid price format on line 2! Use e.g. $10.50", 0);
             return;
         }
 
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
-            sendError(player, "Hold the item you want to sell in your main hand!", 0);
+            sendError(new ServerPlayer[]{player}, "Hold the item you want to sell in your main hand!", 0);
             return;
         }
 
-        ShopManager.Companion.createShop(player, barrelPos, price, heldItem, level);
+        ShopSystemKt.createShop(player, barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
-        sendSuccess(player, "Shop created successfully!", 1);
+        sendSuccess(new ServerPlayer[]{player}, "Shop created successfully!", 1);
     }
 
     @Unique
@@ -80,18 +81,18 @@ public class MixinServerGamePacketListenerImpl {
             price = Double.parseDouble(priceText.replace("$", "").trim());
             if (price < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            sendError(player, "Invalid price format on line 2! Use e.g. $10.50", 0);
+            sendError(new ServerPlayer[]{player}, "Invalid price format on line 2! Use e.g. $10.50", 0);
             return;
         }
 
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) {
-            sendError(player, "Hold the item you want to sell in your main hand!", 0);
+            sendError(new ServerPlayer[]{player}, "Hold the item you want to sell in your main hand!", 0);
             return;
         }
 
-        ShopManager.createCreativeShop(barrelPos, price, heldItem, level);
+        ShopSystemKt.createCreativeShop(barrelPos, price, heldItem, level);
         level.destroyBlock(signPos, true);
-        sendSuccess(player, "Shop created successfully!", 1);
+        sendSuccess(new ServerPlayer[]{player}, "Shop created successfully!", 1);
     } // i wasn't gonna include this but whatever
 }

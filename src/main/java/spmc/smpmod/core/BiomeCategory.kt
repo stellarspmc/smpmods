@@ -8,7 +8,6 @@ import net.minecraft.tags.TagKey
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.biome.Biome
-import spmc.smpmod.utils.createBiomeTag
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

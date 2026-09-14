@@ -1,6 +1,6 @@
 package spmc.smpmod.mobs;
 
-import spmc.smpmod.npc.NPCData;
+import spmc.smpmod.core.NPCCoreKt;
 import spmc.smpmod.utils.ServerMob;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -28,7 +28,7 @@ public class EyeZombie implements ServerMob {
     @Override
     public void setHead(LivingEntity entity) {
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
-        playerHead.set(DataComponents.PROFILE, NPCData.createCustomProfile("eyelol", UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378"), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0="));
+        playerHead.set(DataComponents.PROFILE, NPCCoreKt.createCustomProfile("eyelol", UUID.fromString("ceac9936-06bd-4d08-91ef-91f230099378"), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWE5NTMzZGM1ZGI4MzUwMmY4MTYyOWQ1MDVmOTJhOGE1Y2ZjNGIyNDExYjQzNDJmOWQxNjU3ZDc3NTViYjZhNiJ9fX0="));
         entity.setItemSlot(EquipmentSlot.HEAD, playerHead);
         ((Mob) entity).setDropChance(EquipmentSlot.HEAD, .15f);
     }
