@@ -2,8 +2,6 @@ package spmc.smpmod.vault
 
 import com.mojang.serialization.Codec
 import net.minecraft.util.StringRepresentable
-import spmc.smpmod.vault.entries.ActivePerk
-import spmc.smpmod.vault.entries.ConfiguredEvent
 
 enum class VaultTier(@JvmField val costGoal: Double, @JvmField val perks: MutableList<ActivePerk>, @JvmField val eventPool: MutableList<ConfiguredEvent>): StringRepresentable {
 	ALPHA(125000.0, mutableListOf(
@@ -57,7 +55,7 @@ enum class VaultTier(@JvmField val costGoal: Double, @JvmField val perks: Mutabl
 	));
 
 	val nextTier: VaultTier get() {
-		val values: Array<VaultTier> = entries.toTypedArray()
+		val values = entries.toTypedArray()
 		val nextOrdinal = this.ordinal + 1
 		return if (nextOrdinal < values.size) values[nextOrdinal] else this
 	}

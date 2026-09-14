@@ -1,4 +1,4 @@
-package spmc.smpmod.economy.atm
+package spmc.smpmod.economy
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder
 import eu.pb4.sgui.api.gui.SimpleGui
@@ -10,11 +10,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
-import spmc.smpmod.economy.EconomySystem.Companion.get
-import spmc.smpmod.economy.fluctuate.MarketState
-import spmc.smpmod.utils.sendError
-import spmc.smpmod.utils.sendSuccess
-import spmc.smpmod.utils.rnd2DP
+import spmc.smpmod.utils.*
 import kotlin.math.min
 
 object ATMMenu {
@@ -31,7 +27,7 @@ object ATMMenu {
 	}
 
 	private fun refreshGui(gui: SimpleGui, player: ServerPlayer) {
-		val eco = get() ?: return
+		val eco = EconomySystem.get() ?: return
 		for (i in 0 .. 26) gui.setSlot(i, GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.literal(" ")))
 		gui.setSlot(11, GuiElementBuilder(Items.REDSTONE_BLOCK).setName(Component.literal("Withdraw $100.00").withStyle(ChatFormatting.DARK_RED).append(Component.literal(" (Right-click: Withdraw All)").withStyle(ChatFormatting.GRAY))).setCallback { type ->
 			if (type.isRight) {
@@ -55,7 +51,7 @@ object ATMMenu {
 	}
 
 	private fun openBedrockForm(player: ServerPlayer) {
-		val eco = get() ?: return
+		val eco = EconomySystem.get() ?: return
 		val balance = eco.getBalance(player.getUUID())
 
 		val form = SimpleForm.builder().title("ATM Machine").content(String.format("Current Balance: $%,.2f", balance)).button("Withdraw $100").button("Deposit All").validResultHandler { response ->
@@ -91,7 +87,7 @@ object ATMMenu {
 			val stack = player.inventory.getItem(i)
 			if (stack.isEmpty) continue
 
-			val payout = MarketState.processItemDeposit(player, stack)
+			val payout = processItemDeposit(player, stack)
 			if (payout > 0) {
 				totalPayout += payout
 				player.inventory.removeItem(i, stack.count)

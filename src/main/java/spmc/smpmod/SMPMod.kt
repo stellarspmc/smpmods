@@ -40,22 +40,16 @@ import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import spmc.smpmod.core.BedrockSkinFetcher
-import spmc.smpmod.core.BountySystem
-import spmc.smpmod.core.ChunkLoader
-import spmc.smpmod.core.ScrapHandler
-import spmc.smpmod.discord.EventHandler
+import spmc.smpmod.core.*
 import spmc.smpmod.discord.ConfigLoader
+import spmc.smpmod.discord.EventHandler
 import spmc.smpmod.discord.sendChatMessage
-import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.economy.fluctuate.MarketState
-import spmc.smpmod.economy.shop.ShopManager
+import spmc.smpmod.economy.*
 import spmc.smpmod.fishing.FishingManager
 import spmc.smpmod.fishing.FishingMob
 import spmc.smpmod.mining.ChunkPool
 import spmc.smpmod.mining.TreasureHelper
 import spmc.smpmod.mobs.ServerMobEvents
-import spmc.smpmod.npc.NPCManager
 import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
 import spmc.smpmod.registry.PlantRegistry
@@ -89,7 +83,7 @@ class SMPMod: DedicatedServerModInitializer {
 	        MarketState.register()
 	        VaultData.register()
 	        NPCManager.register()
-	        ShopManager.register()
+	        register()
         }
 
 	    ChunkLoader.register()
@@ -120,7 +114,7 @@ class SMPMod: DedicatedServerModInitializer {
 
 	    ServerTickEvents.END_SERVER_TICK.register {
 		    if (it.playerList.players.isEmpty()) return@register
-		    if (it.tickCount % 360 == 0) ShopManager.serverTickLoop(it)
+		    if (it.tickCount % 360 == 0) serverTickLoop(it)
 		    if (it.tickCount % 15 == 0) NPCManager.serverTickLoop(it)
 		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
 		    if (it.tickCount % 3 == 0 ) FishingMob.serverTickLoop()
@@ -139,7 +133,7 @@ class SMPMod: DedicatedServerModInitializer {
 		    }
 	    }
 
-	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // non-players only
+	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ -> // non-players only
 			if (entity is ServerPlayer) return@register
 		    when (entity.type.category) {
 			    MobCategory.MONSTER -> ScrapHandler.handleMonsterScrap(entity) // all aggressive

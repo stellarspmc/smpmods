@@ -8,10 +8,9 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomySystem.Companion.get
-import spmc.smpmod.economy.fluctuate.MarketState.Companion.state
+import spmc.smpmod.economy.EconomySystem
+import spmc.smpmod.economy.MarketState
 import spmc.smpmod.utils.parseMarkdown
-import kotlin.String
 
 class EventHandler: ListenerAdapter() {
 	override fun onMessageReceived(e: MessageReceivedEvent) {
@@ -28,12 +27,12 @@ class EventHandler: ListenerAdapter() {
 			"players" -> event.replyEmbeds(EmbedBuilder().setTitle("Server Status").setColor(0x2F3136).setDescription(String.format("**%d** players currently in the SMP.", SMPMod.minecraftServer?.playerCount ?: return)).addField("Online List", SMPMod.minecraftServer?.playerList?.players?.joinToString(", ") { player -> MarkdownSanitizer.escape(player.gameProfile.name()) }?.ifEmpty { "*No players online right now.*" } ?: return, false).build()).queue()
 			"top" -> {
 				val page = event.getOption("page")?.asInt ?: 1
-				val eco = get()?: return
+				val eco = EconomySystem.get() ?: return
 
 				event.replyEmbeds(EmbedBuilder().setTitle("Wealth Leaderboard").setColor(0xDFC66F).setDescription(eco.top(page)).setFooter(String.format("Page %d", page), null).build()).queue()
 			}
 			"market" -> {
-				val market = state?: return
+				val market = MarketState.state ?: return
 				val description = StringBuilder()
 				market.all.entries.sortedBy { it.value.currentPrice }.asReversed().forEach {
 					val data = it.value

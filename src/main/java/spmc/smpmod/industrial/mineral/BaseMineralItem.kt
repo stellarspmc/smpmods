@@ -1,47 +1,30 @@
-package spmc.smpmod.industrial.mineral;
+package spmc.smpmod.industrial.mineral
 
-import spmc.smpmod.npc.NPCData;
-import spmc.smpmod.utils.BasePolymerItem;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import spmc.smpmod.core.*
+import spmc.smpmod.utils.BasePolymerItem
+import java.util.*
 
-import java.util.List;
-import java.util.UUID;
+class BaseMineralItem: BasePolymerItem {
+	private val headTexture: String?
+	private val id: Component
 
-public class BaseMineralItem extends BasePolymerItem {
-    private final String headTexture;
-    private final Component id;
+	constructor(properties: Properties, vanillaItem: Item, id: Component): super(properties, vanillaItem) {
+		this.headTexture = null
+		this.id = id
+	}
 
-    public BaseMineralItem(Properties properties, Item vanillaItem, Component id) {
-        super(properties, vanillaItem);
-        this.headTexture = null;
-        this.id = id;
-    }
+	// heads
+	constructor(properties: Properties, headTexture: String?, id: Component): super(properties, Items.PLAYER_HEAD) {
+		this.headTexture = headTexture
+		this.id = id
+	}
 
-    // heads
-    public BaseMineralItem(Properties properties, String headTexture, Component id) {
-        super(properties, Items.PLAYER_HEAD);
-        this.headTexture = headTexture;
-        this.id = id;
-    }
-
-    @Override
-    public Component buildName(ItemStack stack) {
-        return Component.empty().append(id).withStyle(style -> style.withItalic(false));
-    }
-
-    @Override
-    public List<Component> buildLore(ItemStack stack) {
-        return List.of();
-    }
-
-    @Override
-    public void modifyItem(ItemStack stack, ItemStack stackData) {
-        if (headTexture != null) {
-            stack.set(DataComponents.PROFILE, NPCData.createCustomProfile("PolymerItem", UUID.randomUUID(), headTexture));
-        }
-    }
+	override fun buildName(stack: ItemStack) = Component.empty().append(id).withStyle { it.withItalic(false) }
+	override fun buildLore(stack: ItemStack) = mutableListOf<Component>()
+	override fun modifyItem(stack: ItemStack, stackData: ItemStack) { if (headTexture != null) stack.set(DataComponents.PROFILE, createCustomProfile("PolymerItem", UUID.randomUUID(), headTexture)) }
 }

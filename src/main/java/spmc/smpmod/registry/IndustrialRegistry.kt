@@ -2,11 +2,6 @@ package spmc.smpmod.registry
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import spmc.smpmod.industrial.machine.*
-import spmc.smpmod.industrial.machine.entity.*
-import spmc.smpmod.industrial.mineral.BaseMineralItem
-import spmc.smpmod.industrial.recipe.*
-import spmc.smpmod.utils.*
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
@@ -20,6 +15,14 @@ import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
+import spmc.smpmod.industrial.CompressorRecipe
+import spmc.smpmod.industrial.SmelterRecipe
+import spmc.smpmod.industrial.machine.SculkCompressorBlock
+import spmc.smpmod.industrial.machine.SculkCompressorEntity
+import spmc.smpmod.industrial.machine.SmelteryBlock
+import spmc.smpmod.industrial.machine.SmelteryEntity
+import spmc.smpmod.industrial.mineral.BaseMineralItem
+import spmc.smpmod.utils.formatName
 
 object IndustrialRegistry {
     private fun registerMineral(id: String, vanillaModel: Item, textColor: TextColor) { PolymerRegistry.createItem(id) { BaseMineralItem(it, vanillaModel, Component.literal(formatName(id)).withColor(textColor)) }}

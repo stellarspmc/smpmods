@@ -1,6 +1,6 @@
 package spmc.smpmod.mixin.shop;
 
-import spmc.smpmod.economy.shop.ShopManager;
+import spmc.smpmod.economy.ShopManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.server.level.ServerLevel;

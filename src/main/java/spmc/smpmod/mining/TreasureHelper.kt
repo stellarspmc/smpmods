@@ -22,9 +22,12 @@ import spmc.smpmod.mining.ChunkPool.multiplier
 import spmc.smpmod.mining.TreasureSpawner.spawnTreasureContainer
 import spmc.smpmod.utils.checkNotCreative
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.enums.enumEntries
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.pow
 
 object TreasureHelper {
 	@JvmField var eventPercentage: Double = 1.0
@@ -98,4 +101,17 @@ object TreasureHelper {
             fun getMultiplier(state: BlockState) = RATE_MAP[state.block] ?: 0f
         }
     }
+}
+
+object ChunkPool {
+	private val chunkBasedPool = HashMap<ChunkPos, Double>()
+
+	fun increment(chunk: ChunkPos) {
+		val original = chunkBasedPool.getOrDefault(chunk, .0)
+		chunkBasedPool[chunk] = original + max(.0, 4 / ln(original + Math.E))
+	}
+
+	fun multiplier(chunk: ChunkPos) =  1 - (chunkBasedPool.getOrDefault(chunk, .0) / 275)
+	fun serverTickLoop() { for (pos in chunkBasedPool.keys) chunkBasedPool.replace(pos, Math.clamp(chunkBasedPool.getOrDefault(pos, .0).pow(.999), .0, 100.0)) }
+	fun checkChunkPool(pos: ChunkPos) = chunkBasedPool.getOrDefault(pos, .0) > 100.0
 }

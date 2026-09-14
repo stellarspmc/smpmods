@@ -7,16 +7,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.economy.fluctuate.MarketState
-import spmc.smpmod.fishing.FishTracker
-import spmc.smpmod.npc.NPCData
-import spmc.smpmod.npc.NPCManager
-import spmc.smpmod.quest.PlayerQuestData.ActiveQuest
-import spmc.smpmod.quest.Quest
-import spmc.smpmod.quest.QuestManager
-import spmc.smpmod.vault.VaultData
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
@@ -37,9 +27,13 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
-import spmc.smpmod.core.BountySystem
-import spmc.smpmod.economy.shop.CentralizedShopManager
+import spmc.smpmod.SMPMod
+import spmc.smpmod.core.*
+import spmc.smpmod.economy.*
+import spmc.smpmod.fishing.FishTracker
+import spmc.smpmod.quest.*
 import spmc.smpmod.utils.*
+import spmc.smpmod.vault.VaultData
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -94,19 +88,21 @@ object CommandRegistry {
 			        .then(Commands.argument("anonymous", BoolArgumentType.bool())
 				        .executes(CommandRegistry::addBounty)))))
 
-        dispatcher.register(Commands.literal("fishing").executes { FishTracker.openFishIndexMenu(it.getSource().player?: return@executes -1) })
-        dispatcher.register(Commands.literal("vault").executes { VaultData.sendVaultMessage(it.getSource().player?: return@executes -1) })
+        dispatcher.register(Commands.literal("fishing").executes { FishTracker.openFishIndexMenu(it.source.player?: return@executes -1) }
+	        .then(Commands.argument("player", EntityArgument.player())
+				.executes { return@executes sendSuccess(it.source.player?: return@executes -1, message = "${(it.source.player?: return@executes -1).scoreboardName} has ${FishTracker.getFishIndexAmount(EntityArgument.getPlayer(it, "player"))} / 405 fishes unlocked.") }))
+        dispatcher.register(Commands.literal("vault").executes { VaultData.sendVaultMessage(it.source.player?: return@executes -1) })
         dispatcher.register(Commands.literal("quests").executes(CommandRegistry::executeQuests))
         dispatcher.register(Commands.literal("surface").executes(CommandRegistry::executeSurface))
         dispatcher.register(Commands.literal("enderchest") .executes(CommandRegistry::executeEnderChest))
 
-	    dispatcher.register(Commands.literal("webshop").executes { CentralizedShopManager.organizeShopsAsInventory(it.getSource().player?: return@executes -1); return@executes 0 }) // TODO: testing
+	    dispatcher.register(Commands.literal("webshop").executes { CentralizedShopManager.organizeShopsAsInventory(it.source.player?: return@executes -1); return@executes 0 }) // TODO: testing
 	    dispatcher.register(Commands.literal("rtp").executes(CommandRegistry::executeRTP))
 		// TODO: /home, /tpa, ...
 	}
 
     private fun buildBalanceNode(name: String): LiteralArgumentBuilder<CommandSourceStack> {
-        return Commands.literal(name).executes { executeBalance(it, NameAndId((it.getSource().player?: return@executes -1).gameProfile)) }
+        return Commands.literal(name).executes { executeBalance(it, NameAndId((it.source.player?: return@executes -1).gameProfile)) }
             .then(Commands.argument("player", GameProfileArgument.gameProfile())
             .executes { executeBalance(it, GameProfileArgument.getGameProfiles(it, "player").iterator().next()) })
     }
@@ -132,7 +128,7 @@ object CommandRegistry {
 
     private fun executeBalance(ctx: CommandContext<CommandSourceStack>, target: NameAndId): Int {
         val eco: EconomySystem = EconomySystem.get() ?: return -1
-        ctx.getSource().sendSuccess({ Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
+        ctx.source.sendSuccess({ Component.literal("💰: ").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(target.name() + " has ").withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(String.format("$%.2f", eco.getBalance(target.id()))).withStyle(ChatFormatting.RED))
                 .append(Component.literal(".").withStyle(ChatFormatting.GOLD))
@@ -142,7 +138,7 @@ object CommandRegistry {
 
     private fun executeTop(ctx: CommandContext<CommandSourceStack>, page: Int): Int {
         val eco: EconomySystem = EconomySystem.get() ?: return -1
-        ctx.getSource().sendSuccess({ Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD).append("\n").append(eco.getMinecraftTop(page)) }, false)
+        ctx.source.sendSuccess({ Component.literal("Wealth Leaderboard").withStyle(ChatFormatting.GOLD).append("\n").append(eco.getMinecraftTop(page)) }, false)
         return 1
     }
 
@@ -163,7 +159,7 @@ object CommandRegistry {
 
     private fun executeSend(ctx: CommandContext<CommandSourceStack>): Int {
         val target = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()
-        val sender = ctx.getSource().player?: return -1
+        val sender = ctx.source.player?: return -1
         val amount = rnd2DP(DoubleArgumentType.getDouble(ctx, "amount"))
         if (sender.getUUID() == target.id()) return sendError(sender, message = "You cannot send money to yourself.")
 
@@ -185,18 +181,18 @@ object CommandRegistry {
     }
 
     private fun executeDepositHand(ctx: CommandContext<CommandSourceStack>): Int {
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
         val hand = player.inventory.selectedItem
 
         if (hand.isEmpty) return sendError(player, message = "Hold a valid market item or use /deposit all.")
-        val payout = MarketState.processItemDeposit(player, hand)
+        val payout = processItemDeposit(player, hand)
         if (payout <= 0) return sendError(player, message = "This item cannot be deposited into the market.")
         hand.count = 0
         return sendSuccess(player, message = String.format("Deposited items for $%.2f to your account.", payout))
     }
 
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
 	    if (checkNotCreative(player)) return -1
         var totalPayout = .0
 
@@ -204,7 +200,7 @@ object CommandRegistry {
             val stack = player.inventory.getItem(i)
             if (stack.isEmpty) continue
 
-            val payout = MarketState.processItemDeposit(player, stack)
+            val payout = processItemDeposit(player, stack)
             if (payout > 0) {
                 totalPayout += payout
                 player.inventory.removeItem(i, stack.count)
@@ -216,33 +212,33 @@ object CommandRegistry {
     }
 
     private fun executeNpcKill(ctx: CommandContext<CommandSourceStack>): Int {
-        val level = ctx.getSource().level
+        val level = ctx.source.level
         val id = StringArgumentType.getString(ctx, "id")
 
         if (NPCData.get()?.hasNpc(id) == true) {
             NPCData.get()?.removeNpc(id)
             NPCData.get()?.getMannequin(level, id)?.discard()
-	        ctx.getSource().sendSuccess({ Component.literal("✔: Mannequin killed!").withStyle(ChatFormatting.GREEN) }, false)
+	        ctx.source.sendSuccess({ Component.literal("✔: Mannequin killed!").withStyle(ChatFormatting.GREEN) }, false)
 	        return 1
         }
-	    ctx.getSource().sendSuccess({ Component.literal("✖: Mannequin isn't alive!").withStyle(ChatFormatting.RED) }, false)
+	    ctx.source.sendSuccess({ Component.literal("✖: Mannequin isn't alive!").withStyle(ChatFormatting.RED) }, false)
 	    return 0
     }
 
     private fun executeNpcSetup(ctx: CommandContext<CommandSourceStack>): Int {
-        val level = ctx.getSource().level
-        val player = ctx.getSource().player?: return -1
+        val level = ctx.source.level
+        val player = ctx.source.player?: return -1
         val id = StringArgumentType.getString(ctx, "id")
 
         if (NPCData.get()?.hasNpc(id) == true) return sendError(player, message = "Mannequin already exists!")
-        NPCManager.spawn(id, level, BlockPos.containing(ctx.getSource().position))?: return sendError(player, message = "Mannequin already exists / id doesn't exist!")
+        NPCManager.spawn(id, level, BlockPos.containing(ctx.source.position))?: return sendError(player, message = "Mannequin already exists / id doesn't exist!")
         return sendSuccess(player, message = "Mannequin created successfully!")
     }
 
     private fun executeQuests(ctx: CommandContext<CommandSourceStack>): Int {
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
         QuestManager.get()?.checkAndResetRotations(player)
-        val activeQuests: MutableList<ActiveQuest> = QuestManager.getQuests(player).activeQuests
+        val activeQuests: MutableList<PlayerQuestData.ActiveQuest> = QuestManager.getQuests(player).activeQuests
         player.sendSystemMessage(Component.literal("=== Active Quests ===").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
         if (activeQuests.isEmpty()) {
             player.sendSystemMessage(Component.literal(" You have no active quests.").withStyle(ChatFormatting.GRAY))
@@ -275,7 +271,7 @@ object CommandRegistry {
     }
 
 	private fun executeMapArt(ctx: CommandContext<CommandSourceStack>): Int {
-		val player = ctx.getSource().player?: return -1
+		val player = ctx.source.player?: return -1
 		val url = StringArgumentType.getString(ctx, "url")
 
 		if (!url.startsWith("http://") && !url.startsWith("https://")) return sendError(player, message = "Invalid URL! Must start with http:// or https://")
@@ -317,21 +313,21 @@ object CommandRegistry {
 	}
 
     private fun executeSurface(ctx: CommandContext<CommandSourceStack>): Int {
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
         player.teleportTo(player.x, getY(player.x.toInt(), player.z.toInt(), player.level()).toDouble(), player.z)
         player.playSound(SoundEvents.WITHER_SHOOT, 3f, .5f)
         return 1
     }
 
     private fun executeEnderChest(ctx: CommandContext<CommandSourceStack>): Int {
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
         player.openMenu(SimpleMenuProvider({ syncId, inventory, p -> ChestMenu.threeRows(syncId, inventory, p.getEnderChestInventory()) }, Component.translatable("block.minecraft.ender_chest")))
         player.awardStat(Stats.OPEN_ENDERCHEST, 1)
         return 1
     }
 
 	private fun executeRTP(ctx: CommandContext<CommandSourceStack>): Int {
-		val player = ctx.getSource().player?: return -1
+		val player = ctx.source.player?: return -1
 		val eco = EconomySystem.get()?: return -1
 		val range = 150000
 		if (player.level().dimension() != Level.OVERWORLD) return sendError(player, message = "/rtp only works for the overworld!")
@@ -345,7 +341,7 @@ object CommandRegistry {
 	}
 
 	private fun executeTPA(ctx: CommandContext<CommandSourceStack>): Int {
-		val player = ctx.getSource().player?: return -1
+		val player = ctx.source.player?: return -1
 		val eco = EconomySystem.get()?: return -1
 		if (eco.changeBalance(player.uuid, -2.0)) {
 			TODO("implement tpa, tpaccept, tpadeny, tpahere")
@@ -354,7 +350,7 @@ object CommandRegistry {
 	}
 
 	private fun executeHome(ctx: CommandContext<CommandSourceStack>): Int {
-		val player = ctx.getSource().player?: return -1
+		val player = ctx.source.player?: return -1
 		val eco = EconomySystem.get()?: return -1
 		val price = when (val stubValue = player.level().random.nextIntBetweenInclusive(0, 100)) {
 			in 0..2 -> stubValue * 200
@@ -370,7 +366,7 @@ object CommandRegistry {
 	}
 
 	private fun executeMarketAll(ctx: CommandContext<CommandSourceStack>): Int {
-        ctx.getSource().sendSuccess({ Component.literal("Market Prices").withStyle(ChatFormatting.GOLD) }, false)
+        ctx.source.sendSuccess({ Component.literal("Market Prices").withStyle(ChatFormatting.GOLD) }, false)
 	    (MarketState.state?: return -1).all.values.sortedBy { it.defaultPrice }.asReversed()
             .forEach {
                 val ratio = (it.currentPrice / it.defaultPrice - 1) * 100.0
@@ -382,7 +378,7 @@ object CommandRegistry {
                     .append(Component.translatable(it.mineral.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
                     .append(Component.literal(String.format(" | Buy: $%.2f | Sell: $%.2f", it.getBulkBuyCost(1), it.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal(trend).withStyle(trendColor))
-                ctx.getSource().sendSuccess({ message }, false)
+                ctx.source.sendSuccess({ message }, false)
             }
 
         return 1
@@ -391,17 +387,17 @@ object CommandRegistry {
     private fun executeMarketItem(ctx: CommandContext<CommandSourceStack>): Int {
         val targetItem = ItemArgument.getItem(ctx, "item").item().value()
         val market = MarketState.state?: return -1
-        val data = market.get(targetItem) ?: return sendError(ctx.getSource().player?: return -1, message = "This item is not tracked by the market.")
+        val data = market.get(targetItem) ?: return sendError(ctx.source.player?: return -1, message = "This item is not tracked by the market.")
 
-        ctx.getSource().sendSuccess({ Component.literal(String.format(" Base Price: $%.2f", data.defaultPrice)).withStyle(ChatFormatting.GRAY) }, false)
-        ctx.getSource().sendSuccess({ Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE) }, false)
-        ctx.getSource().sendSuccess({ Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE) }, false)
+        ctx.source.sendSuccess({ Component.literal(String.format(" Base Price: $%.2f", data.defaultPrice)).withStyle(ChatFormatting.GRAY) }, false)
+        ctx.source.sendSuccess({ Component.literal(String.format(" 1x   Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(1), data.getBulkSellPayout(1))).withStyle(ChatFormatting.WHITE) }, false)
+        ctx.source.sendSuccess({ Component.literal(String.format(" 64x  Buy: $%.2f  |  Sell: $%.2f", data.getBulkBuyCost(64), data.getBulkSellPayout(64))).withStyle(ChatFormatting.WHITE) }, false)
         return 1
     }
 
     private fun executeWithdraw(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
         val item = ItemArgument.getItem(ctx, "item").item().value()
-        val player = ctx.getSource().player?: return -1
+        val player = ctx.source.player?: return -1
 	    if (checkNotCreative(player)) return -1
         val totalCost = MarketState.buyMineral(player, item, count)
         if (totalCost == -2.0) {

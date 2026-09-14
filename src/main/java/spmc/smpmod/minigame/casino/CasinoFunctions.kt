@@ -1,5 +1,7 @@
 package spmc.smpmod.minigame.casino
 
+import net.minecraft.world.entity.decoration.Mannequin
+
 enum class PokerCards {
 	TWO_S, // TODO: assign map to them
 	TWO_H,
@@ -18,7 +20,7 @@ enum class PokerCards {
 }
 
 object CasinoBot {
-	fun spawnBot() {
-
+	fun spawnBot(): Mannequin? {
+		return null
 	}
 }

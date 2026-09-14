@@ -1,11 +1,5 @@
 package spmc.smpmod.registry
 
-import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.fishing.FishItem
-import spmc.smpmod.npc.CustomNPC
-import spmc.smpmod.npc.NPCData.Companion.talkAsMannequin
-import spmc.smpmod.npc.NPCManager.register
-import spmc.smpmod.vault.VaultData
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
@@ -16,11 +10,17 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
 import spmc.smpmod.core.CreativeData
+import spmc.smpmod.core.CustomNPC
+import spmc.smpmod.core.NPCManager
+import spmc.smpmod.core.talkAsMannequin
+import spmc.smpmod.economy.EconomySystem
+import spmc.smpmod.fishing.FishItem
 import spmc.smpmod.utils.grant
+import spmc.smpmod.vault.VaultData
 
 object NPCRegistry {
     internal fun init() {
-        register(CustomNPC.Builder("fish_seller", true)
+        NPCManager.register(CustomNPC.Builder("fish_seller", true)
             .displayName(Component.literal("Aquamaray").withStyle(ChatFormatting.AQUA))
             .skin("fisher", intArrayOf(-1116145262, -304197271, -1414701672, -926620516), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDM1MWQ3OGNlNDg5MzliYTg5YjllOTFlODk2MjQ2Mjc4NjEwOGUxNTczNzViOWY0MDg2ZjVjNjdkZGE2YzAyOSJ9fX0=")
             .onAttack { player, mannequin ->
@@ -55,7 +55,7 @@ object NPCRegistry {
             .build()
         )
 
-        register(CustomNPC.Builder("vault_guardian", true)
+	    NPCManager.register(CustomNPC.Builder("vault_guardian", true)
             .displayName(Component.literal("Vault Guardian").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
             .skin("vault_guardian", intArrayOf(-1964164316, 1320767568, -2005365226, 1352775866), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjBmNGI2NzRjZmMyZWJmMDEwZWEwYTAwNzM5NzY3YzA4YjNkNmE5N2EwNGVmNmZlM2QxYWY1NTljYzU0YzBjZiJ9fX0=")
             .onAttack { player, _ -> VaultData.DonateAnvilGui(player).open() }
@@ -63,7 +63,7 @@ object NPCRegistry {
             .build()
         )
 
-        register(CustomNPC.Builder("plant_seller", true)
+	    NPCManager.register(CustomNPC.Builder("plant_seller", true)
             .displayName(Component.literal("Farmer").withStyle(ChatFormatting.GREEN))
             .skin("farmer", intArrayOf(1278417584, 1283873747, -1487483765, 2101674152), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTA1MDViMTE2NDg3YjBjNGE0NjkyMjI1ODBlOGZmNzQ1YzJiOGE4ZmZmODI0YmI1NjA0YThjYTc0NjVmOTk5MCJ9fX0=")
             .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("Hi, I am plant person."), player)}
@@ -71,7 +71,7 @@ object NPCRegistry {
             .build()
         )
 
-        register(CustomNPC.Builder("dw_rewarder", true)
+	    NPCManager.register(CustomNPC.Builder("dw_rewarder", true)
             .displayName(Component.literal("Rewarder").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
             .skin("dw_rewarder", intArrayOf(-1913824437, 1951356145, -1425084227, -1019769070), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2IzZTgwMTkyOTIyOTMyOTNjNmUyYWI3N2VlZGZiZTE1YjQxMjZjNmM2NTI0N2UzNGQ3OTgzNzIyM2FhZjExNSJ9fX0=")
             .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("stub: stub"), player) }
@@ -79,7 +79,7 @@ object NPCRegistry {
             .build()
         )
 
-	    register(CustomNPC.Builder("gmc", true)
+	    NPCManager.register(CustomNPC.Builder("gmc", true)
 		    .displayName(Component.literal("Astral Builder").withColor(12471528))
 		    .skin("gmc", intArrayOf(2003779368, -1931584255, -1623256195, 1848851372), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTAxNTcyYTRjNDJkN2ZmOTViZjUyMmIzYzNiMmZiMmNhYWM0NzM1YzQ4YWZlNWZiODI5NDJiMTllMzgxNTYzZiJ9fX0=")
 		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("Right click me to enter the creative realm!"), player) }
@@ -87,7 +87,7 @@ object NPCRegistry {
 			.build()
 		)
 
-	    register(CustomNPC.Builder("gms", true)
+	    NPCManager.register(CustomNPC.Builder("gms", true)
 		    .displayName(Component.literal("Tuff Survivor").withColor(0x87D6BB))
 		    .skin("gms", intArrayOf(-957282800, -489268634, -1836512640, 880029979), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDY2OWU0NTk4MmRjYjQ5OWQyYmZlNjQ4ODcwOTNkZjhjMzlhZTNkNWE5ZjQ5NjJiN2IyZTQwMTY3MGUzN2QyMiJ9fX0=")
 		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("Right click me to return to the SMP!"), player) }
@@ -95,7 +95,7 @@ object NPCRegistry {
 		    .build()
 	    )
 
-	    register(CustomNPC.Builder("market", true)
+	    NPCManager.register(CustomNPC.Builder("market", true)
 		    .displayName(Component.literal("Market Master").withColor(0x87D6BB))
 		    .skin("market", intArrayOf(859935646, -1416867370, -1404676300, 69776291), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjQ1MDZjODMyYTM2YjhiYmE2NDM4NmVhZTM1ZmJjZmRjODBmNzZhZTYzODk3ZjZkM2NlOTNmZWY1ZGZmODU2OCJ9fX0=")
 		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I can control the market with ease!"), player) }

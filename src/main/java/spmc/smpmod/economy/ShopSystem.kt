@@ -1,34 +1,55 @@
-package spmc.smpmod.economy.shop
+package spmc.smpmod.economy
 
+import com.mojang.math.Transformation
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import eu.pb4.sgui.api.ClickType
 import eu.pb4.sgui.api.elements.GuiElementBuilder
 import eu.pb4.sgui.api.gui.SimpleGui
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.UUIDUtil
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
+import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.Container
-import net.minecraft.world.entity.Display
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.*
 import net.minecraft.world.entity.Display.ItemDisplay
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.entity.BarrelBlockEntity
+import net.minecraft.world.level.saveddata.SavedData
+import net.minecraft.world.level.saveddata.SavedDataType
 import org.geysermc.cumulus.form.CustomForm
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
+import org.joml.Quaternionf
+import org.joml.Vector3f
 import spmc.smpmod.SMPMod
-import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.utils.*
+import spmc.smpmod.economy.ShopManager.Companion.get
+import spmc.smpmod.utils.isAdmin
+import spmc.smpmod.utils.rnd2DP
+import spmc.smpmod.utils.sendError
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey<Level>, val barrelPos: BlockPos, val interactionEntityUuid: UUID, val itemDisplayUuid: UUID, val textDisplayUuid: UUID, private var itemSold: ItemStack, private var stack: Int, private var price: Double, receipts: MutableList<ShopReceipt>, val isCreative: Boolean) {
     val receipts: MutableList<ShopReceipt> = ArrayList<ShopReceipt>(receipts)
@@ -41,11 +62,10 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
 	fun isOwner(player: ServerPlayer) = (this.isCreative && isAdmin(player)) || player.getUUID() == ownerUuid
 
 	val level: ServerLevel? get() = SMPMod.minecraftServer?.getLevel(dimension)
-
     fun recordReceipt(receipt: ShopReceipt) {
         this.receipts.addFirst(receipt)
         while (this.receipts.size > 27) this.receipts.removeLast()
-        ShopManager.get(this.level?: return).setDirty()
+        get(this.level?: return).setDirty()
     }
 
     val availableStock: Int get() {
@@ -123,20 +143,20 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
     fun setPrice(price: Double) {
         this.price = rnd2DP(max(.0, price))
         updateHologram()
-        ShopManager.get(this.level?: return).setDirty()
+        get(this.level?: return).setDirty()
     }
 
     fun setStack(stack: Int) {
         this.stack = max(1, stack)
         updateHologram()
-        ShopManager.get(this.level?: return).setDirty()
+        get(this.level?: return).setDirty()
     }
 
     fun setItemSold(newItem: ItemStack) {
         this.itemSold = newItem.copyWithCount(1)
         updateItemDisplay()
         updateHologram()
-        ShopManager.get(this.level?: return).setDirty()
+        get(this.level?: return).setDirty()
     }
 
     fun updateItemDisplay() { ((this.level?: return).getEntity(itemDisplayUuid) as? ItemDisplay)?.itemStack = itemSold.copy() }
@@ -311,3 +331,156 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
         val CODEC: Codec<ShopData> = RecordCodecBuilder.create { instance -> instance.group(UUIDUtil.CODEC.fieldOf("shop_id").forGetter(ShopData::shopId), UUIDUtil.CODEC.fieldOf("owner_id").forGetter(ShopData::ownerUuid), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(ShopData::dimension), BlockPos.CODEC.fieldOf("barrel_pos").forGetter(ShopData::barrelPos), UUIDUtil.CODEC.fieldOf("interaction_id").forGetter(ShopData::interactionEntityUuid), UUIDUtil.CODEC.fieldOf("item_display_id").forGetter(ShopData::itemDisplayUuid), UUIDUtil.CODEC.fieldOf("text_display_id").forGetter(ShopData::textDisplayUuid), ItemStack.CODEC.fieldOf("item_sold").forGetter(ShopData::getItemSold), Codec.INT.fieldOf("stack").forGetter(ShopData::getStack), Codec.DOUBLE.fieldOf("price").forGetter(ShopData::getPrice), Codec.list(ShopReceipt.CODEC).optionalFieldOf("receipts", mutableListOf()).forGetter(ShopData::receipts), Codec.BOOL.optionalFieldOf("is_creative", false).forGetter(ShopData::isCreative)).apply(instance, ::ShopData) }
     }
 }
+
+class ShopManager: SavedData() {
+	internal val shopsByInteractionUuid: MutableMap<UUID, ShopData> = HashMap()
+	internal val shopsByBarrelPos: MutableMap<BlockPos, ShopData> = HashMap()
+	internal val shopsById: MutableMap<UUID, ShopData> = HashMap()
+	internal fun registerShop(data: ShopData) {
+		shopsById[data.shopId] = data
+		shopsByInteractionUuid[data.interactionEntityUuid] = data
+		shopsByBarrelPos[data.barrelPos] = data
+	}
+
+	companion object {
+		val CODEC: Codec<ShopManager> = ShopData.CODEC.listOf().xmap({ shops -> val manager = ShopManager(); for (shop in shops) manager.registerShop(shop); manager }, { manager -> ArrayList(manager.shopsById.values) })
+		val TYPE: SavedDataType<ShopManager> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "shops"), { ShopManager() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+
+		@JvmStatic fun get(level: ServerLevel): ShopManager { return level.dataStorage.computeIfAbsent(TYPE) }
+	}
+}
+
+fun getByInteraction(level: ServerLevel, entityUuid: UUID): ShopData? { return get(level).shopsByInteractionUuid[entityUuid] }
+fun getByPos(level: ServerLevel, pos: BlockPos): ShopData? { return get(level).shopsByBarrelPos[pos] }
+fun createCreativeShop(pos: BlockPos, price: Double, sellItem: ItemStack, level: ServerLevel) { createShop(null, pos, price, sellItem, level, true) }
+fun getAllShops(server: MinecraftServer): List<ShopData> = server.allLevels.flatMap { get(it).shopsById.values }
+fun getAllShopsByLevel(level: ServerLevel): List<ShopData> = ArrayList(get(level).shopsById.values)
+
+@JvmOverloads
+fun createShop(owner: ServerPlayer?, pos: BlockPos, price: Double, sellItem: ItemStack, level: ServerLevel, isCreative: Boolean = false) {
+	val x = pos.x + .5
+	val y = (pos.y + 1).toDouble()
+	val z = pos.z + .5
+	val itemDisplay = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
+	val textDisplay = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
+	val interaction = EntityTypes.INTERACTION.create(level, EntitySpawnReason.TRIGGERED)
+	if (itemDisplay == null || textDisplay == null || interaction == null) {
+		listOfNotNull(itemDisplay, textDisplay, interaction).forEach(Entity::discard)
+		return
+	}
+
+	itemDisplay.setPos(x, y + .35, z)
+	itemDisplay.itemStack = sellItem.copy()
+	itemDisplay.setTransformation(Transformation(Vector3f(0f), Quaternionf().rotationY(Math.toRadians(-((owner?.yRot ?: (0 / 90f)).roundToInt() * 90f).toDouble()).toFloat()), Vector3f(0.5f), null))
+	textDisplay.setPos(x, y + .85, z)
+	textDisplay.text = Component.literal(String.format("§f%dx §e%s\n§a$%.2f\nStock: %s", sellItem.count, sellItem.hoverName.string, price, if (isCreative) "∞" else "0"))
+	textDisplay.billboardConstraints = Display.BillboardConstraints.CENTER
+	interaction.setPos(x, y, z)
+	interaction.height = 1f
+	interaction.width = 1f
+	listOfNotNull(itemDisplay, textDisplay, interaction).forEach(level::addFreshEntity)
+
+	val data = ShopData(UUID.randomUUID(), owner?.getUUID() ?: UUID(0, 0), level.dimension(), pos, interaction.getUUID(), itemDisplay.getUUID(), textDisplay.getUUID(), sellItem.copyWithCount(1), sellItem.count, price, isCreative)
+	val manager = get(level)
+	manager.registerShop(data)
+	manager.setDirty()
+}
+
+fun removeShop(shop: ShopData, level: ServerLevel) {
+	shop.destroyShop()
+
+	val manager = get(level)
+	manager.shopsByInteractionUuid.remove(shop.interactionEntityUuid)
+	manager.shopsByBarrelPos.remove(shop.barrelPos)
+	manager.shopsById.remove(shop.shopId)
+	manager.setDirty()
+}
+
+fun register() {
+	AttackEntityCallback.EVENT.register { player, world, hand, entity, _ ->
+		if (hand != InteractionHand.MAIN_HAND || world.isClientSide) return@register InteractionResult.PASS
+		if (entity is Interaction) {
+			val shop: ShopData = getByInteraction(world as ServerLevel, entity.getUUID()) ?: return@register InteractionResult.PASS
+			if (player.isShiftKeyDown && shop.isOwner(player as ServerPlayer)) shop.openOwnerMenu(player)
+			else shop.processPurchase(player as ServerPlayer)
+			return@register InteractionResult.SUCCESS
+		}
+		return@register InteractionResult.PASS
+	}
+
+	UseEntityCallback.EVENT.register { player, world, _, entity, _ ->
+		if (world.isClientSide) return@register InteractionResult.PASS
+		if (entity is Interaction) {
+			val shop: ShopData = getByInteraction(world as ServerLevel, entity.getUUID()) ?: return@register InteractionResult.PASS
+			if (player.isShiftKeyDown && shop.isOwner(player as ServerPlayer)) removeShop(shop, world)
+			else player.sendSystemMessage(shop.getFormattedInfoComponent())
+			return@register InteractionResult.SUCCESS
+		}
+		return@register InteractionResult.PASS
+	}
+
+	UseBlockCallback.EVENT.register { player, world, _, hitResult ->
+		if (world.isClientSide) return@register InteractionResult.PASS
+		val shop: ShopData = getByPos(world as ServerLevel, hitResult.blockPos) ?: return@register InteractionResult.PASS
+		if (!shop.isOwner(player as ServerPlayer)) return@register sendError(player, message = "You cannot open someone else's shop barrel!", returnValue = InteractionResult.FAIL)
+		return@register InteractionResult.PASS
+	}
+
+	PlayerBlockBreakEvents.BEFORE.register { world, player, pos, _, _ ->
+		if (world.isClientSide) return@register true
+		if (getByPos(world as ServerLevel, pos) == null) return@register true
+		return@register sendError(player as ServerPlayer, message = "You cannot break a shop!", returnValue = false)
+	}
+}
+
+object CentralizedShopManager {
+	val simpleMemberTracker: MutableMap<UUID, Double> = mutableMapOf()// TODO: yuu ($1 -> 1 pt, 100pt -> $1)
+
+	fun organizeShopsAsInventory(player: ServerPlayer) {// TODO: websho
+		val level = player.level()
+		val shopList = getAllShopsByLevel(level)
+		val gui = SimpleGui(MenuType.GENERIC_9x6, player, false)
+
+		refreshGui(gui, player, 1, shopList)
+		gui.open()
+	}
+
+	private fun refreshGui(gui: SimpleGui, player: ServerPlayer, page: Int, shopList: List<ShopData>) {
+		val maxPage = (shopList.size / 45)
+
+		val startIndex = page * 45
+		val endIndex = min(startIndex + 45, shopList.size)
+		for (i in 0 .. 44) {
+			val index = startIndex + i
+			if (index < endIndex) gui.setSlot(i, GuiElementBuilder(createShopItem(shopList[i])).setCallback { it -> callback(it, shopList[i], player) })
+			else gui.setSlot(i, GuiElementBuilder(Items.AIR))
+		}
+
+		for (slot in 45 .. 53) gui.setSlot(slot, GuiElementBuilder(Items.STAINED_GLASS_PANE.lightGray()).setName(Component.literal("")))
+		if (page > 0) gui.setSlot(45, GuiElementBuilder(Items.ARROW).setName(Component.literal("← Previous Page").withColor(TextColor.fromRgb(0xFFFF55))).setCallback { _ -> refreshGui(gui, player, page - 1, shopList) })
+		gui.setSlot(49, GuiElementBuilder(Items.PAPER).setName(Component.literal("Page ${page + 1} of $maxPage").withColor(TextColor.fromRgb(0xFFFFFF))).addLoreLine(Component.literal("Shops: ${shopList.size}").withColor(TextColor.fromRgb(0xAAFFAA))))
+		if (page < maxPage - 1) gui.setSlot(53, GuiElementBuilder(Items.ARROW).setName(Component.literal("Next Page →").withColor(TextColor.fromRgb(0xFFFF55))).setCallback { _ -> refreshGui(gui, player, page + 1, shopList) })
+	}
+
+	private fun createShopItem(data: ShopData): ItemStack {
+		val item = data.getItemSold().copy()
+		item.set(DataComponents.CUSTOM_NAME, Component.literal("${data.getStack()}x $item"))
+		item.set(DataComponents.LORE, ItemLore(listOf(
+			Component.literal("Selling For: $${data.getPrice()}"), Component.literal("Stock left: ${data.availableStock}")
+		)))
+		// TODO: shop displays
+		// data to show: position, selling item, stock, price...
+		// present method: gui
+		return item
+	}
+
+	private fun callback(clickType: ClickType, data: ShopData, player: ServerPlayer) {
+		if (clickType.isLeft) {
+			if (!data.isOwner(player)) data.processPurchase(player)
+			else data.openOwnerMenu(player)
+		} else if (clickType.isRight && data.isOwner(player)) (player.level().getBlockEntity(data.barrelPos) as? BarrelBlockEntity ?: return).startOpen(player)
+	}
+}
+
+
+fun serverTickLoop(server: MinecraftServer) { getAllShops(server).forEach { data: ShopData -> data.updateHologram() }}

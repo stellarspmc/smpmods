@@ -88,9 +88,9 @@ object FishingRegistry { // might have to switch up how this works? TODO
 		registerRod("chromatic", 0xFF4081, (PolymerRegistry.getItem("chromatic_glint")?: return).value(), RodItem.RodStats(3674, 1.85f, 12, .33f), TierSystem.T7)
 
 		registerRod("astral", 0x7B2CBF, (PolymerRegistry.getItem("astral_fabric")?: return).value(), RodItem.RodStats(5896, 2f, 15, .34f), TierSystem.T8)
-		}
+	}
 
-    internal fun registerFishes() {
+    internal fun registerFishes() { // put fish into tags (either code or by hand)
         PolymerRegistry.createItem("corgravian") { FishItem(it, Items.SALMON, "Corgravian", 1000000.0, ItemRarity.ASTRAL) }
         registerDefault()
         registerPlains()

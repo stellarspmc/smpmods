@@ -19,7 +19,7 @@ import net.minecraft.world.level.saveddata.SavedDataType
 import spmc.smpmod.SMPMod.Companion.minecraftServer
 import spmc.smpmod.registry.FishingRegistry.allFish
 import spmc.smpmod.registry.FishingRegistry.getCategoryFromFish
-import spmc.smpmod.utils.*
+import spmc.smpmod.utils.grant
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.max
@@ -52,6 +52,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 			return 1
 		}
 
+		fun getFishIndexAmount(player: ServerPlayer) = get()?.getUnlockedFish(player.getUUID())?.size ?: 0
 		fun openFishIndexMenu(player: ServerPlayer, page: Int) {
 			val maxPages = max(1, ceil(allFish.size.toDouble() / 45).toInt())
 			val currentPage = Math.clamp(page.toLong(), 0, maxPages - 1)

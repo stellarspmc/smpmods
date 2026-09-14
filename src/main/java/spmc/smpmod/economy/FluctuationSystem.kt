@@ -1,14 +1,17 @@
-package spmc.smpmod.economy.fluctuate
+package spmc.smpmod.economy
 
 import com.mojang.math.Transformation
 import com.mojang.serialization.Codec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Brightness
+import net.minecraft.util.RandomSource
 import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
@@ -25,9 +28,83 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import spmc.smpmod.SMPMod
 import spmc.smpmod.economy.EconomySystem.Companion.get
+import spmc.smpmod.economy.MarketState.Companion.sellMineral
 import spmc.smpmod.utils.rnd2DP
-import java.util.UUID
-import kotlin.collections.forEach
+import java.util.*
+import kotlin.math.max
+import kotlin.math.min
+
+class FluctuationData @JvmOverloads constructor(val mineral: Item, @JvmField var defaultPrice: Double, var fluctuation: Double, var amountDeposited: Long = 0, var amountWithdrawn: Long = 0) {
+	private var lastTransactionTime = System.currentTimeMillis()
+
+	fun getBasePriceAt(netDemand: Long) = rnd2DP(max(defaultPrice * (1 + ((netDemand / SATURATION_VOLUME) * fluctuation)), .0))
+	val currentPrice: Double get() = getBasePriceAt(amountWithdrawn - amountDeposited)
+
+	fun getBulkBuyCost(amount: Int): Double {
+		val currentNet = amountWithdrawn - amountDeposited
+		return rnd2DP(((getBasePriceAt(currentNet) * BUY_MARGIN + getBasePriceAt(currentNet + amount) * BUY_MARGIN) / 2) * amount)
+	}
+
+	fun getBulkSellPayout(amount: Int): Double {
+		val currentNet = amountWithdrawn - amountDeposited
+		val startPrice: Double = getBasePriceAt(currentNet) * SELL_MARGIN
+		val endPrice: Double = getBasePriceAt(currentNet - amount) * SELL_MARGIN
+
+		val avgPrice = (startPrice + endPrice) / 2
+		return rnd2DP(avgPrice * amount)
+	}
+
+	fun deposit(amount: Long) {
+		if (amount <= 0) return
+		this.amountDeposited = Math.addExact(this.amountDeposited, amount)
+		this.lastTransactionTime = System.currentTimeMillis()
+	}
+
+	fun withdraw(amount: Long) {
+		if (amount <= 0) return
+		this.amountWithdrawn = Math.addExact(this.amountWithdrawn, amount)
+		this.lastTransactionTime = System.currentTimeMillis()
+	}
+
+	fun applyMarketDecay(source: RandomSource): Boolean {
+		if ((System.currentTimeMillis() - this.lastTransactionTime) >= 150000 && (amountDeposited >= 0 || amountWithdrawn >= 0)) {
+			amountDeposited = processFluctuation(amountDeposited, source.nextFloat() < 0.60f)
+			amountWithdrawn = processFluctuation(amountWithdrawn, source.nextFloat() < 0.60f)
+			return true
+		}
+		return false
+	}
+
+	private fun processFluctuation(currentAmount: Long, moveTowardsBase: Boolean): Long {
+		if (currentAmount < 0) return 0
+		var newAmount: Long
+		if (moveTowardsBase) {
+			if (currentAmount <= 30) return currentAmount + 15
+			newAmount = (currentAmount * 0.99).toLong()
+			if (newAmount == currentAmount) newAmount--
+		} else {
+			newAmount = (currentAmount * 1.01).toLong()
+			if (newAmount == currentAmount) newAmount++
+			newAmount = min(100000L, newAmount)
+		}
+
+		return max(0, newAmount)
+	}
+
+	companion object {
+		val CODEC: Codec<FluctuationData> = RecordCodecBuilder.create { instance -> instance.group(BuiltInRegistries.ITEM.byNameCodec().fieldOf("mineral").forGetter(FluctuationData::mineral), Codec.DOUBLE.fieldOf("default_price").forGetter(FluctuationData::defaultPrice), Codec.DOUBLE.fieldOf("fluctuation").forGetter(FluctuationData::fluctuation), Codec.LONG.fieldOf("amount_deposit").forGetter(FluctuationData::amountDeposited), Codec.LONG.fieldOf("amount_withdraw").forGetter(FluctuationData::amountWithdrawn)).apply(instance, ::FluctuationData) }
+
+		private const val SATURATION_VOLUME = 1000.0
+		private var BUY_MARGIN = 1.15
+		private var SELL_MARGIN = .85
+
+		@JvmStatic
+		fun changeMargin(percentage: Double) {
+			BUY_MARGIN = 1.15 * percentage
+			SELL_MARGIN = .85 / percentage
+		}
+	}
+}
 
 class MarketState: SavedData() {
 	fun get(item: Item): FluctuationData? {
@@ -53,9 +130,9 @@ class MarketState: SavedData() {
 		private val temporaryMarketMap: MutableMap<Item, FluctuationExpiry> = mutableMapOf()
 		private val displayList: MutableList<UUID> = mutableListOf()
 		private var rotationTick = 144000
-		val CODEC: Codec<MarketState> = FluctuationData.CODEC.listOf().xmap( { val market = MarketState(); for (data in it) market.registerMineral(data.mineral, data.defaultPrice, data.fluctuation); market }, { ArrayList(permanentMarketMap.values) })
+		val CODEC: Codec<MarketState> = FluctuationData.CODEC.listOf().xmap( { val market = MarketState(); for (data in it) market.registerMineral(data.mineral, data.defaultPrice, data.fluctuation); market }, { permanentMarketMap.values.toList() })
 
-		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "market"), { MarketState() }, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
+		val TYPE = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "market"), ::MarketState, CODEC, DataFixTypes.SAVED_DATA_COMMAND_STORAGE)
 		@JvmStatic val state: MarketState? get() = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
 		fun buyMineral(player: ServerPlayer, item: Item, amount: Int): Double {
@@ -140,7 +217,7 @@ class MarketState: SavedData() {
 			canvas.brightnessOverride = Brightness(15, 15)
 			level.addFreshEntity(canvas)
 
-			repeat(5) { repeatedValue ->
+			repeat(5) {
 				val item = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
 				val text = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.TRIGGERED)
 				if (item == null || text == null) {
@@ -150,7 +227,7 @@ class MarketState: SavedData() {
 
 				item.itemStack = Items.HEART_OF_THE_SEA.defaultInstance // actually get top 5 items instead of
 				item.setTransformation(Transformation(
-					Vector3f(.3f, 2.5f - (5 - repeatedValue) * .5f, -1.4f), // translation x and z
+					Vector3f(.3f, 2.5f - (5 - it) * .5f, -1.4f), // translation x and z
 					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // translate radians (provided is 270deg)
 					Vector3f(.5f, .5f, .5f),
 					Quaternionf(0f, 0f, 0f, 1f)))
@@ -159,7 +236,7 @@ class MarketState: SavedData() {
 				text.text = Component.empty() // change according to item / stats rn
 				text.backgroundColor = 0
 				text.setTransformation(Transformation(
-					Vector3f(.3f, 2.4f - (5 - repeatedValue) * .4f, 2.5f), // translation: x,y and z
+					Vector3f(.3f, 2.4f - (5 - it) * .4f, 2.5f), // translation: x,y and z
 					Quaternionf(0f, 0.70711f, 0f, 0.70711f), // translate radians (provided is 270deg)
 					Vector3f(0.65f, 0.65f, 0.65f),
 					Quaternionf(0f, 0f, 0f, 1f)))
@@ -190,20 +267,20 @@ class MarketState: SavedData() {
 				rotationTick = server.overworld().getRandom().nextInt(144000) + 144000
 			}
 		}
-
-		fun processItemDeposit(player: ServerPlayer, stack: ItemStack): Double {
-			val baseItem = when (stack.item.getDescriptionId()) {
-				"block.minecraft.netherite_block" -> Items.NETHERITE_INGOT
-				"block.minecraft.diamond_block" -> Items.DIAMOND
-				"block.minecraft.gold_block" -> Items.GOLD_INGOT
-				"block.minecraft.emerald_block" -> Items.EMERALD
-				"block.minecraft.lapis_block" -> Items.LAPIS_LAZULI
-				"block.minecraft.iron_block" -> Items.IRON_INGOT
-				"block.minecraft.copper_block" -> Items.COPPER_INGOT
-				"block.minecraft.redstone_block" -> Items.REDSTONE
-				else -> stack.item
-			}
-			return sellMineral(player, baseItem, stack.count * (if (baseItem !== stack.item) 9 else 1), if (baseItem !== stack.item) .93 else 1.0)
-		}
 	}
+}
+
+fun processItemDeposit(player: ServerPlayer, stack: ItemStack): Double {
+	val baseItem = when (stack.item.getDescriptionId()) {
+		"block.minecraft.netherite_block" -> Items.NETHERITE_INGOT
+		"block.minecraft.diamond_block" -> Items.DIAMOND
+		"block.minecraft.gold_block" -> Items.GOLD_INGOT
+		"block.minecraft.emerald_block" -> Items.EMERALD
+		"block.minecraft.lapis_block" -> Items.LAPIS_LAZULI
+		"block.minecraft.iron_block" -> Items.IRON_INGOT
+		"block.minecraft.copper_block" -> Items.COPPER_INGOT
+		"block.minecraft.redstone_block" -> Items.REDSTONE
+		else -> stack.item
+	}
+	return sellMineral(player, baseItem, stack.count * (if (baseItem !== stack.item) 9 else 1), if (baseItem !== stack.item) .93 else 1.0)
 }
