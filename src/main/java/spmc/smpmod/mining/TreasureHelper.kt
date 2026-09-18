@@ -61,7 +61,7 @@ object TreasureHelper {
 	    val roll = random.nextDouble()
 	    var cumulative = .0
 	    for (rarity in ItemRarity.entries) {
-		    cumulative += getThreshold(rarity.ordinal)
+		    cumulative += getThresholdd(7 - rarity.ordinal)
 		    if (roll <= cumulative) return adjustRarity(rarity)
 	    }
 	    return null
