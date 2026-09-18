@@ -31,13 +31,8 @@ class CreativeData @JvmOverloads constructor(creativeData: MutableMap<UUID, Comp
 		val TYPE: SavedDataType<CreativeData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "creative"), ::CreativeData, CODEC, DataFixTypes.LEVEL)
 		@JvmStatic fun get(): CreativeData? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
-		fun teleportToCreative(player: ServerPlayer) {
-			swapInventoriesAndLocation(player, true)
-		}
-
-		fun teleportToOverworld(player: ServerPlayer) {
-			swapInventoriesAndLocation(player, false)
-		}
+		fun teleportToCreative(player: ServerPlayer) { swapInventoriesAndLocation(player, true) }
+		fun teleportToOverworld(player: ServerPlayer) { swapInventoriesAndLocation(player, false) }
 
 		private fun swapInventoriesAndLocation(player: ServerPlayer, toCreative: Boolean) {
 			val server = SMPMod.minecraftServer ?: return

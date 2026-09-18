@@ -39,7 +39,7 @@ import kotlin.math.pow
 object FishingManager: SessionManager<FishingSession>() {
 	@JvmStatic
 	fun startMinigame(player: ServerPlayer, hook: FishingHook): Boolean {
-		if (checkNotCreative(player)) return false
+		if (anyInCreative(player)) return false
 		val rodItem = player.mainHandItem.item as? RodItem ?: return false
 
 		val session = FishingSession(player, hook, rodItem)

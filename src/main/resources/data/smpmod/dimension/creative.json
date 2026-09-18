@@ -3,10 +3,16 @@
   "generator": {
     "type": "minecraft:flat",
     "settings": {
+      "structure_overrides": [],
+      "features": false,
       "layers": [
         {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
           "block": "minecraft:grass_block",
-          "height": 64
+          "height": 63
         }
       ]
     }

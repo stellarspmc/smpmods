@@ -1,9 +1,5 @@
 package spmc.smpmod.mining
 
-import spmc.smpmod.SMPMod
-import spmc.smpmod.core.ItemRarity
-import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.registry.TreasureRegistry
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
@@ -23,7 +19,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.BarrelBlock
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BarrelBlockEntity
+import spmc.smpmod.SMPMod
 import spmc.smpmod.core.BiomeCategory
+import spmc.smpmod.core.ItemRarity
+import spmc.smpmod.economy.EconomySystem
+import spmc.smpmod.registry.TreasureRegistry
 import kotlin.math.max
 
 object TreasureSpawner {
@@ -35,7 +35,7 @@ object TreasureSpawner {
 	    world.destroyBlock(pos, true)
         world.setBlock(pos, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP), 3)
         val barrel = world.getBlockEntity(pos) as? BarrelBlockEntity ?: return
-	    val customNameComponent = Component.literal(rarity.toString()).withColor(rarity.color).append(" Treasure")
+	    val customNameComponent = Component.literal(rarity.toString()).withColor(rarity.color).append(" Treasure").withStyle { it.withItalic(false) }
 	    barrel.applyComponents(DataComponentMap.builder().set(DataComponents.CUSTOM_NAME, customNameComponent).build(), DataComponentPatch.builder().set(DataComponents.CUSTOM_NAME, customNameComponent).build())
 
 	    val availableSlots = (0 until barrel.containerSize).toMutableList()
