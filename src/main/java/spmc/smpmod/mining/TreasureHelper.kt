@@ -22,7 +22,6 @@ import spmc.smpmod.mining.ChunkPool.multiplier
 import spmc.smpmod.mining.TreasureSpawner.spawnTreasureContainer
 import spmc.smpmod.utils.checkNotCreative
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.enums.enumEntries
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ln
@@ -62,7 +61,7 @@ object TreasureHelper {
 	    val roll = random.nextDouble()
 	    var cumulative = .0
 	    for (rarity in ItemRarity.entries) {
-		    cumulative += getThreshold(rarity.ordinal)
+		    cumulative += getThreshold(7 - rarity.ordinal)
 		    if (roll <= cumulative) return adjustRarity(rarity)
 	    }
 	    return null
