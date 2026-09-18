@@ -465,7 +465,7 @@ object CentralizedShopManager {
 
 	private fun createShopItem(data: ShopData): ItemStack {
 		val item = data.getItemSold().copy()
-		item.set(DataComponents.CUSTOM_NAME, Component.literal("${data.getStack()}x ${item.hoverName.string}").withColor(TextColor.YELLOW))
+		item.set(DataComponents.CUSTOM_NAME, Component.literal("${data.getStack()}x ${item.hoverName.string}").withColor(TextColor.YELLOW).withStyle { it.withItalic(false) })
 		item.set(DataComponents.LORE, ItemLore(listOf(
 			Component.literal("Selling For: $${data.getPrice()}").withStyle { it.withItalic(false) }.withColor(TextColor.GREEN), Component.literal("Stock Left: ${if (data.isCreative) "∞" else data.availableStock}").withStyle { it.withItalic(false) }.withColor(TextColor.GREEN)
 		)))
