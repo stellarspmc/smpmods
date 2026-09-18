@@ -118,7 +118,7 @@ class SMPMod: DedicatedServerModInitializer {
 	    ServerTickEvents.END_SERVER_TICK.register {
 		    if (it.playerList.players.isEmpty()) return@register
 		    if (it.tickCount % 360 == 0) serverTickLoop(it)
-		    if (it.tickCount % 15 == 0) NPCManager.serverTickLoop(it)
+		    if (it.tickCount % 5 == 0) NPCManager.serverTickLoop(it)
 		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
 		    if (it.tickCount % 3 == 0 ) FishingMob.serverTickLoop()
 		    if (it.tickCount % 1200 != 0) return@register
@@ -136,8 +136,9 @@ class SMPMod: DedicatedServerModInitializer {
 		    }
 	    }
 
-	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ -> // non-players only
+	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, source -> // non-players only
 			if (entity is ServerPlayer) return@register
+		    if (source.entity !is ServerPlayer) return@register
 		    when (entity.type.category) {
 			    MobCategory.MONSTER -> ScrapHandler.handleMonsterScrap(entity) // all aggressive
 			    MobCategory.MISC -> ScrapHandler.handleGolemScrap(entity) // villagers, golems, non-mob types (!!!)
@@ -177,8 +178,8 @@ class SMPMod: DedicatedServerModInitializer {
 		    val attacker = source.entity as? ServerPlayer ?: return@register
 		    val mainHandStack = attacker.mainHandItem
 
-		    if (mainHandStack.`is`(Items.MACE) && attacker.fallDistance > 1.5f) attacker.cooldowns.addCooldown(mainHandStack, 30 * 20)
-	    }
+		    if (mainHandStack.`is`(Items.MACE) && attacker.fallDistance >= 1.5f) attacker.cooldowns.addCooldown(mainHandStack, 30 * 20)
+	    } // TODO: investiage fall damage
     }
 
     companion object {

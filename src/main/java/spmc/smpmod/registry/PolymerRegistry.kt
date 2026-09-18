@@ -97,15 +97,15 @@ object PolymerRegistry {
 
 
 	private fun registerMisc() {
-		createItem("common_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.COMMON) }
-		createItem("uncommon_scrap") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.UNCOMMON) }
-		createItem("rare_relic") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.RARE) }
-		createItem("epic_catalyst") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.EPIC) } // maybe dont call it scrap?
-		createItem("legendary_matrix") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.LEGENDARY) }
-		createItem("mythic_singularity") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.MYTHIC) }
+		createItem("common_scrap") { ScrapItem(it, Items.DEAD_BUSH, ItemRarity.COMMON) }
+		createItem("uncommon_scrap") { ScrapItem(it, Items.STRING, ItemRarity.UNCOMMON) }
+		createItem("rare_relic") { ScrapItem(it, Items.BLADE_POTTERY_SHERD, ItemRarity.RARE) }
+		createItem("epic_catalyst") { ScrapItem(it, Items.NETHER_STAR, ItemRarity.EPIC) } // maybe dont call it scrap?
+		createItem("legendary_matrix") { ScrapItem(it, Items.OBSIDIAN, ItemRarity.LEGENDARY) }
+		createItem("mythic_singularity") { ScrapItem(it, Items.CONCRETE.white, ItemRarity.MYTHIC) }
 		createItem("chromatic_glint") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.CHROMATIC) }
-		createItem("astral_fabric") { ScrapItem(it, Items.NETHERITE_SCRAP, ItemRarity.ASTRAL) }
+		createItem("astral_fabric") { ScrapItem(it, Items.WOOL.white, ItemRarity.ASTRAL) } // could change item
 
-		createItem("elementite") { BaseMineralItem(it, Items.DIAMOND, Component.literal("Elementite")) }
+		createItem("elementite") { BaseMineralItem(it, Items.EMERALD, Component.literal("Elementite")) }
 	}
 }

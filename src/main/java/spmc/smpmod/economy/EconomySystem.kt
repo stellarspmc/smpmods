@@ -48,7 +48,7 @@ class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double>
 
 	fun top(page: Int): String {
 		val sorted = sortedBalances()
-		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
+		val filtered = sorted.filter { resolveName(it.key) != "spmc" } // todo: add op check instead of hard remove
 		val rankings = StringBuilder()
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize

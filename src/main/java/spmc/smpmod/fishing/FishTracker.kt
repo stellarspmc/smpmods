@@ -52,6 +52,7 @@ class FishTracker @JvmOverloads constructor(fishUnlocked: MutableMap<UUID, Mutab
 			return 1
 		}
 
+		fun getFishIndexAmount(id: UUID) = get()?.getUnlockedFish(id)?.size ?: 0
 		fun getFishIndexAmount(player: ServerPlayer) = get()?.getUnlockedFish(player.getUUID())?.size ?: 0
 		fun openFishIndexMenu(player: ServerPlayer, page: Int) {
 			val maxPages = max(1, ceil(allFish.size.toDouble() / 45).toInt())

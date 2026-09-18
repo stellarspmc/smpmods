@@ -22,7 +22,6 @@ import spmc.smpmod.mining.ChunkPool.multiplier
 import spmc.smpmod.mining.TreasureSpawner.spawnTreasureContainer
 import spmc.smpmod.utils.checkNotCreative
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.enums.enumEntries
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.ln
@@ -39,7 +38,7 @@ object TreasureHelper {
 
     fun onBlockBreak(world: Level, player: Player, pos: BlockPos, state: BlockState, @Suppress("unused") ignored: BlockEntity?) {
         if (world.isClientSide) return
-	    if (checkNotCreative(player as ServerPlayer)) return
+	    if (!checkNotCreative(player as ServerPlayer)) return
 
         val mainHand = player.mainHandItem
         val enchantmentRegistry = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)

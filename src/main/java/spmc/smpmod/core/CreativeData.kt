@@ -47,7 +47,7 @@ class CreativeData @JvmOverloads constructor(creativeData: MutableMap<UUID, Comp
 			// save data
 			val saveData = (if (toCreative) state.survivalData else state.creativeData).computeIfAbsent(player.uuid) { CompoundTag() }
 			saveData.store("pos", Vec3.CODEC, player.position())
-			player.inventory.forEachIndexed { index, stack -> saveData.store("slot$index", ItemStack.CODEC, stack) }
+			player.inventory.forEachIndexed { index, stack -> saveData.store("slot$index", ItemStack.CODEC, stack) } // cant access registry TODO
 			state.setDirty()
 
 			// load other data

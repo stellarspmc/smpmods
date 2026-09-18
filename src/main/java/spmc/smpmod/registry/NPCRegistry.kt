@@ -3,6 +3,7 @@ package spmc.smpmod.registry
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Prediction
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.entity.player.Player
@@ -39,7 +40,7 @@ object NPCRegistry {
                                 if (stack.item is FishItem) {
 									totalPayout += FishItem.getModifiedPrice(stack)
                                     totalFishCount += stack.count
-                                } else player.inventory.placeItemBackInInventory(stack)
+                                } else player.inventory.placeItemBackInInventory(stack, Prediction.PREDICTED)
                                 sellContainer.setItem(i, ItemStack.EMPTY)
                             }
                             if (totalPayout > 0) {

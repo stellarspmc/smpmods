@@ -3,11 +3,11 @@ package spmc.smpmod.mining
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
-import spmc.smpmod.core.ItemRarity
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
 import spmc.smpmod.core.BiomeCategory
+import spmc.smpmod.core.ItemRarity
 
 class TreasureEntry private constructor(val item: Item, val minCount: Int, val maxCount: Int, val rarity: ItemRarity,
 		val allowedBiomes: Set<BiomeCategory>, val modifiers: List<ItemStack.(ServerLevel) -> Unit>, val name: Component?, val lore: List<Component>) {
@@ -22,7 +22,7 @@ class TreasureEntry private constructor(val item: Item, val minCount: Int, val m
 		val stack = ItemStack(item, count)
 
 		modifiers.forEach { modify -> stack.modify(level) }
-		name?.let { customName -> stack.set(DataComponents.CUSTOM_NAME, customName) }
+		name?.let { customName -> stack.set(DataComponents.CUSTOM_NAME, customName.plainCopy().withStyle {it.withItalic(false) }) }
 		if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore))
 
 		return stack

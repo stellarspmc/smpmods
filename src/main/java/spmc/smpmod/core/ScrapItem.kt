@@ -16,6 +16,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import spmc.smpmod.registry.PolymerRegistry
 import spmc.smpmod.utils.BasePolymerItem
+import spmc.smpmod.utils.formatName
 
 class ScrapItem(properties: Properties, vanillaItem: Item, val rarity: ItemRarity): BasePolymerItem(properties, vanillaItem) {
 	private val mods: MutableList<ItemModifier> = mutableListOf()
@@ -28,20 +29,20 @@ class ScrapItem(properties: Properties, vanillaItem: Item, val rarity: ItemRarit
 
 	companion object {
 		private fun getName(rarity: ItemRarity) = when(rarity) {
-			ItemRarity.RARE -> "${rarity.name} Relic"
-			ItemRarity.EPIC -> "${rarity.name} Catalyst"
-			ItemRarity.LEGENDARY -> "${rarity.name} Matrix"
-			ItemRarity.MYTHIC -> "${rarity.name} Singularity"
-			ItemRarity.CHROMATIC -> "${rarity.name} Glint"
-			ItemRarity.ASTRAL -> "${rarity.name} Fabric"
-			else -> "${rarity.name} Scrap"
+			ItemRarity.RARE -> "${formatName(rarity.name)} Relic"
+			ItemRarity.EPIC -> "${formatName(rarity.name)} Catalyst"
+			ItemRarity.LEGENDARY -> "${formatName(rarity.name)} Matrix"
+			ItemRarity.MYTHIC -> "${formatName(rarity.name)} Singularity"
+			ItemRarity.CHROMATIC -> "${formatName(rarity.name)} Glint"
+			ItemRarity.ASTRAL -> "${formatName(rarity.name)} Fabric"
+			else -> "${formatName(rarity.name)} Scrap"
 		}
 	}
 }
 
 object ScrapHandler {
 	var buffMultiplier = 1f
-
+	// TODO: broken (only 50th line is broken)
 	fun handleMonsterScrap(entity: Entity) {
 		if (entity is SulfurCube) return
 		val random = entity.random

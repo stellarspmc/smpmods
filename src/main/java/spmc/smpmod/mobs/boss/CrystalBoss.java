@@ -63,7 +63,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
             if (orbitingCrystals[i] == null || !orbitingCrystals[i].isAlive()) {
                 EndCrystal crystal = new EndCrystal(this.level(), this.getX(), this.getY() + 2, this.getZ());
                 crystal.setShowBottom(false);
-                crystal.setInvulnerable(true);
+                crystal.setPermanentlyInvulnerable(true);
                 this.level().addFreshEntity(crystal);
                 orbitingCrystals[i] = crystal;
             }

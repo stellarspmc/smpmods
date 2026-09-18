@@ -23,9 +23,9 @@ public abstract class MixinPlayerAdvancementTracker {
     private void smpmod$addMessage(AdvancementHolder holder, String criterion, CallbackInfoReturnable<Boolean> cir) {
         if (holder.value().display().isEmpty()) return;
         if(!this.getOrStartProgress(holder).isDone()) return;
-        String advancementName = holder.value().display().get().getTitle().getString();
+        String advancementName = holder.value().display().get().title().getString();
         String sent;
-        switch (holder.value().display().get().getType()) {
+        switch (holder.value().display().get().type()) {
             case GOAL -> sent = "Nice, " + player.getName().getString() + " has achieved [" + advancementName + "]";
             case CHALLENGE -> sent = "Nice, " + player.getName().getString() + " has finished [" + advancementName + "]";
             default -> sent = "Nice, " + player.getName().getString() + " has done [" + advancementName + "]";

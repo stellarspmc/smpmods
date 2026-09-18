@@ -4,11 +4,12 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Prediction
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.item.ItemStack
 import spmc.smpmod.economy.EconomySystem.Companion.get
 import spmc.smpmod.quest.Quest.QuestType
-import spmc.smpmod.utils.*
+import spmc.smpmod.utils.formatName
 import java.util.*
 
 @JvmRecord
@@ -44,7 +45,7 @@ data class Quest(val id: String, val title: String, val description: String, @Jv
 		fun grant(player: ServerPlayer) {
 			if (money > 0) get()?.changeBalance(player.getUUID(), money)
 			if (experience > 0) player.giveExperiencePoints(experience)
-			for (item in items) if (!player.inventory.add(item.copy())) player.drop(item.copy(), false)
+			for (item in items) if (!player.inventory.add(item.copy())) player.drop(item.copy(), false, Prediction.PREDICTED)
 		}
 
 		companion object {

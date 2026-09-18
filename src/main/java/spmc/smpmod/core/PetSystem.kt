@@ -41,7 +41,7 @@ object PetManager {
 		val pet = EntityTypes.ARMOR_STAND.create(player.level(), EntitySpawnReason.TRIGGERED) ?: return
 		pet.isInvisible = true
 		pet.setNoBasePlate(true)
-		pet.isInvulnerable = true
+		pet.isPermanentlyInvulnerable = true
 
 		val head = ItemStack(Items.PLAYER_HEAD)
 		head.applyComponents(DataComponentMap.builder().set(DataComponents.PROFILE, createCustomProfile("pet_${player.scoreboardName}", UUID.randomUUID(), "")).build()) // todo

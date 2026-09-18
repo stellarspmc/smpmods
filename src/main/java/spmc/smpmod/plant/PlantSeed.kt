@@ -6,15 +6,11 @@ import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.RandomSource
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.CropBlock
-import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.*
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
@@ -25,7 +21,7 @@ import spmc.smpmod.utils.BasePolymerBlockItem
 import java.util.function.Supplier
 import kotlin.math.pow
 
-class SeedBlock(properties: Properties, private val cropItemSupplier: Supplier<CropItem>): CropBlock(properties.mapColor { if (it.getValue(AGE) >= 6) MapColor.COLOR_YELLOW else MapColor.PLANT }.noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY)), PolymerBlock {
+class SeedBlock(properties: Properties, private val cropItemSupplier: Supplier<CropItem>): CropBlock(properties.mapColor { if (it.getValue(AGE) >= 6) MapColor.COLOR_YELLOW else MapColor.PLANT }.noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.POPPED)), PolymerBlock {
 	private val boneMealAffection = intArrayOf(0, 1, 1, 3, 3, 5)
 
 	override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -35,14 +31,14 @@ class SeedBlock(properties: Properties, private val cropItemSupplier: Supplier<C
 
 	override fun getPolymerBlockState(state: BlockState, context: PacketContext?) = Blocks.WHEAT.defaultBlockState().setValue(AGE, state.getValue(ageProperty)) // TODO
 
-	override fun performBonemeal(level: ServerLevel, random: RandomSource, pos: BlockPos, state: BlockState) {
-		super.performBonemeal(level, random, pos, state)
+	override fun performBonemeal(level: ServerLevel, random: RandomSource, pos: BlockPos, state: BlockState, source: BonemealSource) {
+		super.performBonemeal(level, random, pos, state, source)
 		val updatedState = level.getBlockState(pos)
 		val currentBonemeal: Int = state.getValue(BONEMEAL_COUNT)
 		if (currentBonemeal < 5 && updatedState.`is`(this)) level.setBlock(pos, updatedState.setValue(BONEMEAL_COUNT, currentBonemeal + 1), UPDATE_CLIENTS)
 	}
 
-	override fun playerDestroy(level: Level, player: Player, pos: BlockPos, state: BlockState, blockEntity: BlockEntity?, tool: ItemStack) {
+	override fun playerDestroy(level: ServerLevel, player: ServerPlayer, pos: BlockPos, state: BlockState, blockEntity: BlockEntity?, tool: ItemStack) {
 		if (!level.isClientSide && isMaxAge(state)) {
 			val bonemealUsed: Int = state.getValue(BONEMEAL_COUNT) // basic impl, TODO: make this more sophisticated -> impl fusing
 			val finalQuality = Math.clamp((rollStarQuality(level.getRandom(), player.luck) - boneMealAffection[bonemealUsed]).toLong(), -2, 5)

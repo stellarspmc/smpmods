@@ -1,6 +1,6 @@
 package spmc.smpmod.mixin.shop;
 
-import spmc.smpmod.economy.ShopManager;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.server.level.ServerLevel;
@@ -31,14 +31,15 @@ public class MixinServerGamePacketListenerImpl {
     @Inject(method = "updateSignText", at = @At("TAIL"))
     private void smpmod$createShop(ServerboundSignUpdatePacket packet, List<FilteredText> lines, CallbackInfo ci) {
         ServerLevel serverLevel = this.player.level();
-        BlockPos signPos = packet.getPos();
+        BlockPos signPos = packet.pos();
 
         if (!(serverLevel.getBlockEntity(signPos) instanceof SignBlockEntity signBlockEntity)) return;
         if (!serverLevel.dimension().identifier().getNamespace().equals("minecraft")) return;
 
-        SignText signText = signBlockEntity.getText(packet.isFrontText());
-        String line1 = signText.getMessage(0, false).getString().trim();
-        String line2 = signText.getMessage(1, false).getString().trim();
+        SignText signText = signBlockEntity.getText(packet.slot());
+        List<Component> line = signText.getMessages(false);
+        String line1 = line.getFirst().getString().trim();
+        String line2 = line.get(1).getString().trim();
 
         if (line1.equalsIgnoreCase("[shop]")) smpmod$handleCreation(this.player, serverLevel, signPos, line2);
         if (line1.equalsIgnoreCase("[ashop]")) smpmod$handleAdminShop(this.player, serverLevel, signPos, line2);
