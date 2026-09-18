@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Prediction
 import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.Container
 import net.minecraft.world.InteractionHand
@@ -108,7 +109,7 @@ class ShopData(val shopId: UUID, val ownerUuid: UUID, val dimension: ResourceKey
             recordReceipt(ShopReceipt(buyer.getUUID(), buyer.scoreboardName, stack, price, System.currentTimeMillis()))
 
             val itemsToGive = itemSold.copyWithCount(stack)
-            if (!buyer.inventory.add(itemsToGive)) buyer.drop(itemsToGive, false)
+            if (!buyer.inventory.add(itemsToGive)) buyer.drop(itemsToGive, false, Prediction.PREDICTED)
 
             buyer.sendSystemMessage(Component.literal("🏢: ").withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("Bought ").withStyle(ChatFormatting.GOLD))
@@ -441,18 +442,18 @@ object CentralizedShopManager {
 		val shopList = getAllShopsByLevel(level)
 		val gui = SimpleGui(MenuType.GENERIC_9x6, player, false)
 
-		refreshGui(gui, player, 1, shopList)
+		refreshGui(gui, player, 0, shopList)
 		gui.open()
 	}
 
 	private fun refreshGui(gui: SimpleGui, player: ServerPlayer, page: Int, shopList: List<ShopData>) {
-		val maxPage = (shopList.size / 45)
+		val maxPage = (shopList.size / 45f).roundToInt()
 
 		val startIndex = page * 45
 		val endIndex = min(startIndex + 45, shopList.size)
 		for (i in 0 .. 44) {
 			val index = startIndex + i
-			if (index < endIndex) gui.setSlot(i, GuiElementBuilder(createShopItem(shopList[i])).setCallback { it -> callback(it, shopList[i], player) })
+			if (index < endIndex) gui.setSlot(i, GuiElementBuilder(createShopItem(shopList[i])).setCallback { it -> callback(it, shopList[i], player); refreshGui(gui, player, page, shopList) })
 			else gui.setSlot(i, GuiElementBuilder(Items.AIR))
 		}
 
@@ -464,9 +465,9 @@ object CentralizedShopManager {
 
 	private fun createShopItem(data: ShopData): ItemStack {
 		val item = data.getItemSold().copy()
-		item.set(DataComponents.CUSTOM_NAME, Component.literal("${data.getStack()}x $item"))
+		item.set(DataComponents.CUSTOM_NAME, Component.literal("${data.getStack()}x ${item.hoverName.string}").withColor(TextColor.YELLOW).withStyle { it.withItalic(false) })
 		item.set(DataComponents.LORE, ItemLore(listOf(
-			Component.literal("Selling For: $${data.getPrice()}"), Component.literal("Stock left: ${data.availableStock}")
+			Component.literal("Selling For: $${data.getPrice()}").withStyle { it.withItalic(false) }.withColor(TextColor.GREEN), Component.literal("Stock Left: ${if (data.isCreative) "∞" else data.availableStock}").withStyle { it.withItalic(false) }.withColor(TextColor.GREEN)
 		)))
 		// TODO: shop displays
 		// data to show: position, selling item, stock, price...

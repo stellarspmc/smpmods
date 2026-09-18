@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.players.NameAndId
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.stats.Stats
+import net.minecraft.util.Prediction
 import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.Item
@@ -89,17 +90,18 @@ object CommandRegistry {
                     .executes(CommandRegistry::executeNpcSetup))))
 
 	    dispatcher.register(Commands.literal("bounty")
-		    .executes { executeBounty(it, it.source.player ?: return@executes -1) }
+		    .executes { executeBounty(it, it.source.player?: return@executes -1) }
 		    .then(Commands.argument("player", EntityArgument.player())
 			    .executes { executeBounty(it, EntityArgument.getPlayer(it, "player")) }
 		        .then(Commands.literal("add")
 			        .then(Commands.argument("anonymous", BoolArgumentType.bool())
-				        .executes(CommandRegistry::addBounty)))))
+				        .then(Commands.argument("amount", DoubleArgumentType.doubleArg(.01))
+				            .executes(CommandRegistry::addBounty))))))
 
         dispatcher.register(Commands.literal("fishing").executes { FishTracker.openFishIndexMenu(it.source.player?: return@executes -1) }
-	        .then(Commands.argument("player", EntityArgument.player())
-				.executes { return@executes sendSuccess(it.source.player?: return@executes -1, message = "${(it.source.player?: return@executes -1).scoreboardName} has ${FishTracker.getFishIndexAmount(EntityArgument.getPlayer(it, "player"))} / 405 fishes unlocked.") }))
-        dispatcher.register(Commands.literal("vault").executes { VaultData.sendVaultMessage(it.source.player?: return@executes -1) })
+	        .then(Commands.argument("player", GameProfileArgument.gameProfile())
+				.executes(CommandRegistry::executeFish)))
+	    dispatcher.register(Commands.literal("vault").executes { VaultData.sendVaultMessage(it.source.player?: return@executes -1) })
         dispatcher.register(Commands.literal("quests").executes(CommandRegistry::executeQuests))
         dispatcher.register(Commands.literal("surface").executes(CommandRegistry::executeSurface))
         dispatcher.register(Commands.literal("enderchest") .executes(CommandRegistry::executeEnderChest))
@@ -154,6 +156,10 @@ object CommandRegistry {
 		ctx.source.sendSuccess({ Component.literal("$name bounty is at $${BountySystem.checkBounty(player)}.").withColor(TextColor.GREEN) }, false)
 		return 1
 	}
+	private fun executeFish(ctx: CommandContext<CommandSourceStack>): Int {
+		val player = GameProfileArgument.getGameProfiles(ctx, "player").iterator().next()
+		return sendSuccess(ctx.source.player?: return -1, message = "${player.name} has ${FishTracker.getFishIndexAmount(player.id)} / 405 fishes unlocked.")
+	}
 
 	private fun addBounty(ctx: CommandContext<CommandSourceStack>): Int {
 		val player = EntityArgument.getPlayer(ctx, "player")
@@ -189,6 +195,7 @@ object CommandRegistry {
 
     private fun executeDepositHand(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.source.player?: return -1
+	    if (anyInCreative(player)) return -1
         val hand = player.inventory.selectedItem
 
         if (hand.isEmpty) return sendError(player, message = "Hold a valid market item or use /deposit all.")
@@ -200,7 +207,7 @@ object CommandRegistry {
 
     private fun executeDepositAll(ctx: CommandContext<CommandSourceStack>): Int {
         val player = ctx.source.player?: return -1
-	    if (checkNotCreative(player)) return -1
+	    if (anyInCreative(player)) return -1
         var totalPayout = .0
 
         for (i in 0..<player.inventory.containerSize) {
@@ -223,8 +230,8 @@ object CommandRegistry {
         val id = StringArgumentType.getString(ctx, "id")
 
         if (NPCData.get()?.hasNpc(id) == true) {
+	        NPCData.get()?.getMannequin(level, id)?.discard()
             NPCData.get()?.removeNpc(id)
-            NPCData.get()?.getMannequin(level, id)?.discard()
 	        ctx.source.sendSuccess({ Component.literal("✔: Mannequin killed!").withStyle(ChatFormatting.GREEN) }, false)
 	        return 1
         }
@@ -405,7 +412,7 @@ object CommandRegistry {
     private fun executeWithdraw(ctx: CommandContext<CommandSourceStack>, count: Int): Int {
         val item = ItemArgument.getItem(ctx, "item").item().value()
         val player = ctx.source.player?: return -1
-	    if (checkNotCreative(player)) return -1
+	    if (anyInCreative(player)) return -1
         val totalCost = MarketState.buyMineral(player, item, count)
         if (totalCost == -2.0) {
             player.sendSystemMessage(Component.literal("✖: ").append(Component.translatable(item.getDescriptionId())).append(" is not a tradeable market item.").withStyle(ChatFormatting.RED))
@@ -427,7 +434,7 @@ object CommandRegistry {
             val stackSize = min(totalCount, maxStack)
             val stack = ItemStack(item, stackSize)
 	        totalCount -= stackSize
-            if (!player.inventory.add(stack)) player.drop(stack, false)?.setNoPickUpDelay()
+            if (!player.inventory.add(stack)) player.drop(stack, false, Prediction.PREDICTED)?.setNoPickUpDelay()
         }
     }
 }

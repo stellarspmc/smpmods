@@ -20,9 +20,9 @@
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
-    "minecraft": "^26.2", // ^26.3
-    "fabric-api": ">=0.156.0+26.2", // >+0.160.4+26.3
-    "polymer-bundled": ">=0.17.3+26.2", // 0.18.0+26.3-rc-1, waiting
+    "minecraft": "^26.3",
+    "fabric-api": ">+0.160.4+26.3",
+    "polymer-bundled": ">=0.18.0+26.3-rc-1",
     "floodgate": "2.x",
     "fabric-language-kotlin": ">=1.14.1+kotlin.2.4.20"
   }

@@ -179,7 +179,7 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.SILK_TOUCH), 1)
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), it.random.nextIntBetweenInclusive(8, 10))
 		}}
-		entry(Items.CHAINMAIL_CHESTPLATE) { rarity(ItemRarity.MYTHIC).name(Component.literal("Copper Plate").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.COPPER_CHESTPLATE) { rarity(ItemRarity.MYTHIC).name(Component.literal("Copper Plate").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.PROJECTILE_PROTECTION), 9)
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 		}}
@@ -284,7 +284,7 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.BANE_OF_ARTHROPODS), 8)
 			enchant(enchants.getOrThrow(Enchantments.VANISHING_CURSE), 1)
 		}}
-		entry(Items.MACE) { rarity(ItemRarity.ASTRAL).name(Component.literal("Netherite Spear").withStyle(ChatFormatting.AQUA)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+		entry(Items.NETHERITE_SPEAR) { rarity(ItemRarity.ASTRAL).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.DENSITY), 6)
 			enchant(enchants.getOrThrow(Enchantments.MENDING), 1)
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 4)

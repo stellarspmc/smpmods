@@ -5,7 +5,7 @@ import spmc.smpmod.utils.*
 
 object GolfMechanic: SessionManager<GolfSession>() {
 	fun startMinigame(player: ServerPlayer): Boolean {
-		if (checkNotCreative(player)) return false
+		if (anyInCreative(player)) return false
 		val session = GolfSession(player)
 		return startSession(session)
 	}

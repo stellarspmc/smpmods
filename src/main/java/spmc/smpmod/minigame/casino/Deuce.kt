@@ -12,7 +12,7 @@ import java.util.*
 object DeuceManager: SessionManager<DeuceSession>() {
 	fun startMinigame(list: List<ServerPlayer>): Boolean {
 		if (list.size !in 1..4) return false
-		if (checkNotCreative(list)) return false
+		if (anyInCreative(list)) return false
 		val session = DeuceSession(list)
 		return startSession(session)
 		// TODO: add betting
@@ -33,6 +33,8 @@ class DeuceSession(players: List<ServerPlayer>) : GameSession(players) {
 	private val handMapBaseId = 1000 // TODO: map testing
 
 	override fun onStart() {
+		// clear and remember hotbar items
+
 		seats.clear()
 		players.forEach { seats.add(it.uuid) }
 

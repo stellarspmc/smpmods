@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.util.Mth
+import net.minecraft.util.Prediction
 import net.minecraft.util.RandomSource
 import net.minecraft.world.BossEvent.BossBarColor
 import net.minecraft.world.BossEvent.BossBarOverlay
@@ -38,7 +39,7 @@ import kotlin.math.pow
 object FishingManager: SessionManager<FishingSession>() {
 	@JvmStatic
 	fun startMinigame(player: ServerPlayer, hook: FishingHook): Boolean {
-		if (checkNotCreative(player)) return false
+		if (anyInCreative(player)) return false
 		val rodItem = player.mainHandItem.item as? RodItem ?: return false
 
 		val session = FishingSession(player, hook, rodItem)
@@ -170,7 +171,7 @@ object FishingLoot {
 	private fun createFishItem(player: ServerPlayer, item: RodItem, streak: Int) {
 		val fishData = rollFish(player, item, streak)
 		val fishStack = fishData.item.createFishInstance(fishData.star, fishData.mods)
-		if (!player.inventory.add(fishStack)) player.drop(fishStack, false)
+		if (!player.inventory.add(fishStack)) player.drop(fishStack, false, Prediction.PREDICTED)
 	}
 
 	private val rates: List<DoubleArray> = listOf( // 8 tiers, so a 8x8 matrix

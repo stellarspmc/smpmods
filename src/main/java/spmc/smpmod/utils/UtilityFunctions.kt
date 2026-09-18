@@ -16,13 +16,12 @@ import spmc.smpmod.SMPMod.Companion.minecraftServer
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
-@Suppress("UnstableApiUsage")
 fun isAdmin(player: ServerPlayer) = player.checkPermission(Identifier.fromNamespaceAndPath("smpmod", "admin"), PermissionLevel.GAMEMASTERS)
 fun streamToSuggestion(set: Set<Item>): SuggestionProvider<CommandSourceStack> = { _, builder -> SharedSuggestionProvider.suggestResource(set.distinct().map { BuiltInRegistries.ITEM.getKey(it) }, builder)}
 fun rnd2DP(toBeRounded: Double) = (toBeRounded * 100.0).roundToInt() / 100.0
 fun getY(x: Int, z: Int, level: ServerLevel) = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z)
-fun checkNotCreative(players: Collection<ServerPlayer>) = players.all { it.level().dimension().identifier().namespace == "minecraft" }
-fun checkNotCreative(vararg players: ServerPlayer) = checkNotCreative(players.asList())
+fun anyInCreative(players: Collection<ServerPlayer>) = players.any { it.level().dimension().identifier().path == "creative" }
+fun anyInCreative(vararg players: ServerPlayer) = anyInCreative(players.asList())
 fun id(id: String) = Identifier.fromNamespaceAndPath("smpmod", id)
 
 @Suppress("UNCHECKED_CAST") fun <T> sendError(players: Collection<ServerPlayer>, message: String, returnValue: T = -1 as T): T { players.forEach { it.sendSystemMessage(Component.literal("✖: $message").withStyle(ChatFormatting.RED)) }; return returnValue }

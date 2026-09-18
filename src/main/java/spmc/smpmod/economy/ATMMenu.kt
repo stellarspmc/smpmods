@@ -5,12 +5,15 @@ import eu.pb4.sgui.api.gui.SimpleGui
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Prediction
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.geysermc.cumulus.form.SimpleForm
 import org.geysermc.floodgate.api.FloodgateApi
-import spmc.smpmod.utils.*
+import spmc.smpmod.utils.rnd2DP
+import spmc.smpmod.utils.sendError
+import spmc.smpmod.utils.sendSuccess
 import kotlin.math.min
 
 object ATMMenu {
@@ -74,7 +77,7 @@ object ATMMenu {
 		while (totalCount > 0) {
 			val stackSize = min(totalCount, maxStack)
 			val stack = ItemStack(Items.DIAMOND, stackSize)
-			if (!player.inventory.add(stack)) player.drop(stack, false)?.setNoPickUpDelay()
+			if (!player.inventory.add(stack)) player.drop(stack, false, Prediction.PREDICTED)?.setNoPickUpDelay()
 			totalCount -= stackSize
 		}
 		sendSuccess<Int>(player, message = String.format("Withdrew %dx Diamonds for $%d.", totalCount, totalCount * 100))

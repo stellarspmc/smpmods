@@ -9,11 +9,15 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
-import net.minecraft.server.level.*
-import net.minecraft.sounds.*
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.inventory.*
+import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.inventory.MenuType
+import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.crafting.SingleRecipeInput
@@ -22,12 +26,12 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.phys.BlockHitResult
-import spmc.smpmod.industrial.*
+import spmc.smpmod.industrial.CompressorRecipe
 import spmc.smpmod.registry.IndustrialRegistry
 import kotlin.math.max
 
 class SculkCompressorBlock(properties: Properties): BaseMachineBlock<SculkCompressorEntity>(properties, { IndustrialRegistry.SCULK_ENTITY!! }, ::SculkCompressorEntity) {
-	override fun codec() = CODEC
+	//override fun codec(): simpleCodec = CODEC
 	override fun getPolymerBlockState(state: BlockState, context: PacketContext?) = Blocks.SCULK_CATALYST.defaultBlockState().setValue(BlockStateProperties.BLOOM, true)
 	override fun useWithoutItem(state: BlockState, level: Level, pos: BlockPos, player: Player, hitResult: BlockHitResult): InteractionResult {
 		if (!level.isClientSide && player is ServerPlayer && level.getBlockEntity(pos) is SculkCompressorEntity) CompressorUI(player, level.getBlockEntity(pos) as SculkCompressorEntity).open()
@@ -68,9 +72,9 @@ class SculkCompressorBlock(properties: Properties): BaseMachineBlock<SculkCompre
 		}
 	}
 
-	companion object {
-		val CODEC = simpleCodec(::SculkCompressorBlock)
-	}
+	//companion object {
+		//val CODEC = simpleCodec(::SculkCompressorBlock)
+	//}
 }
 
 class SculkCompressorEntity(pos: BlockPos, state: BlockState): BaseMachineEntity<SingleRecipeInput, CompressorRecipe>(IndustrialRegistry.SCULK_ENTITY!!, pos, state, 2, IndustrialRegistry.COMPRESSOR_TYPE!!, intArrayOf(0), intArrayOf(1)) {

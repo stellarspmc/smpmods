@@ -57,7 +57,7 @@ import spmc.smpmod.quest.QuestManager
 import spmc.smpmod.registry.CommandRegistry
 import spmc.smpmod.registry.PlantRegistry
 import spmc.smpmod.registry.PolymerRegistry
-import spmc.smpmod.utils.checkNotCreative
+import spmc.smpmod.utils.anyInCreative
 import spmc.smpmod.vault.VaultData
 import java.util.concurrent.CompletableFuture
 
@@ -95,7 +95,7 @@ class SMPMod: DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
 	        val player = handler.getPlayer()
 	        BedrockSkinFetcher.restoreSkin(server, player)
-	        QuestManager.get()?.checkAndResetRotations(player)
+	        QuestManager.get()?.checkAndResetRotations(player) // TODO: no use
 	        EconomySystem.get()?.registerPlayer(player.getUUID(), player.gameProfile.name())
 	        player.awardRecipes(server.recipeManager.recipes.distinct().filter { it.id().identifier().namespace == "smpmod" })
 	        messageChannel?.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string))?.queue()
@@ -104,7 +104,7 @@ class SMPMod: DedicatedServerModInitializer {
 
 	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource -> // players only
 	        val player = entity as? ServerPlayer ?: return@register
-		    if (checkNotCreative(player)) return@register
+		    if (anyInCreative(player)) return@register
 		    messageChannel?.sendMessage(MarkdownSanitizer.escape("☠ " + damageSource.getLocalizedDeathMessage(player).string + " at (" + player.x.toInt() + ", " + player.y.toInt() + ", " + player.z.toInt() + ")"))?.queue()
 		    val headItem = ItemStack(Items.PLAYER_HEAD)
 		    headItem.applyComponents(DataComponentMap.builder().set(DataComponents.PROFILE, player.profile).build())
@@ -118,7 +118,7 @@ class SMPMod: DedicatedServerModInitializer {
 	    ServerTickEvents.END_SERVER_TICK.register {
 		    if (it.playerList.players.isEmpty()) return@register
 		    if (it.tickCount % 360 == 0) serverTickLoop(it)
-		    if (it.tickCount % 15 == 0) NPCManager.serverTickLoop(it)
+		    if (it.tickCount % 5 == 0) NPCManager.serverTickLoop(it)
 		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
 		    if (it.tickCount % 3 == 0 ) FishingMob.serverTickLoop()
 		    if (it.tickCount % 1200 != 0) return@register
@@ -136,8 +136,9 @@ class SMPMod: DedicatedServerModInitializer {
 		    }
 	    }
 
-	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ -> // non-players only
+	    ServerLivingEntityEvents.AFTER_DEATH.register { entity, source -> // non-players only
 			if (entity is ServerPlayer) return@register
+		    if (source.entity !is ServerPlayer) return@register
 		    when (entity.type.category) {
 			    MobCategory.MONSTER -> ScrapHandler.handleMonsterScrap(entity) // all aggressive
 			    MobCategory.MISC -> ScrapHandler.handleGolemScrap(entity) // villagers, golems, non-mob types (!!!)
@@ -147,9 +148,9 @@ class SMPMod: DedicatedServerModInitializer {
 
 	    ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> messageChannel?.sendMessage("[-] " + MarkdownSanitizer.escape(handler.getPlayer().name.string))?.queue() }
 	    ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ ->
-			if (checkNotCreative(sender)) sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID())
-			else sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), "${sender.name.string} (In Creative Realm)", sender.getStringUUID())
-	    }
+			if (anyInCreative(sender)) sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), "${sender.name.string} (In Creative Realm)", sender.getStringUUID())
+			else sendChatMessage(message.signedContent().replace("<[^>]*>".toRegex(), ""), sender.name.string, sender.getStringUUID())
+		 }
 	    ServerLifecycleEvents.SERVER_STOPPED.register { messageChannel?.sendMessage("Server shutting down...")?.queue(); bot?.shutdown() }
 	    PlayerBlockBreakEvents.AFTER.register(TreasureHelper::onBlockBreak)
 	    ServerEntityEvents.ENTITY_LOAD.register(ServerMobEvents::onEntityJoin)
@@ -160,7 +161,7 @@ class SMPMod: DedicatedServerModInitializer {
         PlayerBlockBreakEvents.AFTER.register { world, _, pos, state, _ ->
 	        if (world.isClientSide) return@register
 	        if (world.dimension().identifier().namespace != "minecraft") return@register
-	        if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS)) {
+	        if (state.`is`(Blocks.SHORT_GRASS) || state.`is`(Blocks.TALL_GRASS) || state.`is`(Blocks.BUSH)) {
 		        if (world.getRandom().nextFloat() < .08f) PlantRegistry.SEEDS["wheat"]?.let { Block.popResource(world, pos, ItemStack(it)) }
 	        }
         }
@@ -177,8 +178,8 @@ class SMPMod: DedicatedServerModInitializer {
 		    val attacker = source.entity as? ServerPlayer ?: return@register
 		    val mainHandStack = attacker.mainHandItem
 
-		    if (mainHandStack.`is`(Items.MACE) && attacker.fallDistance > 1.5f) attacker.cooldowns.addCooldown(mainHandStack, 30 * 20)
-	    }
+		    if (mainHandStack.`is`(Items.MACE) && attacker.fallDistance >= 1.5f) attacker.cooldowns.addCooldown(mainHandStack, 30 * 20)
+	    } // TODO: investiage fall damage
     }
 
     companion object {

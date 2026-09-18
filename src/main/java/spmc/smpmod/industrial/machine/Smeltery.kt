@@ -18,7 +18,7 @@ import spmc.smpmod.industrial.TripleRecipeInput
 import spmc.smpmod.registry.IndustrialRegistry
 
 class SmelteryBlock(properties: Properties): BaseMachineBlock<SmelteryEntity>(properties, { IndustrialRegistry.SMELTERY_ENTITY!! }, ::SmelteryEntity) {
-	public override fun codec() = CODEC
+	//public override fun codec() = CODEC
 	override fun getPolymerBlockState(state: BlockState, context: PacketContext?) = Blocks.SMOKER.defaultBlockState().setValue(BlockStateProperties.LIT, true)
 
 	override fun useWithoutItem(state: BlockState, level: Level, pos: BlockPos, player: Player, hitResult: BlockHitResult): InteractionResult {
@@ -26,9 +26,9 @@ class SmelteryBlock(properties: Properties): BaseMachineBlock<SmelteryEntity>(pr
 		return InteractionResult.SUCCESS
 	}
 
-	companion object {
-		val CODEC = simpleCodec(::SmelteryBlock)
-	}
+	//companion object {
+	//	val CODEC = simpleCodec(::SmelteryBlock)
+	//}
 }
 
 class SmelteryEntity(pos: BlockPos, state: BlockState): BaseMachineEntity<TripleRecipeInput, SmelterRecipe>(IndustrialRegistry.SMELTERY_ENTITY!!, pos, state, 4, IndustrialRegistry.SMELTERY_TYPE!!, intArrayOf(0, 1, 2), intArrayOf(3)) {

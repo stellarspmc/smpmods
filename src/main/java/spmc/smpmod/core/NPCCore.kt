@@ -78,7 +78,7 @@ object NPCManager {
 		if (def.profile != null) mannequin.profile = def.profile
 		mannequin.customName = def.displayName
 		mannequin.setImmovable(true)
-		mannequin.isInvulnerable = true
+		mannequin.isPermanentlyInvulnerable = true
 		mannequin.setHideDescription(true)
 
 		level.addFreshEntity(mannequin)
@@ -108,7 +108,7 @@ object NPCManager {
 	}
 
 	@JvmStatic
-	fun serverTickLoop(server: MinecraftServer) {
+	fun serverTickLoop(server: MinecraftServer) { // TODO: broken
 		val npcData = NPCData.get()?: return
 		for (uuid in npcData.npcMap.values) {
 			val def = DEFINITIONS[npcData.getNpcId(uuid)]

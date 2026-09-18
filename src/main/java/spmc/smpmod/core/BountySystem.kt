@@ -7,8 +7,10 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.item.component.CustomData
 import spmc.smpmod.economy.EconomySystem
-import spmc.smpmod.utils.*
-import java.util.UUID
+import spmc.smpmod.utils.rnd2DP
+import spmc.smpmod.utils.sendError
+import spmc.smpmod.utils.sendSuccess
+import java.util.*
 
 object BountySystem {
 	private val killCooldowns: MutableMap<Pair<UUID, UUID>, Long> = mutableMapOf()
@@ -70,6 +72,5 @@ object BountySystem {
 	}
 
 	fun checkBounty(player: ServerPlayer) = player.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getDoubleOr("bounty", .0)
-
 	private fun clearBounty(player: ServerPlayer) { player.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).update { it.remove("bounty") } }
 }

@@ -31,13 +31,8 @@ class CreativeData @JvmOverloads constructor(creativeData: MutableMap<UUID, Comp
 		val TYPE: SavedDataType<CreativeData> = SavedDataType(Identifier.fromNamespaceAndPath("smpmod", "creative"), ::CreativeData, CODEC, DataFixTypes.LEVEL)
 		@JvmStatic fun get(): CreativeData? = SMPMod.minecraftServer?.dataStorage?.computeIfAbsent(TYPE)
 
-		fun teleportToCreative(player: ServerPlayer) {
-			swapInventoriesAndLocation(player, true)
-		}
-
-		fun teleportToOverworld(player: ServerPlayer) {
-			swapInventoriesAndLocation(player, false)
-		}
+		fun teleportToCreative(player: ServerPlayer) { swapInventoriesAndLocation(player, true) }
+		fun teleportToOverworld(player: ServerPlayer) { swapInventoriesAndLocation(player, false) }
 
 		private fun swapInventoriesAndLocation(player: ServerPlayer, toCreative: Boolean) {
 			val server = SMPMod.minecraftServer ?: return
@@ -47,7 +42,7 @@ class CreativeData @JvmOverloads constructor(creativeData: MutableMap<UUID, Comp
 			// save data
 			val saveData = (if (toCreative) state.survivalData else state.creativeData).computeIfAbsent(player.uuid) { CompoundTag() }
 			saveData.store("pos", Vec3.CODEC, player.position())
-			player.inventory.forEachIndexed { index, stack -> saveData.store("slot$index", ItemStack.CODEC, stack) }
+			player.inventory.forEachIndexed { index, stack -> saveData.store("slot$index", ItemStack.CODEC, stack) } // cant access registry TODO
 			state.setDirty()
 
 			// load other data

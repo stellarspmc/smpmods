@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerPlayer
 import spmc.smpmod.quest.Quest
 import spmc.smpmod.quest.Quest.QuestReward
 import spmc.smpmod.quest.QuestManager.Companion.getQuests
-import spmc.smpmod.utils.checkNotCreative
+import spmc.smpmod.utils.anyInCreative
 
 object QuestRegistry {
 	private val QUESTS: MutableMap<String, Quest> = mutableMapOf()
@@ -17,7 +17,7 @@ object QuestRegistry {
 		initWeekly()
 
 		PlayerBlockBreakEvents.AFTER.register { _, player, _, state, _ ->
-			if (checkNotCreative(player as? ServerPlayer ?: return@register)) return@register
+			if (anyInCreative(player as? ServerPlayer ?: return@register)) return@register
 			getQuests(player).activeQuests.forEach { val quest = it.getQuest() ?: return@register
 				if (quest.type == Quest.QuestType.MINE_BLOCK && quest.target == BuiltInRegistries.BLOCK.getKey(state.block)) it.increment(1)
 			}

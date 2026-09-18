@@ -5,7 +5,7 @@ import spmc.smpmod.utils.*
 
 object WordleManager: SessionManager<WordleSession>() {
 	fun startMinigame(player: ServerPlayer): Boolean {
-		if (checkNotCreative(player)) return false
+		if (anyInCreative(player)) return false
 		val session = WordleSession(player)
 		return startSession(session)
 	}

@@ -1,14 +1,14 @@
 package spmc.smpmod.quest
 
 import com.mojang.serialization.Codec
-import spmc.smpmod.SMPMod.Companion.minecraftServer
-import spmc.smpmod.registry.QuestRegistry
 import net.minecraft.core.UUIDUtil
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
+import spmc.smpmod.SMPMod.Companion.minecraftServer
+import spmc.smpmod.registry.QuestRegistry
 import java.time.LocalDate
 import java.util.*
 import kotlin.math.min
@@ -32,7 +32,7 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
             setDirty()
         }
 
-        data.activeQuests.filter { a -> (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.DAILY) or (QuestRegistry.get(a.questId)?.questType == Quest.QuestCategory.WEEKLY) }.forEach { completeAndClaim(player, it) }
+        data.activeQuests.filter { (QuestRegistry.get(it.questId)?.questType == Quest.QuestCategory.DAILY) or (QuestRegistry.get(it.questId)?.questType == Quest.QuestCategory.WEEKLY) }.forEach { completeAndClaim(player, it) }
     }
 
     fun getAvailableNpcQuests(player: ServerPlayer, npcId: String): List<Quest?> {
@@ -54,7 +54,7 @@ class QuestManager @JvmOverloads constructor(questData: MutableMap<UUID, PlayerQ
     }
 
     private fun refreshQuestsForCategory(data: PlayerQuestData, player: ServerPlayer, category: Quest.QuestCategory, availablePool: List<Quest>) {
-        data.activeQuests.removeIf { q -> QuestRegistry.get(q.questId) != null && QuestRegistry.get(q.questId)?.questType == category }
+        data.activeQuests.removeIf { QuestRegistry.get(it.questId) != null && QuestRegistry.get(it.questId)?.questType == category }
         if (availablePool.isEmpty()) return
 
         val pool = ArrayList(availablePool)
