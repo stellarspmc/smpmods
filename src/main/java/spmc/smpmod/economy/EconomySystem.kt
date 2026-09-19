@@ -16,7 +16,7 @@ import kotlin.math.min
 
 class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double> = HashMap<UUID, Double>(), names: MutableMap<UUID, String> = HashMap<UUID, String>()): SavedData() {
 	private val balances = HashMap(balances)
-	private val names = HashMap(names)
+	private val names = HashMap(names) // todo: replace using SMPMod.minecraftServer?.playerList
 
 	fun registerPlayer(uuid: UUID, name: String) {
 		if (!balances.containsKey(uuid)) {
@@ -28,14 +28,6 @@ class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double>
 
 	fun resolveName(uuid: UUID): String = names.getOrDefault(uuid, uuid.toString().substring(0, 8))
 	fun getBalance(uuid: UUID): Double = balances.getOrDefault(uuid, .0)
-
-	fun setBalance(uuid: UUID, money: Double) {
-		if (money >= 0 && money < Double.MAX_VALUE) {
-			balances[uuid] = money
-			this.setDirty()
-		}
-	}
-
 	fun changeBalance(uuid: UUID, money: Double): Boolean {
 		val current = getBalance(uuid)
 		if (current + money >= 0 && current + money < Double.MAX_VALUE) {
@@ -48,7 +40,7 @@ class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double>
 
 	fun top(page: Int): String {
 		val sorted = sortedBalances()
-		val filtered = sorted.filter { resolveName(it.key) != "spmc" } // todo: add op check instead of hard remove
+		val filtered = sorted.filter { !(SMPMod.minecraftServer?.playerList?.opNames?.contains(resolveName(it.key)) ?: true) }
 		val rankings = StringBuilder()
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
@@ -67,7 +59,7 @@ class EconomySystem @JvmOverloads constructor(balances: MutableMap<UUID, Double>
 
 	fun getMinecraftTop(page: Int): Component {
 		val sorted = sortedBalances()
-		val filtered = sorted.filter { resolveName(it.key) != "spmc" }
+		val filtered = sorted.filter { !(SMPMod.minecraftServer?.playerList?.opNames?.contains(resolveName(it.key)) ?: true) }
 		val pageSize = 10
 		val startIndex = (page - 1) * pageSize
 		val endIndex = min(startIndex + pageSize, filtered.size)

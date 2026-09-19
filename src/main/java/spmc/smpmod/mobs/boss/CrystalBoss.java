@@ -45,7 +45,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         super.tick();
 
         if (!this.level().isClientSide()) {
-            //if (tickCount % 10 == 0) updateOrbitingCrystals(); TODO: fix code
+            if (tickCount % 10 == 0) updateOrbitingCrystals();
 
             if (this.roarAbilityCooldown > 0) this.roarAbilityCooldown--;
             if (this.roarAnimationState.isStarted() && this.roarAbilityCooldown <= 0) {
@@ -59,7 +59,7 @@ public class CrystalBoss extends Warden implements PolymerEntity {
         double radius = 2.5;
         double speed = .05;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) { // todo: fix
             if (orbitingCrystals[i] == null || !orbitingCrystals[i].isAlive()) {
                 EndCrystal crystal = new EndCrystal(this.level(), this.getX(), this.getY() + 2, this.getZ());
                 crystal.setShowBottom(false);

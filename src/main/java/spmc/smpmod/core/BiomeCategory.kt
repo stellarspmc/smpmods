@@ -11,11 +11,11 @@ import net.minecraft.world.level.biome.Biome
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) { // TODO: check if any stupid things
+enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) {
 	BADLANDS(listOf(BiomeTags.IS_BADLANDS)),
 	DESERT(listOf(ConventionalBiomeTags.IS_DRY_OVERWORLD, ConventionalBiomeTags.IS_DESERT)),
 	SNOWY(listOf(ConventionalBiomeTags.IS_SNOWY, ConventionalBiomeTags.IS_COLD_OVERWORLD)),
-	TROPICAL(listOf(ConventionalBiomeTags.IS_JUNGLE, ConventionalBiomeTags.IS_SAVANNA, ConventionalBiomeTags.IS_SWAMP, BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)), // TODO: ConventionalBiomeTags.IS_TROPICAL?
+	TROPICAL(listOf(ConventionalBiomeTags.IS_JUNGLE, ConventionalBiomeTags.IS_SAVANNA, ConventionalBiomeTags.IS_SWAMP, BiomeTags.IS_JUNGLE, BiomeTags.IS_SAVANNA)),
 	OCEAN(listOf(ConventionalBiomeTags.IS_OCEAN, ConventionalBiomeTags.IS_RIVER, BiomeTags.IS_OCEAN, BiomeTags.IS_RIVER, BiomeTags.IS_BEACH)),
 	FOREST(listOf(ConventionalBiomeTags.IS_FOREST, BiomeTags.IS_FOREST)),
 	TAIGA(listOf(BiomeTags.IS_TAIGA, ConventionalBiomeTags.IS_TAIGA)),
@@ -27,17 +27,16 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) { // TODO:
 	CAVE(listOf(ConventionalBiomeTags.IS_CAVE)),
 	SCULK(listOf(BiomeTags.HAS_ANCIENT_CITY)),
 
-	DEEP,
 	SKY,
 
 	NETHER(listOf(BiomeTags.IS_NETHER)), // general nether
-	CRIMSON, // TODO
+	CRIMSON, // todo
 	WARPED,
 	SOUL_SAND,
 	BASALT,
 	NETHER_WASTES,
 
-	END(listOf(BiomeTags.IS_END)), // probably includes every end biome? TODO: add nullscape diversity (not a good idea to put here)
+	END(listOf(BiomeTags.IS_END)), // probably includes every end biome? todo: add nullscape diversity (not a good idea to put here)
 	// END_ISLANDS? ConventionalBiomeTags.END_ISLANDS)
 	DEFAULT;
 
@@ -59,7 +58,7 @@ enum class BiomeCategory(val tags: List<TagKey<Biome>> = emptyList()) { // TODO:
 			if (level.dimension() == Level.END) return EnumSet.of(END)
 
 			if (yPos > 240) return EnumSet.of(SKY)
-			if (yPos < 0) return EnumSet.of(DEEP) // TODO: merge sculk with deep? / vice versa? (only for fishing)
+			if (yPos < 0) return EnumSet.of(SCULK)
 
 			val biomeHolder = level.getBiome(player.blockPosition())
 			val category = getGroup(biomeHolder)

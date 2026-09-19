@@ -108,7 +108,7 @@ object NPCManager {
 	}
 
 	@JvmStatic
-	fun serverTickLoop(server: MinecraftServer) { // TODO: broken
+	fun serverTickLoop(server: MinecraftServer) {
 		val npcData = NPCData.get()?: return
 		for (uuid in npcData.npcMap.values) {
 			val def = DEFINITIONS[npcData.getNpcId(uuid)]

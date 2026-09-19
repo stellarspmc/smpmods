@@ -73,7 +73,7 @@ object TreasureHelper {
 		return ItemRarity.entries[rarity.ordinal + 1]
 	}
 
-    internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) { // TODO: new blocks?
+    internal enum class BlockRates(val multiplier: Float, private val blocks: MutableList<Block>) {
         VERY_HIGH(2f, mutableListOf(
 	        Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE,
 	        Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE,

@@ -17,7 +17,7 @@ import spmc.smpmod.utils.sendSuccess
 import kotlin.math.min
 
 object ATMMenu {
-	fun open(player: ServerPlayer) {
+	fun open(player: ServerPlayer) { // todo
 		if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUUID())) openBedrockForm(player)
 		else openJavaGui(player)
 	}

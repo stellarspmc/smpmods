@@ -241,8 +241,8 @@ object TreasureRegistry {
 			enchant(enchants.getOrThrow(Enchantments.UNBREAKING), 3)
 		}}
 		entry(Items.HEAVY_CORE) { rarity(ItemRarity.CHROMATIC) }
-	    // TODO: any t6 rod (entry(FishingRegistry.getRod("emerald_fishing_rod")) { rarity(ItemRarity.LEGENDARY) } )
-		entry(Items.TRIDENT) { rarity(ItemRarity.CHROMATIC).name(Component.literal("Copper Spear").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+	    entry(FishingRegistry.getRod("uranium_fishing_rod")) { rarity(ItemRarity.CHROMATIC) } // todo
+	    entry(Items.TRIDENT) { rarity(ItemRarity.CHROMATIC).name(Component.literal("Copper Spear").withStyle(ChatFormatting.GOLD)).modify { val enchants = it.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
 			enchant(enchants.getOrThrow(Enchantments.RIPTIDE), 3)
 			enchant(enchants.getOrThrow(Enchantments.IMPALING), 6)
 			enchant(enchants.getOrThrow(Enchantments.VANISHING_CURSE), 1)
@@ -304,9 +304,9 @@ object TreasureRegistry {
 		    set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
 			    .add(Attributes.STEP_HEIGHT, AttributeModifier(ResourceLocation.fromNamespaceAndPath("smpmod", "step_height_boost"), 0.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.FEET)
 			    .build())
-	    }*/ // TODO: fix
+	    }*/ // todo: fix
     }
-    private fun registerOverworld() { // sort by rarity, then biome, group overlaps tgt TODO
+    private fun registerOverworld() { // sort by rarity, then biome, group overlaps tgt todo
 		entry(Items.HANGING_ROOTS) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
 		entry(Items.RAW_COPPER) { count(4).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
 		entry(Items.RAW_IRON) { count(2).rarity(ItemRarity.COMMON).biome(BiomeCategory.OVERWORLD) }
@@ -378,7 +378,7 @@ object TreasureRegistry {
 		entry(Items.SCULK) { count(16).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SCULK) }
 		entry(Items.CANDLE) { count(5).rarity(ItemRarity.UNCOMMON).biome(BiomeCategory.SCULK) }
     }
-    private fun registerNether() { // TODO
+    private fun registerNether() { // todo
 		entry(Items.GLOWSTONE_DUST) { count(12).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }
 		entry(Items.NETHERRACK) { count(32).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }
 		entry(Items.NETHER_BRICK) { count(8).rarity(ItemRarity.COMMON).biome(BiomeCategory.NETHER) }

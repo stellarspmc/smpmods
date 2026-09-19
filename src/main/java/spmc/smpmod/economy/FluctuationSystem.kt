@@ -197,7 +197,7 @@ class MarketState: SavedData() {
 			temporaryMarketMap[template.mineral] = FluctuationExpiry(FluctuationData(template.mineral, template.defaultPrice, template.fluctuation), server.tickCount + server.overworld().getRandom().nextInt(144000) + 144000)
 		}
 
-		fun addScreenMonitor(level: ServerLevel, pos: BlockPos): Boolean { // TODO: saved data again...
+		fun addScreenMonitor(level: ServerLevel, pos: BlockPos): Boolean { // todo: saved data again... (only need to save screen monitor uuid)
 			if (displayList.isNotEmpty()) return false // this line is for
 			repeat(3) { createScreen(level, pos, it) } // maybe more than 1 screen? 1 screen holds 5 data
 			return true

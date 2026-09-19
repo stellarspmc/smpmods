@@ -55,7 +55,7 @@ object FishingRegistry { // might have to switch up how this works? TODO
 		if (PLAINS.contains(fish)) return BiomeCategory.PLAINS
 		else if (DESERT.contains(fish)) return BiomeCategory.DESERT
 		else if (LAVA.contains(fish)) return BiomeCategory.NETHER
-		else if (DEEP.contains(fish)) return BiomeCategory.DEEP
+		else if (DEEP.contains(fish)) return BiomeCategory.SCULK
 		else if (END.contains(fish)) return BiomeCategory.END
 		else if (SNOWY.contains(fish)) return BiomeCategory.SNOWY
 		else if (SKY.contains(fish)) return BiomeCategory.SKY

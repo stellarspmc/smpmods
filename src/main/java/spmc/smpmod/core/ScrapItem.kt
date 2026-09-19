@@ -42,7 +42,6 @@ class ScrapItem(properties: Properties, vanillaItem: Item, val rarity: ItemRarit
 
 object ScrapHandler {
 	var buffMultiplier = 1f
-	// TODO: broken (only 50th line is broken)
 	fun handleMonsterScrap(entity: Entity) {
 		if (entity is SulfurCube) return
 		val random = entity.random
@@ -84,12 +83,16 @@ object ScrapHandler {
 		return when (rarity) {
 			ItemRarity.COMMON -> PolymerRegistry.getItem("common_scrap")?.value() as? ScrapItem
 			ItemRarity.UNCOMMON -> PolymerRegistry.getItem("uncommon_scrap")?.value() as? ScrapItem
-			ItemRarity.RARE -> PolymerRegistry.getItem("rare_scrap")?.value() as? ScrapItem
-			ItemRarity.EPIC -> PolymerRegistry.getItem("epic_scrap")?.value() as? ScrapItem
-			ItemRarity.LEGENDARY -> PolymerRegistry.getItem("legendary_scrap")?.value() as? ScrapItem
-			ItemRarity.MYTHIC -> PolymerRegistry.getItem("mythic_scrap")?.value() as? ScrapItem
+			ItemRarity.RARE -> PolymerRegistry.getItem("rare_relic")?.value() as? ScrapItem
+			ItemRarity.EPIC -> PolymerRegistry.getItem("epic_catalyst")?.value() as? ScrapItem
+			ItemRarity.LEGENDARY -> PolymerRegistry.getItem("legendary_matrix")?.value() as? ScrapItem
+			ItemRarity.MYTHIC -> PolymerRegistry.getItem("mythic_singularity")?.value() as? ScrapItem
 			ItemRarity.CHROMATIC -> PolymerRegistry.getItem("chromatic_glint")?.value() as? ScrapItem
 			ItemRarity.ASTRAL -> PolymerRegistry.getItem("astral_fabric")?.value() as? ScrapItem
 		}
 	}
+}
+
+object ScrapRefiner {
+	// to be used with npcs, todo: not in priority
 }

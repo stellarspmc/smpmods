@@ -100,7 +100,7 @@ object NPCRegistry {
 		    .displayName(Component.literal("Market Master").withColor(0x87D6BB))
 		    .skin("market", intArrayOf(859935646, -1416867370, -1404676300, 69776291), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjQ1MDZjODMyYTM2YjhiYmE2NDM4NmVhZTM1ZmJjZmRjODBmNzZhZTYzODk3ZjZkM2NlOTNmZWY1ZGZmODU2OCJ9fX0=")
 		    .onAttack { player, mannequin -> talkAsMannequin(mannequin, Component.literal("I can control the market with ease!"), player) }
-		    .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("This is a work in progress..."), player) } // TODO
+		    .onUse { player, mannequin -> talkAsMannequin(mannequin, Component.literal("This is a work in progress..."), player) }
 		    .build()
 	    )
     }

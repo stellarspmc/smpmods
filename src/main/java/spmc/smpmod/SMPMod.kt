@@ -95,7 +95,7 @@ class SMPMod: DedicatedServerModInitializer {
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
 	        val player = handler.getPlayer()
 	        BedrockSkinFetcher.restoreSkin(server, player)
-	        QuestManager.get()?.checkAndResetRotations(player) // TODO: no use
+	        QuestManager.get()?.checkAndResetRotations(player) // TODO: fix
 	        EconomySystem.get()?.registerPlayer(player.getUUID(), player.gameProfile.name())
 	        player.awardRecipes(server.recipeManager.recipes.distinct().filter { it.id().identifier().namespace == "smpmod" })
 	        messageChannel?.sendMessage("[+] " + MarkdownSanitizer.escape(player.name.string))?.queue()
@@ -118,7 +118,7 @@ class SMPMod: DedicatedServerModInitializer {
 	    ServerTickEvents.END_SERVER_TICK.register {
 		    if (it.playerList.players.isEmpty()) return@register
 		    if (it.tickCount % 360 == 0) serverTickLoop(it)
-		    if (it.tickCount % 5 == 0) NPCManager.serverTickLoop(it)
+		    if (it.tickCount % 3 == 0) NPCManager.serverTickLoop(it)
 		    if (it.tickCount % 50 == 0) ChunkPool.serverTickLoop()
 		    if (it.tickCount % 3 == 0 ) FishingMob.serverTickLoop()
 		    if (it.tickCount % 1200 != 0) return@register
@@ -157,7 +157,7 @@ class SMPMod: DedicatedServerModInitializer {
 	    //UseBlockCallback.EVENT.register(CrystalBoss::eventSpawnBoss) todo: better handling
 	    CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, context, _ -> CommandRegistry.register(dispatcher, context) })
 
-	    // poc, TODO: make it better
+	    // poc, todo: make it better
         PlayerBlockBreakEvents.AFTER.register { world, _, pos, state, _ ->
 	        if (world.isClientSide) return@register
 	        if (world.dimension().identifier().namespace != "minecraft") return@register
