@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "smpmod:kraken",
+    "smpmod:moncavia",
+    "smpmod:leviathan",
+    "smpmod:megalodon",
+    "smpmod:bahamut",
+    "smpmod:cthulhu",
+    "smpmod:bakunawa",
+    "smpmod:ningen"
+  ]
+}

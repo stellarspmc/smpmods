@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "smpmod:rowlen",
+    "smpmod:skibindidle",
+    "smpmod:crazer",
+    "smpmod:venomfish",
+    "smpmod:enemyfish",
+    "smpmod:geysaurous",
+    "smpmod:jenfish",
+    "smpmod:tonka",
+    "smpmod:deitus",
+    "smpmod:mochafish",
+    "smpmod:diddus",
+    "smpmod:codded_salmon",
+    "smpmod:kungdus_khan",
+    "smpmod:swordfish",
+    "smpmod:finfishius",
+    "smpmod:phantomfish"
+  ]
+}

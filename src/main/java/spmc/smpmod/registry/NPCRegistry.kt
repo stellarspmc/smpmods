@@ -22,7 +22,7 @@ import spmc.smpmod.vault.VaultData
 object NPCRegistry {
     internal fun init() {
         NPCManager.register(CustomNPC.Builder("fish_seller", true)
-            .displayName(Component.literal("Aquamaray").withStyle(ChatFormatting.AQUA))
+            .displayName(Component.literal("Aquamarie").withStyle(ChatFormatting.AQUA))
             .skin("fisher", intArrayOf(-1116145262, -304197271, -1414701672, -926620516), "e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDM1MWQ3OGNlNDg5MzliYTg5YjllOTFlODk2MjQ2Mjc4NjEwOGUxNTczNzViOWY0MDg2ZjVjNjdkZGE2YzAyOSJ9fX0=")
             .onAttack { player, mannequin ->
                 talkAsMannequin(mannequin, Component.literal("Ahoy! Drop whatever fish you want to sell into the bin, then close it when you're done."), player)
